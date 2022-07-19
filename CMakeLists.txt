@@ -10,16 +10,21 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  message_generation
 )
 
-
-catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES kinova_test
-#  CATKIN_DEPENDS roscpp rospy std_msgs
-#  DEPENDS system_lib
+# 自定義 msg file
+add_message_files(FILES
+  kinovaMsg.msg
 )
 
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
+
+catkin_package(CATKIN_DEPENDS
+    message_runtime)
 
 # 建立mylib函式庫
 add_library(mylib "")
@@ -51,6 +56,25 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 target_link_libraries(${PROJECT_NAME}
   mylib
   ${PROJECT_SOURCE_DIR}/lib/KinovaGen3Model.a
+  ${PROJECT_SOURCE_DIR}/lib/release/libKortexApiCpp.a
+  ${catkin_LIBRARIES}
+)
+
+# ------------------------------------------------------
+add_executable(kinova_joint_position src/kinova_joint_position.cpp src/utilities.cpp)
+
+target_include_directories(kinova_joint_position PUBLIC
+  ${PROJECT_SOURCE_DIR}/include
+  ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}
+  ${PROJECT_SOURCE_DIR}/include/client
+  ${PROJECT_SOURCE_DIR}/include/common
+  ${PROJECT_SOURCE_DIR}/include/messages
+  ${PROJECT_SOURCE_DIR}/include/client_stubs
+  ${PROJECT_SOURCE_DIR}/include/cxxopts
+  ${catkin_INCLUDE_DIRS}
+)
+
+target_link_libraries(kinova_joint_position
   ${PROJECT_SOURCE_DIR}/lib/release/libKortexApiCpp.a
   ${catkin_LIBRARIES}
 )
