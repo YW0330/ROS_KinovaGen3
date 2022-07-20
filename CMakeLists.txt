@@ -38,10 +38,10 @@ target_include_directories(mylib PRIVATE
 
 
 # 生成執行檔
-add_executable(${PROJECT_NAME} src/kinova_test.cpp src/utilities.cpp)
+add_executable(kinova_torque src/kinova_torque.cpp src/utilities.cpp)
 
 # 執行檔加入標頭檔
-target_include_directories(${PROJECT_NAME} PUBLIC
+target_include_directories(kinova_torque PUBLIC
   ${PROJECT_SOURCE_DIR}/include
   ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}
   ${PROJECT_SOURCE_DIR}/include/client
@@ -53,7 +53,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 
 # 執行檔連接函式庫
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(kinova_torque
   mylib
   ${PROJECT_SOURCE_DIR}/lib/KinovaGen3Model.a
   ${PROJECT_SOURCE_DIR}/lib/release/libKortexApiCpp.a
@@ -61,9 +61,9 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 # ------------------------------------------------------
-add_executable(kinova_joint_position src/kinova_joint_position.cpp src/utilities.cpp)
+add_executable(${PROJECT_NAME}  src/${PROJECT_NAME}.cpp src/utilities.cpp)
 
-target_include_directories(kinova_joint_position PUBLIC
+target_include_directories(${PROJECT_NAME}  PUBLIC
   ${PROJECT_SOURCE_DIR}/include
   ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}
   ${PROJECT_SOURCE_DIR}/include/client
@@ -74,7 +74,7 @@ target_include_directories(kinova_joint_position PUBLIC
   ${catkin_INCLUDE_DIRS}
 )
 
-target_link_libraries(kinova_joint_position
+target_link_libraries(${PROJECT_NAME} 
   ${PROJECT_SOURCE_DIR}/lib/release/libKortexApiCpp.a
   ${catkin_LIBRARIES}
 )

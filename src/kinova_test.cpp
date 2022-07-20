@@ -1,73 +1,45 @@
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <vector>
-#include <math.h>
+/*
+ * KINOVA (R) KORTEX (TM)
+ *
+ * Copyright (c) 2018 Kinova inc. All rights reserved.
+ *
+ * This software may be modified and distributed
+ * under the terms of the BSD 3-Clause license.
+ *
+ * Refer to the LICENSE file for details.
+ *
+ */
 #include "ros/ros.h"
-#include "std_msgs/String.h"
-
-#include <KDetailedException.h>
+#include "kinova_test/kinovaMsg.h"
 #include <BaseClientRpc.h>
 #include <BaseCyclicClientRpc.h>
-#include <ActuatorConfigClientRpc.h>
-#include <SessionClientRpc.h>
 #include <SessionManager.h>
+
 #include <RouterClient.h>
-#include <TransportClientUdp.h>
 #include <TransportClientTcp.h>
+
 #include "utilities.h"
-#include <google/protobuf/util/json_util.h>
 
-#include "../include/kinova_test/KinovaGen3Model.h"
-#include "../include/kinova_test/mylib.h"
-
-#if defined(_MSC_VER)
-#include <Windows.h>
-#else
-#include <unistd.h>
-#endif
-#include <time.h>
+#define PORT 10000
+#define PI 3.1415926
+#define Deg_to_Rad PI / 180
+#define Rad_to_Deg 180 / PI
 
 namespace k_api = Kinova::Api;
 
-#define PORT 10000
-#define PORT_REAL_TIME 10001
-
-float TIME_DURATION = 30.0f; // Duration of the example (seconds)
-
 // Maximum allowed waiting time during actions
-constexpr auto TIMEOUT_PROMISE_DURATION = std::chrono::seconds{20};
-
-/*****************************
- * Example related function *
- *****************************/
-int64_t GetTickUs()
-{
-#if defined(_MSC_VER)
-    LARGE_INTEGER start, frequency;
-
-    QueryPerformanceFrequency(&frequency);
-    QueryPerformanceCounter(&start);
- 
-    return (start.QuadPart * 1000000) / frequency.QuadPart;
-#else
-    struct timespec start;
-    clock_gettime(CLOCK_MONOTONIC, &start);
-
-    return (start.tv_sec * 1000000LLU) + (start.tv_nsec / 1000);
-#endif
-}
+constexpr auto TIMEOUT_DURATION = std::chrono::seconds{20};
 
 // Create an event listener that will set the promise action event to the exit value
 // Will set promise to either END or ABORT
 // Use finish_promise.get_future.get() to wait and get the value
-std::function<void(k_api::Base::ActionNotification)> 
-    create_event_listener_by_promise(std::promise<k_api::Base::ActionEvent>& finish_promise)
+std::function<void(k_api::Base::ActionNotification)>
+create_event_listener_by_promise(std::promise<k_api::Base::ActionEvent> &finish_promise)
 {
-    return [&finish_promise] (k_api::Base::ActionNotification notification)
+    return [&finish_promise](k_api::Base::ActionNotification notification)
     {
         const auto action_event = notification.action_event();
-        switch(action_event)
+        switch (action_event)
         {
         case k_api::Base::ActionEvent::ACTION_END:
         case k_api::Base::ActionEvent::ACTION_ABORT:
@@ -79,10 +51,28 @@ std::function<void(k_api::Base::ActionNotification)>
     };
 }
 
-/**************************
- * Example core functions *
- **************************/
-bool example_move_to_home_position(k_api::Base::BaseClient* base)
+// Create an event listener that will set the sent reference to the exit value
+// Will set to either END or ABORT
+// Read the value of returnAction until it is set
+std::function<void(k_api::Base::ActionNotification)>
+create_event_listener_by_ref(k_api::Base::ActionEvent &returnAction)
+{
+    return [&returnAction](k_api::Base::ActionNotification notification)
+    {
+        const auto action_event = notification.action_event();
+        switch (action_event)
+        {
+        case k_api::Base::ActionEvent::ACTION_END:
+        case k_api::Base::ActionEvent::ACTION_ABORT:
+            returnAction = action_event;
+            break;
+        default:
+            break;
+        }
+    };
+}
+
+bool example_move_to_home_position(k_api::Base::BaseClient *base)
 {
     // Make sure the arm is in Single Level Servoing before executing an Action
     auto servoingMode = k_api::Base::ServoingModeInformation();
@@ -97,37 +87,36 @@ bool example_move_to_home_position(k_api::Base::BaseClient* base)
     auto action_list = base->ReadAllActions(action_type);
     auto action_handle = k_api::Base::ActionHandle();
     action_handle.set_identifier(0);
-    for (auto action : action_list.action_list()) 
+    for (auto action : action_list.action_list())
     {
-        if (action.name() == "Home") 
+        if (action.name() == "Home")
         {
             action_handle = action.handle();
         }
     }
 
-    if (action_handle.identifier() == 0) 
+    if (action_handle.identifier() == 0)
     {
         std::cout << "Can't reach safe position, exiting" << std::endl;
         return false;
-    } 
-    else 
+    }
+    else
     {
         // Connect to notification action topic
         std::promise<k_api::Base::ActionEvent> finish_promise;
         auto finish_future = finish_promise.get_future();
         auto promise_notification_handle = base->OnNotificationActionTopic(
             create_event_listener_by_promise(finish_promise),
-            k_api::Common::NotificationOptions()
-        );
+            k_api::Common::NotificationOptions());
 
         // Execute action
         base->ExecuteActionFromReference(action_handle);
 
         // Wait for future value from promise
-        const auto status = finish_future.wait_for(TIMEOUT_PROMISE_DURATION);
+        const auto status = finish_future.wait_for(TIMEOUT_DURATION);
         base->Unsubscribe(promise_notification_handle);
 
-        if(status != std::future_status::ready)
+        if (status != std::future_status::ready)
         {
             std::cout << "Timeout on action notification wait" << std::endl;
             return false;
@@ -141,242 +130,180 @@ bool example_move_to_home_position(k_api::Base::BaseClient* base)
     }
 }
 
-bool example_cyclic_torque_control(k_api::Base::BaseClient* base, k_api::BaseCyclic::BaseCyclicClient* base_cyclic, k_api::ActuatorConfig::ActuatorConfigClient* actuator_config)
+bool example_angular_action_movement(k_api::Base::BaseClient *base)
 {
-    bool return_status = true;
+    std::cout << "Starting angular action movement ..." << std::endl;
 
-    // Get actuator count
-    unsigned int actuator_count = base->GetActuatorCount().count();
-    
-    // Clearing faults
-    try
+    auto action = k_api::Base::Action();
+    action.set_name("Example angular action movement");
+    action.set_application_data("");
+
+    auto reach_joint_angles = action.mutable_reach_joint_angles();
+    auto joint_angles = reach_joint_angles->mutable_joint_angles();
+
+    auto actuator_count = base->GetActuatorCount();
+
+    // Arm straight up
+    for (size_t i = 0; i < actuator_count.count(); ++i)
     {
-        base->ClearFaults();
+        auto joint_angle = joint_angles->add_joint_angles();
+        joint_angle->set_joint_identifier(i);
+        joint_angle->set_value(0);
     }
-    catch(...)
+
+    // Connect to notification action topic
+    // (Promise alternative)
+    // See cartesian examples for Reference alternative
+    std::promise<k_api::Base::ActionEvent> finish_promise;
+    auto finish_future = finish_promise.get_future();
+    auto promise_notification_handle = base->OnNotificationActionTopic(
+        create_event_listener_by_promise(finish_promise),
+        k_api::Common::NotificationOptions());
+
+    std::cout << "Executing action" << std::endl;
+    base->ExecuteAction(action);
+
+    std::cout << "Waiting for movement to finish ..." << std::endl;
+
+    // Wait for future value from promise
+    // (Promise alternative)
+    // See cartesian examples for Reference alternative
+    const auto status = finish_future.wait_for(TIMEOUT_DURATION);
+    base->Unsubscribe(promise_notification_handle);
+
+    if (status != std::future_status::ready)
     {
-        std::cout << "Unable to clear robot faults" << std::endl;
+        std::cout << "Timeout on action notification wait" << std::endl;
+        return false;
+    }
+    const auto promise_event = finish_future.get();
+
+    std::cout << "Angular movement completed" << std::endl;
+    std::cout << "Promise value : " << k_api::Base::ActionEvent_Name(promise_event) << std::endl;
+
+    return true;
+}
+
+bool example_cartesian_action_movement(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclicClient *base_cyclic)
+{
+    std::cout << "Starting Cartesian action movement ..." << std::endl;
+
+    auto feedback = base_cyclic->RefreshFeedback();
+    auto action = k_api::Base::Action();
+    action.set_name("Example Cartesian action movement");
+    action.set_application_data("");
+
+    auto constrained_pose = action.mutable_reach_pose();
+    auto pose = constrained_pose->mutable_target_pose();
+    pose->set_x(feedback.base().tool_pose_x());             // x (meters)
+    pose->set_y(feedback.base().tool_pose_y() - 0.1);       // y (meters)
+    pose->set_z(feedback.base().tool_pose_z() - 0.2);       // z (meters)
+    pose->set_theta_x(feedback.base().tool_pose_theta_x()); // theta x (degrees)
+    pose->set_theta_y(feedback.base().tool_pose_theta_y()); // theta y (degrees)
+    pose->set_theta_z(feedback.base().tool_pose_theta_z()); // theta z (degrees)
+
+    // Connect to notification action topic
+    // (Reference alternative)
+    // See angular examples for Promise alternative
+    k_api::Base::ActionEvent event = k_api::Base::ActionEvent::UNSPECIFIED_ACTION_EVENT;
+    auto reference_notification_handle = base->OnNotificationActionTopic(
+        create_event_listener_by_ref(event),
+        k_api::Common::NotificationOptions());
+
+    std::cout << "Executing action" << std::endl;
+    base->ExecuteAction(action);
+
+    std::cout << "Waiting for movement to finish ..." << std::endl;
+
+    // Wait for reference value to be set
+    // (Reference alternative)
+    // See angular examples for Promise alternative
+    // Set a timeout after 20s of wait
+    const auto timeout = std::chrono::system_clock::now() + TIMEOUT_DURATION;
+    while (event == k_api::Base::ActionEvent::UNSPECIFIED_ACTION_EVENT &&
+           std::chrono::system_clock::now() < timeout)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    base->Unsubscribe(reference_notification_handle);
+
+    if (event == k_api::Base::ActionEvent::UNSPECIFIED_ACTION_EVENT)
+    {
+        std::cout << "Timeout on action notification wait" << std::endl;
         return false;
     }
 
-    
-    k_api::BaseCyclic::Feedback base_feedback;
-    k_api::BaseCyclic::Command  base_command;
+    std::cout << "Cartesian movement completed" << std::endl;
+    std::cout << "Reference value : " << k_api::Base::ActionEvent_Name(event) << std::endl;
 
-    std::vector<float> commands;
-
-    auto servoing_mode = k_api::Base::ServoingModeInformation();
-
-    int timer_count = 0;
-    int64_t now = 0;
-    int64_t last = 0;
-
-    std::cout << "Initializing the arm for torque control example" << std::endl;
-    try
-    {
-        // Set the base in low-level servoing mode
-        servoing_mode.set_servoing_mode(k_api::Base::ServoingMode::LOW_LEVEL_SERVOING);
-        base->SetServoingMode(servoing_mode);
-        base_feedback = base_cyclic->RefreshFeedback();
-
-        // Initialize each actuator to their current position
-        for (unsigned int i = 0; i < actuator_count; i++)
-        {
-            commands.push_back(base_feedback.actuators(i).position());
-
-            // Save the current actuator position, to avoid a following error
-            base_command.add_actuators()->set_position(base_feedback.actuators(i).position());
-        }
-
-        // Send a first frame
-        base_feedback = base_cyclic->Refresh(base_command);
-        
-        // Set first actuator in torque mode now that the command is equal to measure
-        auto control_mode_message = k_api::ActuatorConfig::ControlModeInformation();
-        control_mode_message.set_control_mode(k_api::ActuatorConfig::ControlMode::TORQUE);
-
-        int first_actuator_device_id = 1;
-        actuator_config->SetControlMode(control_mode_message, first_actuator_device_id);
-
-        // Initial delta between first and last actuator
-        float init_delta_position = base_feedback.actuators(0).position() - base_feedback.actuators(actuator_count - 1).position();
-
-        // Initial first and last actuator torques; avoids unexpected movement due to torque offsets
-        float init_last_torque = base_feedback.actuators(actuator_count - 1).torque();
-        float init_first_torque = -base_feedback.actuators(0).torque(); //Torque measure is reversed compared to actuator direction
-        float torque_amplification = 2.0;
-
-        std::cout << "Running torque control example for " << TIME_DURATION << " seconds" << std::endl;
-
-        // Real-time loop
-        while (ros::ok())
-        {
-            now = GetTickUs();
-
-            if (now - last > 1000)
-            {
-                // Position command to first actuator is set to measured one to avoid following error to trigger
-                // Bonus: When doing this instead of disabling the following error, if communication is lost and first
-                //        actuator continues to move under torque command, resulting position error with command will
-                //        trigger a following error and switch back the actuator in position command to hold its position
-                base_command.mutable_actuators(0)->set_position(base_feedback.actuators(0).position());
-
-                // First actuator torque command is set to last actuator torque measure times an amplification
-                base_command.mutable_actuators(0)->set_torque_joint(init_first_torque + (torque_amplification * (base_feedback.actuators(actuator_count - 1).torque() - init_last_torque)));
-
-
-                // First actuator position is sent as a command to last actuator
-                base_command.mutable_actuators(actuator_count - 1)->set_position(base_feedback.actuators(0).position() - init_delta_position);
-
-                // Incrementing identifier ensures actuators can reject out of time frames
-                base_command.set_frame_id(base_command.frame_id() + 1);
-                if (base_command.frame_id() > 65535)
-                    base_command.set_frame_id(0);
-
-                for (int idx = 0; idx < actuator_count; idx++)
-                {
-                    base_command.mutable_actuators(idx)->set_command_id(base_command.frame_id());
-                }
-
-                try
-                {
-                    base_feedback = base_cyclic->Refresh(base_command, 0);
-                }
-                catch (k_api::KDetailedException& ex)
-                {
-                    std::cout << "Kortex exception: " << ex.what() << std::endl;
-
-                    std::cout << "Error sub-code: " << k_api::SubErrorCodes_Name(k_api::SubErrorCodes((ex.getErrorInfo().getError().error_sub_code()))) << std::endl;
-                }
-                catch (std::runtime_error& ex2)
-                {
-                    std::cout << "runtime error: " << ex2.what() << std::endl;
-                }
-                catch(...)
-                {
-                    std::cout << "Unknown error." << std::endl;
-                }
-                
-                timer_count++;
-                last = GetTickUs();
-                ros::spinOnce();
-            }
-        }
-
-        std::cout << "Torque control example completed" << std::endl;
-
-        // Set first actuator back in position 
-        control_mode_message.set_control_mode(k_api::ActuatorConfig::ControlMode::POSITION);
-        actuator_config->SetControlMode(control_mode_message, first_actuator_device_id);
-
-        std::cout << "Torque control example clean exit" << std::endl;
-
-    }
-    catch (k_api::KDetailedException& ex)
-    {
-        std::cout << "API error: " << ex.what() << std::endl;
-        return_status = false;
-    }
-    catch (std::runtime_error& ex2)
-    {
-        std::cout << "Error: " << ex2.what() << std::endl;
-        return_status = false;
-    }
-    
-    // Set the servoing mode back to Single Level
-    servoing_mode.set_servoing_mode(k_api::Base::ServoingMode::SINGLE_LEVEL_SERVOING);
-    base->SetServoingMode(servoing_mode);
-
-    // Wait for a bit
-    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-
-    return return_status;
-}
-
-//ROS subscriber callback
-void chatterCallback(const std_msgs::String::ConstPtr &msg)
-{
-    ROS_INFO("I heard: [%s]", msg->data.c_str());
+    return true;
 }
 
 int main(int argc, char **argv)
 {
-    //ROS
-    ros::init(argc, argv, "listener");
+    // ROS
+    ros::init(argc, argv, "kinova");
     ros::NodeHandle n;
-    ros::Subscriber sub = n.subscribe("chatter", 1000, chatterCallback);
+    ros::Publisher msg_pub = n.advertise<kinova_test::kinovaMsg>("jointInfo", 1000);
+    ros::Rate loop_rate(10);
 
     auto parsed_args = ParseExampleArguments(argc, argv);
 
     // Create API objects
-    auto error_callback = [](k_api::KError err){ cout << "_________ callback error _________" << err.toString(); };
-    
-    std::cout << "Creating transport objects" << std::endl;
+    auto error_callback = [](k_api::KError err)
+    { cout << "_________ callback error _________" << err.toString(); };
     auto transport = new k_api::TransportClientTcp();
     auto router = new k_api::RouterClient(transport, error_callback);
     transport->connect(parsed_args.ip_address, PORT);
 
-    std::cout << "Creating transport real time objects" << std::endl;
-    auto transport_real_time = new k_api::TransportClientUdp();
-    auto router_real_time = new k_api::RouterClient(transport_real_time, error_callback);
-    transport_real_time->connect(parsed_args.ip_address, PORT_REAL_TIME);
-
     // Set session data connection information
     auto create_session_info = k_api::Session::CreateSessionInfo();
-    create_session_info.set_username("admin");
-    create_session_info.set_password("admin");
+    create_session_info.set_username(parsed_args.username);
+    create_session_info.set_password(parsed_args.password);
     create_session_info.set_session_inactivity_timeout(60000);   // (milliseconds)
     create_session_info.set_connection_inactivity_timeout(2000); // (milliseconds)
 
     // Session manager service wrapper
-    std::cout << "Creating sessions for communication" << std::endl;
+    std::cout << "Creating session for communication" << std::endl;
     auto session_manager = new k_api::SessionManager(router);
     session_manager->CreateSession(create_session_info);
-    auto session_manager_real_time = new k_api::SessionManager(router_real_time);
-    session_manager_real_time->CreateSession(create_session_info);
-    std::cout << "Sessions created" << std::endl;
+    std::cout << "Session created" << std::endl;
 
     // Create services
     auto base = new k_api::Base::BaseClient(router);
-    auto base_cyclic = new k_api::BaseCyclic::BaseCyclicClient(router_real_time);
-    auto actuator_config = new k_api::ActuatorConfig::ActuatorConfigClient(router);
+    auto base_cyclic = new k_api::BaseCyclic::BaseCyclicClient(router);
+    k_api::BaseCyclic::Feedback base_feedback;
 
     // Example core
-    bool success = true;
-    success &= example_move_to_home_position(base);
-    success &= example_cyclic_torque_control(base, base_cyclic, actuator_config);
-    if (!success)
+    kinova_test::kinovaMsg kinovaMsg;
+    while (ros::ok())
     {
-        std::cout << "There has been an unexpected error." << endl;
+        base_feedback = base_cyclic->RefreshFeedback();
+        for (int i = 0; i < 7; i++)
+        {
+            kinovaMsg.jointPos[i] = base_feedback.actuators(i).position();
+            kinovaMsg.jointVel[i] = base_feedback.actuators(i).velocity();
+        }
+        msg_pub.publish(kinovaMsg);
+        ros::spinOnce();
+        loop_rate.sleep();
     }
+
+    // You can also refer to the 110-Waypoints examples if you want to execute
+    // a trajectory defined by a series of waypoints in joint space or in Cartesian space
 
     // Close API session
     session_manager->CloseSession();
-    session_manager_real_time->CloseSession();
 
     // Deactivate the router and cleanly disconnect from the transport object
     router->SetActivationStatus(false);
     transport->disconnect();
-    router_real_time->SetActivationStatus(false);
-    transport_real_time->disconnect();
 
     // Destroy the API
     delete base;
-    delete base_cyclic;
-    delete actuator_config;
     delete session_manager;
-    delete session_manager_real_time;
     delete router;
-    delete router_real_time;
     delete transport;
-    delete transport_real_time;
-    
-    return success ? 0 : 1;
-    
+
+    return 0;
 }
-
-
-
-
-
-
