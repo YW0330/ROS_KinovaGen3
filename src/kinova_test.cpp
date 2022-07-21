@@ -11,6 +11,7 @@
  */
 #include "ros/ros.h"
 #include "kinova_test/kinovaMsg.h"
+#include "kinova_test/gripperMsg.h"
 #include <BaseClientRpc.h>
 #include <BaseCyclicClientRpc.h>
 #include <SessionManager.h>
@@ -245,7 +246,14 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "kinova");
     ros::NodeHandle n;
     ros::Publisher msg_pub = n.advertise<kinova_test::kinovaMsg>("jointInfo", 1000);
+    ros::Publisher gripper_pub = n.advertise<kinova_test::gripperMsg>("gripperInfo", 1000);
     ros::Rate loop_rate(10);
+
+    k_api::BaseCyclic::Feedback base_feedback;
+    k_api::BaseCyclic::Command base_command;
+
+    k_api::GripperCyclic::MotorCommand *gripper_motor_command;
+    gripper_motor_command = base_command.mutable_interconnect()->mutable_gripper_command()->add_motor_cmd();
 
     auto parsed_args = ParseExampleArguments(argc, argv);
 
@@ -272,10 +280,10 @@ int main(int argc, char **argv)
     // Create services
     auto base = new k_api::Base::BaseClient(router);
     auto base_cyclic = new k_api::BaseCyclic::BaseCyclicClient(router);
-    k_api::BaseCyclic::Feedback base_feedback;
 
     // Example core
     kinova_test::kinovaMsg kinovaMsg;
+    kinova_test::gripperMsg gripperInfo;
     while (ros::ok())
     {
         base_feedback = base_cyclic->RefreshFeedback();
@@ -284,7 +292,10 @@ int main(int argc, char **argv)
             kinovaMsg.jointPos[i] = base_feedback.actuators(i).position();
             kinovaMsg.jointVel[i] = base_feedback.actuators(i).velocity();
         }
+        gripperInfo.gripperPos = base_feedback.interconnect().gripper_feedback().motor(0).position();
+        gripperInfo.gripperVel = base_feedback.interconnect().gripper_feedback().motor(0).velocity();
         msg_pub.publish(kinovaMsg);
+        gripper_pub.publish(gripperInfo);
         ros::spinOnce();
         loop_rate.sleep();
     }
