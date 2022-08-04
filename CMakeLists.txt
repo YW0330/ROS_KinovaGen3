@@ -16,7 +16,6 @@ find_package(catkin REQUIRED COMPONENTS
 # 自定義 msg file
 add_message_files(FILES
   kinovaMsg.msg
-  gripperMsg.msg
 )
 
 generate_messages(

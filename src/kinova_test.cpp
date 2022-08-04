@@ -11,7 +11,6 @@
  */
 #include "ros/ros.h"
 #include "kinova_test/kinovaMsg.h"
-#include "kinova_test/gripperMsg.h"
 #include <BaseClientRpc.h>
 #include <BaseCyclicClientRpc.h>
 #include <SessionManager.h>
@@ -245,8 +244,7 @@ int main(int argc, char **argv)
     // ROS
     ros::init(argc, argv, "kinova");
     ros::NodeHandle n;
-    ros::Publisher msg_pub = n.advertise<kinova_test::kinovaMsg>("jointInfo", 1000);
-    ros::Publisher gripper_pub = n.advertise<kinova_test::gripperMsg>("gripperInfo", 1000);
+    ros::Publisher msg_pub = n.advertise<kinova_test::kinovaMsg>("kinovaInfo", 1000);
     ros::Rate loop_rate(10);
 
     k_api::BaseCyclic::Feedback base_feedback;
@@ -283,7 +281,6 @@ int main(int argc, char **argv)
 
     // Example core
     kinova_test::kinovaMsg kinovaMsg;
-    kinova_test::gripperMsg gripperInfo;
     while (ros::ok())
     {
         base_feedback = base_cyclic->RefreshFeedback();
@@ -292,10 +289,9 @@ int main(int argc, char **argv)
             kinovaMsg.jointPos[i] = base_feedback.actuators(i).position();
             kinovaMsg.jointVel[i] = base_feedback.actuators(i).velocity();
         }
-        gripperInfo.gripperPos = base_feedback.interconnect().gripper_feedback().motor(0).position();
-        gripperInfo.gripperVel = base_feedback.interconnect().gripper_feedback().motor(0).velocity();
+        kinovaMsg.gripperPos = base_feedback.interconnect().gripper_feedback().motor(0).position();
+        kinovaMsg.gripperVel = base_feedback.interconnect().gripper_feedback().motor(0).velocity();
         msg_pub.publish(kinovaMsg);
-        gripper_pub.publish(gripperInfo);
         ros::spinOnce();
         loop_rate.sleep();
     }

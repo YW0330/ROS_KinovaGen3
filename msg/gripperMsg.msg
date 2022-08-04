@@ -1,2 +1,0 @@
-float32 gripperPos
-float32 gripperVel
