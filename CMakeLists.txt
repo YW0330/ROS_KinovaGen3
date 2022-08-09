@@ -36,12 +36,8 @@ target_include_directories(mylib PRIVATE
   ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}
 )
 
-
-# 生成執行檔
-add_executable(kinova_torque src/kinova_torque.cpp src/utilities.cpp)
-
-# 執行檔加入標頭檔
-target_include_directories(kinova_torque PUBLIC
+# 加入標頭檔
+include_directories(
   ${PROJECT_SOURCE_DIR}/include
   ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}
   ${PROJECT_SOURCE_DIR}/include/client
@@ -51,6 +47,10 @@ target_include_directories(kinova_torque PUBLIC
   ${PROJECT_SOURCE_DIR}/include/cxxopts
   ${catkin_INCLUDE_DIRS}
 )
+
+
+# 生成執行檔
+add_executable(kinova_torque src/kinova_torque.cpp src/utilities.cpp)
 
 # 執行檔連接函式庫
 target_link_libraries(kinova_torque
@@ -62,17 +62,6 @@ target_link_libraries(kinova_torque
 
 # ------------------------------------------------------
 add_executable(${PROJECT_NAME}  src/${PROJECT_NAME}.cpp src/utilities.cpp)
-
-target_include_directories(${PROJECT_NAME}  PUBLIC
-  ${PROJECT_SOURCE_DIR}/include
-  ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}
-  ${PROJECT_SOURCE_DIR}/include/client
-  ${PROJECT_SOURCE_DIR}/include/common
-  ${PROJECT_SOURCE_DIR}/include/messages
-  ${PROJECT_SOURCE_DIR}/include/client_stubs
-  ${PROJECT_SOURCE_DIR}/include/cxxopts
-  ${catkin_INCLUDE_DIRS}
-)
 
 target_link_libraries(${PROJECT_NAME} 
   ${PROJECT_SOURCE_DIR}/lib/release/libKortexApiCpp.a
