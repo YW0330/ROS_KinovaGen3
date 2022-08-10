@@ -26,17 +26,7 @@ generate_messages(
 catkin_package(CATKIN_DEPENDS
     message_runtime)
 
-# 建立mylib函式庫
-add_library(mylib "")
-target_sources(mylib
-  PRIVATE
-    ${PROJECT_SOURCE_DIR}/src/mylib.cpp
-)
-target_include_directories(mylib PRIVATE
-  ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}
-)
-
-# 加入標頭檔
+  # 加入標頭檔
 include_directories(
   ${PROJECT_SOURCE_DIR}/include
   ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}
@@ -48,22 +38,41 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
+# 建立mylib函式庫
+add_library(mylib "")
+target_sources(mylib
+  PRIVATE
+  ${PROJECT_SOURCE_DIR}/src/mylib.cpp
+)
+# target_include_directories(mylib PRIVATE
+#   ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}
+# )
 
 # 生成執行檔
-add_executable(kinova_torque src/kinova_torque.cpp src/utilities.cpp)
+add_executable(${PROJECT_NAME}  src/${PROJECT_NAME}.cpp src/utilities.cpp)
 
 # 執行檔連接函式庫
-target_link_libraries(kinova_torque
-  mylib
-  ${PROJECT_SOURCE_DIR}/lib/KinovaGen3Model.a
+target_link_libraries(${PROJECT_NAME} 
   ${PROJECT_SOURCE_DIR}/lib/release/libKortexApiCpp.a
   ${catkin_LIBRARIES}
 )
 
-# ------------------------------------------------------
-add_executable(${PROJECT_NAME}  src/${PROJECT_NAME}.cpp src/utilities.cpp)
+# ---------------- 官方 kinova_torque 範例 ------------------
+add_executable(kinova_torque src/kinova_torque.cpp src/utilities.cpp)
 
-target_link_libraries(${PROJECT_NAME} 
+target_link_libraries(kinova_torque
+  mylib
+  ${PROJECT_SOURCE_DIR}/lib/libKinovaGen3Model.a
+  ${PROJECT_SOURCE_DIR}/lib/release/libKortexApiCpp.a
+  ${catkin_LIBRARIES}
+)
+
+# ---------------- 重力補償 ------------------
+add_executable(gravity_compensation src/gravity_compensation.cpp src/utilities.cpp)
+
+target_link_libraries(gravity_compensation
+  mylib
+  ${PROJECT_SOURCE_DIR}/lib/libKinovaGen3Model.a
   ${PROJECT_SOURCE_DIR}/lib/release/libKortexApiCpp.a
   ${catkin_LIBRARIES}
 )

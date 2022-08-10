@@ -18,15 +18,8 @@
 #include "utilities.h"
 #include <google/protobuf/util/json_util.h>
 
-#include "../include/kinova_test/KinovaGen3Model.h"
-#include "../include/kinova_test/mylib.h"
-
-#if defined(_MSC_VER)
-#include <Windows.h>
-#else
-#include <unistd.h>
-#endif
-#include <time.h>
+#include "kinova_test/KinovaGen3Model.h"
+#include "kinova_test/mylib.h"
 
 namespace k_api = Kinova::Api;
 
