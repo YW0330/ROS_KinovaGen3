@@ -1,5 +1,5 @@
-#ifndef MYLIB_H
-#define MYLIB_H
+#ifndef MYLIB_H_
+#define MYLIB_H_
 
 #include <iomanip>
 #include <cmath>
@@ -13,8 +13,10 @@
 #include <RouterClient.h>
 #include <TransportClientUdp.h>
 #include <TransportClientTcp.h>
-#include "utilities.h"
 #include <google/protobuf/util/json_util.h>
+
+#include "utilities.h"
+#include "Matrix.h"
 
 #if defined(_MSC_VER)
 #include <Windows.h>
@@ -34,5 +36,12 @@ namespace k_api = Kinova::Api;
 
 int64_t GetTickUs();
 bool example_move_to_home_position(k_api::Base::BaseClient *base);
-void torque_satuation(double tau[7]);
+
+/*
+ * 輸出扭矩飽和器。
+ *
+ * @param 7*1 的輸出扭矩向量
+ *
+ */
+void torque_satuation(Matrix &tau);
 #endif

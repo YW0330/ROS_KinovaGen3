@@ -105,7 +105,7 @@ bool example_move_to_home_position(k_api::Base::BaseClient *base)
     }
 }
 
-void torque_satuation(double tau[7])
+void torque_satuation(Matrix &tau)
 {
     for (int i = 0; i < 7; i++)
     {

@@ -11,6 +11,8 @@
  */
 #include "ros/ros.h"
 #include "kinova_test/kinovaMsg.h"
+
+#include <cmath>
 #include <BaseClientRpc.h>
 #include <BaseCyclicClientRpc.h>
 #include <SessionManager.h>
@@ -21,9 +23,10 @@
 #include "utilities.h"
 
 #define PORT 10000
-#define PI 3.1415926
-#define Deg_to_Rad PI / 180
-#define Rad_to_Deg 180 / PI
+#define PORT_REAL_TIME 10001
+
+#define Deg2Rad M_PI / 180
+#define Rad_to_Deg 180 / M_PI
 
 namespace k_api = Kinova::Api;
 
@@ -286,7 +289,14 @@ int main(int argc, char **argv)
         base_feedback = base_cyclic->RefreshFeedback();
         for (int i = 0; i < 7; i++)
         {
+            // float pos_curr = base_feedback.actuators(i).position();
+            // if (pos_curr > 180)
+            // {
+            //     pos_curr = -(360 - pos_curr);
+            // }
+            //  kinovaMsg.jointPos[i] = pos_curr;
             kinovaMsg.jointPos[i] = base_feedback.actuators(i).position();
+
             kinovaMsg.jointVel[i] = base_feedback.actuators(i).velocity();
         }
         kinovaMsg.gripperPos = base_feedback.interconnect().gripper_feedback().motor(0).position();
