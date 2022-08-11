@@ -39,14 +39,13 @@ include_directories(
 )
 
 # 建立mylib函式庫
-add_library(mylib "")
-target_sources(mylib
+add_library(mylibary "")
+target_sources(mylibary
   PRIVATE
   ${PROJECT_SOURCE_DIR}/src/mylib.cpp
+  ${PROJECT_SOURCE_DIR}/src/Matrix.cpp
 )
-# target_include_directories(mylib PRIVATE
-#   ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}
-# )
+
 
 # 生成執行檔
 add_executable(${PROJECT_NAME}  src/${PROJECT_NAME}.cpp src/utilities.cpp)
@@ -61,7 +60,7 @@ target_link_libraries(${PROJECT_NAME}
 add_executable(kinova_torque src/kinova_torque.cpp src/utilities.cpp)
 
 target_link_libraries(kinova_torque
-  mylib
+  mylibary
   ${PROJECT_SOURCE_DIR}/lib/libKinovaGen3Model.a
   ${PROJECT_SOURCE_DIR}/lib/release/libKortexApiCpp.a
   ${catkin_LIBRARIES}
@@ -71,7 +70,15 @@ target_link_libraries(kinova_torque
 add_executable(gravity_compensation src/gravity_compensation.cpp src/utilities.cpp)
 
 target_link_libraries(gravity_compensation
-  mylib
+  mylibary
+  ${PROJECT_SOURCE_DIR}/lib/libKinovaGen3Model.a
+  ${PROJECT_SOURCE_DIR}/lib/release/libKortexApiCpp.a
+  ${catkin_LIBRARIES}
+)
+
+add_executable(matlab src/matlab.cpp)
+target_link_libraries(matlab
+  mylibary
   ${PROJECT_SOURCE_DIR}/lib/libKinovaGen3Model.a
   ${PROJECT_SOURCE_DIR}/lib/release/libKortexApiCpp.a
   ${catkin_LIBRARIES}
