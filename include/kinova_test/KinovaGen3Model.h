@@ -1,7 +1,11 @@
-#ifndef KINOVAGEN3MODEL_H
-#define KINOVAGEN3MODEL_H
+#ifndef _KINOVAGEN3MODEL_H
+#define _KINOVAGEN3MODEL_H
 
-// Type Definitions
+#include "Matrix.h"
+
+#define TOMETER(num) (double)num / 10000
+
+// Type Definitions from MATLAB
 void kinova_M(double q1, double q2, double q3, double q4, double q5,
               double q6, double q7, double M[49]);
 
@@ -11,4 +15,23 @@ void kinova_G(double g, double q1, double q2, double q3, double q4,
 void kinova_C(double q1, double q2, double q3, double q4, double q5,
               double q6, double q7, double dq1, double dq2, double dq3,
               double dq4, double dq5, double dq6, double dq7, double C[49]);
+
+// Parameters
+enum class Params
+{
+    // unit: meter*10000
+    d1 = 1284,
+    d2 = 54,
+    d3 = 2104,
+    d4 = 64,
+    d5 = 2104,
+    d6 = 64,
+    d7 = 2084,
+    d8 = 64,
+    d9 = 1059,
+    d10 = 1059,
+    d11 = 615,
+};
+
+Matrix<double> forward_kinematic(Matrix<double> q);
 #endif

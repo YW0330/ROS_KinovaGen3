@@ -41,6 +41,7 @@ target_sources(mylibary
   PRIVATE
   ${PROJECT_SOURCE_DIR}/src/Matrix.cpp
   ${PROJECT_SOURCE_DIR}/src/mylib.cpp
+  ${PROJECT_SOURCE_DIR}/src/KinovaGen3Model.cpp
 )
 
 
