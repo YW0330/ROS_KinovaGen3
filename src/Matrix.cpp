@@ -1,213 +1,211 @@
-#include "kinova_test/Matrix.h"
+#include "../include/kinova_test/Matrix.h"
 
 // ---------- Constructor Start ----------
-Matrix::Matrix(int rows, int cols) : _rows(rows), _cols(cols)
+template <class DATA_TYPE>
+Matrix<DATA_TYPE>::Matrix(unsigned rows, unsigned cols) : _rows(rows), _cols(cols)
 {
-    matrix = new double *[_rows];
-    for (int i = 0; i < _rows; i++)
-        matrix[i] = new double[_cols];
-    for (int i = 0; i < _rows; i++)
-        for (int j = 0; j < _cols; j++)
-            matrix[i][j] = 0;
+    if (rows == 0 || cols == 0)
+        throw std::logic_error("The rows and cols can not be zero.");
+    matrix = new DATA_TYPE[_rows * _cols];
+    for (unsigned i = 0; i < _rows; i++)
+        for (unsigned j = 0; j < _cols; j++)
+            *(matrix + _cols * i + j) = 0;
 }
 
-Matrix::Matrix(const Matrix &mat) : _rows(mat._rows), _cols(mat._cols)
+template <class DATA_TYPE>
+Matrix<DATA_TYPE>::Matrix(const Matrix<DATA_TYPE> &mat) : _rows(mat._rows), _cols(mat._cols)
 {
-    matrix = new double *[_rows];
-    for (int i = 0; i < _rows; i++)
-        matrix[i] = new double[_cols];
-    for (int i = 0; i < _rows; i++)
-        for (int j = 0; j < _cols; j++)
-            matrix[i][j] = mat.matrix[i][j];
+    matrix = new DATA_TYPE[_rows * _cols];
+    std::copy(mat.matrix, mat.matrix + _rows * _cols, matrix);
 }
 // ---------- Constructor End ----------
 
 // ---------- Destructor Start ----------
-Matrix::~Matrix()
+template <class DATA_TYPE>
+Matrix<DATA_TYPE>::~Matrix()
 {
-    if (matrix == nullptr)
-        return;
-    for (int i = 0; i < _rows; i++)
-        delete[] matrix[i];
     delete[] matrix;
     matrix = nullptr;
 }
 // ---------- Destructor End ----------
 
 // ---------- Operator Start ----------
-Matrix &Matrix::operator=(const Matrix &mat)
+template <class DATA_TYPE>
+const DATA_TYPE &Matrix<DATA_TYPE>::operator[](unsigned num) const
+{
+    if (num >= _rows && num >= _cols)
+        throw std::out_of_range("Invalid index to matrix");
+    return _rows == 1 ? *(matrix + num) : *(matrix + _cols * num);
+}
+
+template <class DATA_TYPE>
+DATA_TYPE &Matrix<DATA_TYPE>::operator[](unsigned num)
+{
+    if (num >= _rows && num >= _cols)
+        throw std::out_of_range("Invalid index to matrix");
+    return _rows == 1 ? *(matrix + num) : *(matrix + _cols * num);
+}
+
+template <class DATA_TYPE>
+const DATA_TYPE &Matrix<DATA_TYPE>::operator()(unsigned row, unsigned col) const
+{
+    if (row >= _rows || col >= _cols)
+        throw std::out_of_range("Invalid index to matrix");
+    return *(matrix + _cols * row + col);
+}
+
+template <class DATA_TYPE>
+DATA_TYPE &Matrix<DATA_TYPE>::operator()(unsigned row, unsigned col)
+{
+    if (row >= _rows || col >= _cols)
+        throw std::out_of_range("Invalid index to matrix");
+    return *(matrix + _cols * row + col);
+}
+
+template <class DATA_TYPE>
+Matrix<DATA_TYPE> &Matrix<DATA_TYPE>::operator=(const Matrix<DATA_TYPE> &mat)
 {
     if (this == &mat)
         return *this;
     if (_rows != mat._rows || _cols != mat._cols)
     {
-        this->~Matrix();
+        delete[] matrix;
         _rows = mat._rows;
         _cols = mat._cols;
-        matrix = new double *[_rows];
-        for (int i = 0; i < _rows; i++)
-            matrix[i] = new double[_cols];
+        matrix = new DATA_TYPE[_rows * _cols];
     }
-    for (int i = 0; i < _rows; i++)
-        for (int j = 0; j < _cols; j++)
-            matrix[i][j] = mat.matrix[i][j];
+    std::copy(mat.matrix, mat.matrix + _rows * _cols, matrix);
     return *this;
 }
 
-const double &Matrix::operator[](int num) const
-{
-    if (num < 0 || (num >= _rows && num >= _cols))
-        throw std::out_of_range("Invalid index to matrix");
-    return _rows == 1 ? matrix[0][num] : matrix[num][0];
-}
-
-double &Matrix::operator[](int num)
-{
-    if (num < 0 || (num >= _rows && num >= _cols))
-        throw std::out_of_range("Invalid index to matrix");
-    return _rows == 1 ? matrix[0][num] : matrix[num][0];
-}
-
-const double &Matrix::operator()(int row, int col) const
-{
-    if (row < 0 || col < 0 || row >= _rows || col >= _cols)
-        throw std::out_of_range("Invalid index to matrix");
-    return matrix[row][col];
-}
-
-double &Matrix::operator()(int row, int col)
-{
-    if (row < 0 || col < 0 || row >= _rows || col >= _cols)
-        throw std::out_of_range("Invalid index to matrix");
-    return matrix[row][col];
-}
-
-Matrix Matrix::operator+(const Matrix &rhs)
+template <class DATA_TYPE>
+Matrix<DATA_TYPE> Matrix<DATA_TYPE>::operator+(const Matrix<DATA_TYPE> &rhs)
 {
     if (_rows != rhs._rows || _cols != rhs._cols)
         throw std::logic_error("LHS size is not equal to RHS size.");
-    Matrix ret(_rows, _cols);
-    for (int i = 0; i < _rows; i++)
-        for (int j = 0; j < _cols; j++)
-            ret.matrix[i][j] = matrix[i][j] + rhs.matrix[i][j];
+    Matrix<DATA_TYPE> ret(_rows, _cols);
+    for (unsigned i = 0; i < _rows; i++)
+        for (unsigned j = 0; j < _cols; j++)
+            *(ret.matrix + _cols * i + j) = *(matrix + _cols * i + j) + *(rhs.matrix + _cols * i + j);
     return ret;
 }
 
-Matrix &Matrix::operator+=(const Matrix &rhs)
+template <class DATA_TYPE>
+Matrix<DATA_TYPE> &Matrix<DATA_TYPE>::operator+=(const Matrix<DATA_TYPE> &rhs)
 {
     if (_rows != rhs._rows || _cols != rhs._cols)
         throw std::logic_error("LHS size is not equal to RHS size.");
-    for (int i = 0; i < _rows; i++)
-        for (int j = 0; j < _cols; j++)
-            matrix[i][j] += rhs.matrix[i][j];
+    for (unsigned i = 0; i < _rows; i++)
+        for (unsigned j = 0; j < _cols; j++)
+            *(matrix + _cols * i + j) += *(rhs.matrix + _cols * i + j);
     return *this;
 }
 
-Matrix Matrix::operator-(const Matrix &rhs)
+template <class DATA_TYPE>
+Matrix<DATA_TYPE> Matrix<DATA_TYPE>::operator-(const Matrix<DATA_TYPE> &rhs)
 {
-    if (_rows != rhs._rows || _cols != rhs._cols)
-        throw std::logic_error("LHS size is not equal to RHS size.");
-    Matrix ret(_rows, _cols);
-    for (int i = 0; i < _rows; i++)
-        for (int j = 0; j < _cols; j++)
-            ret.matrix[i][j] = matrix[i][j] - rhs.matrix[i][j];
+    Matrix<DATA_TYPE> ret(_rows, _cols);
+    for (unsigned i = 0; i < _rows; i++)
+        for (unsigned j = 0; j < _cols; j++)
+            *(ret.matrix + _cols * i + j) = *(matrix + _cols * i + j) - *(rhs.matrix + _cols * i + j);
     return ret;
 }
 
-Matrix &Matrix::operator-=(const Matrix &rhs)
+template <class DATA_TYPE>
+Matrix<DATA_TYPE> &Matrix<DATA_TYPE>::operator-=(const Matrix<DATA_TYPE> &rhs)
 {
     if (_rows != rhs._rows || _cols != rhs._cols)
         throw std::logic_error("LHS size is not equal to RHS size.");
-    for (int i = 0; i < _rows; i++)
-        for (int j = 0; j < _cols; j++)
-            matrix[i][j] -= rhs.matrix[i][j];
+    for (unsigned i = 0; i < _rows; i++)
+        for (unsigned j = 0; j < _cols; j++)
+            *(matrix + _cols * i + j) -= *(rhs.matrix + _cols * i + j);
     return *this;
 }
 
-Matrix Matrix::operator*(const double rhs)
+template <class DATA_TYPE>
+Matrix<DATA_TYPE> Matrix<DATA_TYPE>::operator*(const DATA_TYPE rhs)
 {
-    Matrix ret(_rows, _cols);
-    for (int i = 0; i < _rows; i++)
-        for (int j = 0; j < _cols; j++)
-            ret.matrix[i][j] = matrix[i][j] * rhs;
+    Matrix<DATA_TYPE> ret(_rows, _cols);
+    for (unsigned i = 0; i < _rows; i++)
+        for (unsigned j = 0; j < _cols; j++)
+            *(ret.matrix + _cols * i + j) = *(matrix + _cols * i + j) * rhs;
     return ret;
 }
 
-Matrix Matrix::operator*(const Matrix &rhs)
+template <class DATA_TYPE>
+Matrix<DATA_TYPE> &Matrix<DATA_TYPE>::operator*=(const DATA_TYPE rhs)
+{
+    for (unsigned i = 0; i < _rows; i++)
+        for (unsigned j = 0; j < _cols; j++)
+            *(matrix + _cols * i + j) *= rhs;
+    return *this;
+}
+template <class DATA_TYPE>
+Matrix<DATA_TYPE> Matrix<DATA_TYPE>::operator*(const Matrix<DATA_TYPE> &rhs)
 {
     if (_cols != rhs._rows)
         throw std::logic_error("LHS column is not equal to RHS row.");
-    Matrix ret(_rows, rhs._cols);
-    for (int i = 0; i < _rows; i++)
-        for (int j = 0; j < rhs._cols; j++)
-            for (int k = 0; k < _cols; k++)
-                ret.matrix[i][j] += matrix[i][k] * rhs.matrix[k][j];
+    Matrix<DATA_TYPE> ret(_rows, rhs._cols);
+    for (unsigned i = 0; i < _rows; i++)
+        for (unsigned j = 0; j < rhs._cols; j++)
+            for (unsigned k = 0; k < _cols; k++)
+                *(ret.matrix + rhs._cols * i + j) += *(matrix + _cols * i + k) * *(rhs.matrix + rhs._cols * k + j);
     return ret;
 }
 
-Matrix &Matrix::operator*=(const double rhs)
-{
-    for (int i = 0; i < _rows; i++)
-        for (int j = 0; j < _cols; j++)
-            matrix[i][j] *= rhs;
-    return *this;
-}
-
-Matrix &Matrix::operator*=(const Matrix &rhs)
+template <class DATA_TYPE>
+Matrix<DATA_TYPE> &Matrix<DATA_TYPE>::operator*=(const Matrix<DATA_TYPE> &rhs)
 {
     if (_cols != rhs._rows)
         throw std::logic_error("LHS column is not equal to RHS row.");
-    Matrix ret(_rows, rhs._cols);
-    for (int i = 0; i < _rows; i++)
-        for (int j = 0; j < rhs._cols; j++)
-            for (int k = 0; k < _cols; k++)
-                ret.matrix[i][j] += matrix[i][k] * rhs.matrix[k][j];
+    Matrix<DATA_TYPE> ret(_rows, rhs._cols);
+    for (unsigned i = 0; i < _rows; i++)
+        for (unsigned j = 0; j < rhs._cols; j++)
+            for (unsigned k = 0; k < _cols; k++)
+                *(ret.matrix + rhs._cols * i + j) += *(matrix + _cols * i + k) * *(rhs.matrix + rhs._cols * k + j);
     return *this = ret;
 }
 
-Matrix Matrix::operator/(const double rhs)
+template <class DATA_TYPE>
+Matrix<DATA_TYPE> Matrix<DATA_TYPE>::operator/(const DATA_TYPE rhs)
 {
     Matrix ret(_rows, _cols);
-    for (int i = 0; i < _rows; i++)
-        for (int j = 0; j < _cols; j++)
-            ret.matrix[i][j] = matrix[i][j] / rhs;
+    for (unsigned i = 0; i < _rows; i++)
+        for (unsigned j = 0; j < _cols; j++)
+            *(ret.matrix + _cols * i + j) = *(matrix + _cols * i + j) / rhs;
     return ret;
 }
 
-Matrix &Matrix::operator/=(const double rhs)
+template <class DATA_TYPE>
+Matrix<DATA_TYPE> &Matrix<DATA_TYPE>::operator/=(const DATA_TYPE rhs)
 {
-    for (int i = 0; i < _rows; i++)
-        for (int j = 0; j < _cols; j++)
-            matrix[i][j] /= rhs;
+    for (unsigned i = 0; i < _rows; i++)
+        for (unsigned j = 0; j < _cols; j++)
+            *(matrix + _cols * i + j) /= rhs;
     return *this;
-}
-
-std::ostream &operator<<(std::ostream &os, const Matrix &mat)
-{
-    for (int i = 0; i < mat._rows; i++)
-    {
-        for (int j = 0; j < mat._cols; j++)
-            std::cout << mat.matrix[i][j] << "\t";
-        std::cout << std::endl;
-    }
-    return os;
 }
 // ---------- Operator End ----------
 
 // ---------- Other function Start ----------
-void Matrix::update_from_matlab(double *arr)
+template <class DATA_TYPE>
+void Matrix<DATA_TYPE>::update_from_matlab(DATA_TYPE *arr)
 {
-    for (int i = 0, k = 0; i < _cols; i++)
-        for (int j = 0; j < _rows; j++, k++)
-            matrix[j][i] = arr[k];
+    for (unsigned i = 0, k = 0; i < _cols; i++)
+        for (unsigned j = 0; j < _rows; j++, k++)
+            *(matrix + _cols * j + i) = *(arr + k);
 }
 
-Matrix Matrix::gen_Transpose()
+template <class DATA_TYPE>
+Matrix<DATA_TYPE> Matrix<DATA_TYPE>::gen_Transpose()
 {
-    Matrix T(_cols, _rows);
-    for (int i = 0; i < _rows; i++)
-        for (int j = 0; j < _cols; j++)
-            T.matrix[j][i] = matrix[i][j];
+    Matrix<DATA_TYPE> T(_cols, _rows);
+    for (unsigned i = 0; i < _rows; i++)
+        for (unsigned j = 0; j < _cols; j++)
+            *(T.matrix + _rows * j + i) = *(matrix + _cols * i + j);
     return T;
 }
 // ---------- Other function End ----------
+
+template class Matrix<double>;
+template class Matrix<float>;
+template class Matrix<int>;

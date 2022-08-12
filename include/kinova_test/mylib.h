@@ -43,5 +43,6 @@ bool example_move_to_home_position(k_api::Base::BaseClient *base);
  * @param 7*1 的輸出扭矩向量
  *
  */
-void torque_satuation(Matrix &tau);
+void torque_satuation(Matrix<float> &tau);
+
 #endif
