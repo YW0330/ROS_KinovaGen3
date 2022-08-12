@@ -1,39 +1,35 @@
-/*
- * @file gravity_compensation.cpp
- * @author YW0330
- * @date 2022.8.9
- * @brief kinova gen3 進行重力補償
- */
-
 #include <iostream>
+#include <cmath>
 #include <string>
 #include <vector>
-#include <math.h>
 
 // ros 相關
 #include "ros/ros.h"
-#include "std_msgs/String.h"
+#include "kinova_test/kinovaMsg.h"
+//#include "std_msgs/String.h"
 
 // 自行加入的功能
 #include "kinova_test/KinovaGen3Model.h"
 #include "kinova_test/mylib.h"
+#include "kinova_test/Matrix.h"
 
-/**************************
- * Example core functions *
- **************************/
-bool example_cyclic_torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclicClient *base_cyclic, k_api::ActuatorConfig::ActuatorConfigClient *actuator_config)
+using namespace std;
+using namespace kinova_test;
+
+bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclicClient *base_cyclic, k_api::ActuatorConfig::ActuatorConfigClient *actuator_config)
 {
-    // 參數設定
-    double G[7];
-    double position_curr[7];
-    double controller_tau[7] = {0};
-    double init_tau[7];
+    // ROS
+    ros::NodeHandle n;
+    ros::Publisher msg_pub = n.advertise<kinovaMsg>("kinovaInfo", 1000); // rostopic的名稱(Publish)
+    // ros::Subscriber sub = n.subscribe("chatter", 1000, chatterCallback); // rostopic的名稱(subscribe)
+    ros::Rate loop_rate(10);
 
+    double init_tau[7];
     bool return_status = true;
 
     // Get actuator count
     unsigned int actuator_count = base->GetActuatorCount().count();
-    cout << actuator_count << endl;
+    cout << "actuator_counts: " << actuator_count << endl;
     // Clearing faults
     try
     {
@@ -41,22 +37,18 @@ bool example_cyclic_torque_control(k_api::Base::BaseClient *base, k_api::BaseCyc
     }
     catch (...)
     {
-        std::cout << "Unable to clear robot faults" << std::endl;
+        cout << "Unable to clear robot faults" << endl;
         return false;
     }
 
     k_api::BaseCyclic::Feedback base_feedback;
     k_api::BaseCyclic::Command base_command;
 
-    std::vector<float> commands;
+    vector<float> commands;
 
     auto servoing_mode = k_api::Base::ServoingModeInformation();
 
-    int timer_count = 0;
-    int64_t now = 0;
-    int64_t last = 0;
-
-    std::cout << "Initializing the arm for torque control example" << std::endl;
+    cout << "Initializing the arm for torque control" << endl;
     try
     {
         // Set the base in low-level servoing mode
@@ -85,11 +77,48 @@ bool example_cyclic_torque_control(k_api::Base::BaseClient *base, k_api::BaseCyc
         for (int i = 0; i < actuator_count; i++)
             init_tau[i] = -base_feedback.actuators(i).torque();
 
+        kinovaMsg kinovaInfo;
+        //初始值參數設定
+        //讀取關節角
+        Matrix<double> position_curr(7, 1); //-pi~pi
+        Matrix<double> round(7, 1);         //圈數
+        Matrix<double> q(7, 1);             // -inf~inf
+        for (int i = 0; i < 7; i++)
+        {
+            position_curr[i] = base_feedback.actuators(i).position() * Deg2Rad;
+            if (position_curr[i] > M_PI)
+                position_curr[i] = -(2 * M_PI - position_curr[i]);
+        }
+        q = position_curr;
+        //順向運動學
+        Matrix<double> X = forward_kinematic(q);
+        kinovaInfo.kinova_X = {X[0], X[1], X[2]};
+
+        Matrix<double> dq(7, 1);
+        kinovaInfo.kinova_dX = {dq[0], dq[1], dq[2]};
+
+        int64_t t_start = GetTickUs(), now = GetTickUs(), last = now; //微秒
+        double exp_time = (double)(now - t_start) / 1000000;          //秒
+        Matrix<double> prev_q = q;
+
+        Matrix<float> controller_tau(7, 1);
+        int loop = 1;
+        //目標輸出
+        Matrix<double> qd(7, 1);
+        for (int i = 0; i < 7; i++)
+            qd[i] = 0;
+        Matrix<double> error = qd - q;
+        double G_arr[7];
+        Matrix<double> G(7, 1);
+        Matrix<double> P_controller(7, 1);
+        Matrix<double> Kp(7, 7);
+        for (int i = 0; i < 7; i++)
+            Kp(i, i) = 8;
+        msg_pub.publish(kinovaInfo);
         // Real-time loop
         while (ros::ok())
         {
             now = GetTickUs();
-
             if (now - last > 1000)
             {
                 // Position command to first actuator is set to measured one to avoid following error to trigger
@@ -99,31 +128,65 @@ bool example_cyclic_torque_control(k_api::Base::BaseClient *base, k_api::BaseCyc
                 for (int i = 0; i < actuator_count; i++)
                     base_command.mutable_actuators(i)->set_position(base_feedback.actuators(i).position());
 
-                // 取得當前關節位置
-                for (int i = 0; i < actuator_count; i++)
+                //控制器
+                kinova_G(GRAVITY, position_curr[0], position_curr[1], position_curr[2], position_curr[3], position_curr[4], position_curr[5], position_curr[6], G_arr);
+                G.update_from_matlab(G_arr);
+                P_controller = Kp * error;
+
+                //設定扭矩
+                controller_tau[0] = P_controller[0] + G[0] + init_tau[0] * 0.3;
+                controller_tau[1] = P_controller[1] + G[1] * 1.03 + init_tau[1] * 0.1;
+                controller_tau[2] = P_controller[2] + G[2];
+                controller_tau[3] = P_controller[3] + G[3] + init_tau[3] * 0.1;
+                controller_tau[4] = P_controller[4] + G[4];
+                controller_tau[5] = P_controller[5] + G[5] + init_tau[5] * 0.1;
+                controller_tau[6] = P_controller[6] + G[6] + init_tau[6];
+                //設定飽和器
+                torque_satuation(controller_tau);
+                //輸入扭矩
+                for (int i = 0; i < 7; i++)
+                {
+                    base_command.mutable_actuators(i)->set_torque_joint(controller_tau[i]);
+                }
+
+                //讀取關節角
+                for (int i = 0; i < 7; i++)
                 {
                     position_curr[i] = base_feedback.actuators(i).position() * Deg2Rad;
+                    if (position_curr[i] > M_PI)
+                        position_curr[i] = -(2 * M_PI - position_curr[i]);
+                }
+                q = position_curr + 2 * M_PI * round;
+                for (int i = 0; i < 7; i++)
+                {
+                    if (q[i] - prev_q[i] > 330 * Deg2Rad)
+                    {
+                        q[i] = q[i] - 2 * M_PI;
+                        round[i] = round[i] - 1;
+                    }
+                    else if (q[i] - prev_q[i] < -330 * Deg2Rad)
+                    {
+                        q[i] = q[i] + 2 * M_PI;
+                        round[i] = round[i] + 1;
+                    }
                 }
 
-                kinova_G(GRAVITY, position_curr[0], position_curr[1], position_curr[2], position_curr[3], position_curr[4], position_curr[5], position_curr[6], G);
-                G[1] = G[1] * 1.05;
-                G[3] = G[3] * 1.2;
-                G[5] = G[5] * 1.2;
+                //順向運動學
+                X = forward_kinematic(q);
+                kinovaInfo.kinova_X = {X[0], X[1], X[2]};
+                if (loop % 500 == 0)
+                    cout << X << endl;
 
-                controller_tau[0] = init_tau[0] * 1.1;
-                controller_tau[6] = init_tau[6];
-                for (int i = 0; i < actuator_count; i++)
-                {
-                    controller_tau[i] += G[i];
-                }
-                torque_satuation(controller_tau);
-                for (int i = 0; i < actuator_count; i++)
-                {
-                    cout << controller_tau[i] << "\t";
-                    base_command.mutable_actuators(i)->set_torque_joint(controller_tau[i]);
-                    controller_tau[i] = 0;
-                }
-                cout << endl;
+                //更新時間、微分、積分
+                now = GetTickUs();
+                exp_time = (double)(now - t_start) / 1000000;
+                for (int i = 0; i < 7; i++)
+                    dq[i] = base_feedback.actuators(i).velocity() * Deg2Rad;
+                kinovaInfo.kinova_dX = {dq[0], dq[1], dq[2]};
+                prev_q = q;
+                last = now;
+
+                error = qd - q;
 
                 // Incrementing identifier ensures actuators can reject out of time frames
                 base_command.set_frame_id(base_command.frame_id() + 1);
@@ -141,42 +204,42 @@ bool example_cyclic_torque_control(k_api::Base::BaseClient *base, k_api::BaseCyc
                 }
                 catch (k_api::KDetailedException &ex)
                 {
-                    std::cout << "Kortex exception: " << ex.what() << std::endl;
+                    cout << "Kortex exception: " << ex.what() << endl;
 
-                    std::cout << "Error sub-code: " << k_api::SubErrorCodes_Name(k_api::SubErrorCodes((ex.getErrorInfo().getError().error_sub_code()))) << std::endl;
+                    cout << "Error sub-code: " << k_api::SubErrorCodes_Name(k_api::SubErrorCodes((ex.getErrorInfo().getError().error_sub_code()))) << endl;
                 }
-                catch (std::runtime_error &ex2)
+                catch (runtime_error &ex2)
                 {
-                    std::cout << "runtime error: " << ex2.what() << std::endl;
+                    cout << "runtime error: " << ex2.what() << endl;
                 }
                 catch (...)
                 {
-                    std::cout << "Unknown error." << std::endl;
+                    cout << "Unknown error." << endl;
                 }
 
-                timer_count++;
-                last = GetTickUs();
-                ros::spinOnce();
+                loop = loop + 1;
+                msg_pub.publish(kinovaInfo);
+                // ros::spinOnce(); //偵測subscriber
             }
         }
 
-        std::cout << "Torque control example completed" << std::endl;
+        cout << "Torque control completed" << endl;
 
         // Set first actuator back in position
         control_mode_message.set_control_mode(k_api::ActuatorConfig::ControlMode::POSITION);
         for (int i = 1; i <= actuator_count; i++)
             actuator_config->SetControlMode(control_mode_message, i);
 
-        std::cout << "Torque control example clean exit" << std::endl;
+        cout << "Torque control clean exit" << endl;
     }
     catch (k_api::KDetailedException &ex)
     {
-        std::cout << "API error: " << ex.what() << std::endl;
+        cout << "API error: " << ex.what() << endl;
         return_status = false;
     }
     catch (std::runtime_error &ex2)
     {
-        std::cout << "Error: " << ex2.what() << std::endl;
+        cout << "Error: " << ex2.what() << endl;
         return_status = false;
     }
 
@@ -193,17 +256,15 @@ bool example_cyclic_torque_control(k_api::Base::BaseClient *base, k_api::BaseCyc
 }
 
 // ROS subscriber callback
-void chatterCallback(const std_msgs::String::ConstPtr &msg)
-{
-    ROS_INFO("I heard: [%s]", msg->data.c_str());
-}
+// void chatterCallback(const std_msgs::String::ConstPtr &msg)
+// {
+//     ROS_INFO("I heard: [%s]", msg->data.c_str());
+// }
 
 int main(int argc, char **argv)
 {
     // ROS
-    ros::init(argc, argv, "listener");
-    ros::NodeHandle n;
-    ros::Subscriber sub = n.subscribe("chatter", 1000, chatterCallback);
+    ros::init(argc, argv, "kinovaDevice"); // rosnode的名稱
 
     auto parsed_args = ParseExampleArguments(argc, argv);
 
@@ -211,12 +272,12 @@ int main(int argc, char **argv)
     auto error_callback = [](k_api::KError err)
     { cout << "_________ callback error _________" << err.toString(); };
 
-    std::cout << "Creating transport objects" << std::endl;
+    cout << "Creating transport objects" << endl;
     auto transport = new k_api::TransportClientTcp();
     auto router = new k_api::RouterClient(transport, error_callback);
     transport->connect(parsed_args.ip_address, PORT);
 
-    std::cout << "Creating transport real time objects" << std::endl;
+    cout << "Creating transport real time objects" << endl;
     auto transport_real_time = new k_api::TransportClientUdp();
     auto router_real_time = new k_api::RouterClient(transport_real_time, error_callback);
     transport_real_time->connect(parsed_args.ip_address, PORT_REAL_TIME);
@@ -229,12 +290,12 @@ int main(int argc, char **argv)
     create_session_info.set_connection_inactivity_timeout(2000); // (milliseconds)
 
     // Session manager service wrapper
-    std::cout << "Creating sessions for communication" << std::endl;
+    cout << "Creating sessions for communication" << endl;
     auto session_manager = new k_api::SessionManager(router);
     session_manager->CreateSession(create_session_info);
     auto session_manager_real_time = new k_api::SessionManager(router_real_time);
     session_manager_real_time->CreateSession(create_session_info);
-    std::cout << "Sessions created" << std::endl;
+    cout << "Sessions created" << endl;
 
     // Create services
     auto base = new k_api::Base::BaseClient(router);
@@ -244,10 +305,10 @@ int main(int argc, char **argv)
     // Example core
     bool success = true;
     success &= example_move_to_home_position(base);
-    success &= example_cyclic_torque_control(base, base_cyclic, actuator_config);
+    success &= torque_control(base, base_cyclic, actuator_config);
     if (!success)
     {
-        std::cout << "There has been an unexpected error." << endl;
+        cout << "There has been an unexpected error." << endl;
     }
 
     // Close API session

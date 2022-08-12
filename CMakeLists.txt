@@ -44,7 +44,7 @@ target_sources(mylibary
   ${PROJECT_SOURCE_DIR}/src/KinovaGen3Model.cpp
 )
 
-
+# ---------------- kinova_test ------------------
 # 生成執行檔
 add_executable(${PROJECT_NAME}  src/${PROJECT_NAME}.cpp src/utilities.cpp)
 
@@ -66,7 +66,7 @@ target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
 )
 
-# ---------------- 官方 kinova_torque 範例 ------------------
+# ---------------- kinova_torque ------------------
 add_executable(kinova_torque src/kinova_torque.cpp src/utilities.cpp)
 
 target_include_directories(kinova_torque PUBLIC
@@ -81,49 +81,6 @@ target_include_directories(kinova_torque PUBLIC
 )
 
 target_link_libraries(kinova_torque
-  mylibary
-  ${PROJECT_SOURCE_DIR}/lib/libKinovaGen3Model.a
-  ${PROJECT_SOURCE_DIR}/lib/release/libKortexApiCpp.a
-  ${catkin_LIBRARIES}
-)
-
-# ---------------- 重力補償 ------------------
-add_executable(gravity_compensation src/gravity_compensation.cpp src/utilities.cpp)
-
-target_include_directories(gravity_compensation PUBLIC
-  ${PROJECT_SOURCE_DIR}/include
-  ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}
-  ${PROJECT_SOURCE_DIR}/include/client
-  ${PROJECT_SOURCE_DIR}/include/common
-  ${PROJECT_SOURCE_DIR}/include/messages
-  ${PROJECT_SOURCE_DIR}/include/client_stubs
-  ${PROJECT_SOURCE_DIR}/include/cxxopts
-  ${catkin_INCLUDE_DIRS}
-)
-
-target_link_libraries(gravity_compensation
-  mylibary
-  ${PROJECT_SOURCE_DIR}/lib/libKinovaGen3Model.a
-  ${PROJECT_SOURCE_DIR}/lib/release/libKortexApiCpp.a
-  ${catkin_LIBRARIES}
-)
-
-
-# ---------------- Matlab ------------------
-add_executable(matlab src/matlab.cpp)
-
-target_include_directories(matlab PUBLIC
-  ${PROJECT_SOURCE_DIR}/include
-  ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}
-  ${PROJECT_SOURCE_DIR}/include/client
-  ${PROJECT_SOURCE_DIR}/include/common
-  ${PROJECT_SOURCE_DIR}/include/messages
-  ${PROJECT_SOURCE_DIR}/include/client_stubs
-  ${PROJECT_SOURCE_DIR}/include/cxxopts
-  ${catkin_INCLUDE_DIRS}
-)
-
-target_link_libraries(matlab
   mylibary
   ${PROJECT_SOURCE_DIR}/lib/libKinovaGen3Model.a
   ${PROJECT_SOURCE_DIR}/lib/release/libKortexApiCpp.a

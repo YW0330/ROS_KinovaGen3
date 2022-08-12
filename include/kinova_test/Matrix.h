@@ -50,6 +50,18 @@ public:
      *
      */
     Matrix<DATA_TYPE> operator+(const Matrix<DATA_TYPE> &rhs);
+    // 不同類型相加
+    template <class TYPE>
+    Matrix<DATA_TYPE> operator+(const Matrix<TYPE> &rhs)
+    {
+        if (_rows != rhs.getRow() || _cols != rhs.getRow())
+            throw std::logic_error("LHS size is not equal to RHS size.");
+        Matrix<DATA_TYPE> ret(_rows, _cols);
+        for (unsigned i = 0; i < _rows; i++)
+            for (unsigned j = 0; j < _cols; j++)
+                ret(i, j) = *(matrix + _cols * i + j) + rhs(i, j);
+        return ret;
+    }
     Matrix<DATA_TYPE> &operator+=(const Matrix<DATA_TYPE> &rhs);
 
     /*
@@ -101,7 +113,7 @@ public:
      * 輸出方法
      *
      */
-    friend std::ostream &operator<<(std::ostream &os, const Matrix<DATA_TYPE> &mat)
+    friend std::ostream &operator<<(std::ostream &os, const Matrix &mat)
     {
         for (unsigned i = 0; i < mat._rows; i++)
         {
@@ -127,6 +139,22 @@ public:
      *
      */
     Matrix<DATA_TYPE> gen_Transpose();
+
+    /*
+     * 取得矩陣列數。
+     *
+     * @return 矩陣列數
+     *
+     */
+    const unsigned getRow() const { return _rows; }
+
+    /*
+     * 取得矩陣行數。
+     *
+     * @return 矩陣行數
+     *
+     */
+    const unsigned getCol() const { return _cols; }
 };
 
 #endif
