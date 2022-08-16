@@ -73,6 +73,18 @@ public:
      *
      */
     Matrix<DATA_TYPE> operator-(const Matrix<DATA_TYPE> &rhs);
+    // 不同類型相減
+    template <class TYPE>
+    Matrix<DATA_TYPE> operator-(const Matrix<TYPE> &rhs)
+    {
+        if (_rows != rhs.getRow() || _cols != rhs.getRow())
+            throw std::logic_error("LHS size is not equal to RHS size.");
+        Matrix<DATA_TYPE> ret(_rows, _cols);
+        for (unsigned i = 0; i < _rows; i++)
+            for (unsigned j = 0; j < _cols; j++)
+                ret(i, j) = *(matrix + _cols * i + j) - rhs(i, j);
+        return ret;
+    }
     Matrix<DATA_TYPE> &operator-=(const Matrix<DATA_TYPE> &rhs);
 
     /*
@@ -138,7 +150,7 @@ public:
      * @return 轉置矩陣
      *
      */
-    Matrix<DATA_TYPE> gen_Transpose();
+    Matrix<DATA_TYPE> Transpose();
 
     /*
      * 取得矩陣列數。

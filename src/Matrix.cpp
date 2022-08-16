@@ -6,10 +6,7 @@ Matrix<DATA_TYPE>::Matrix(unsigned rows, unsigned cols) : _rows(rows), _cols(col
 {
     if (rows == 0 || cols == 0)
         throw std::logic_error("The rows and cols can not be zero.");
-    matrix = new DATA_TYPE[_rows * _cols];
-    for (unsigned i = 0; i < _rows; i++)
-        for (unsigned j = 0; j < _cols; j++)
-            *(matrix + _cols * i + j) = 0;
+    matrix = new DATA_TYPE[_rows * _cols]();
 }
 
 template <class DATA_TYPE>
@@ -31,19 +28,35 @@ Matrix<DATA_TYPE>::~Matrix()
 
 // ---------- Operator Start ----------
 template <class DATA_TYPE>
+Matrix<DATA_TYPE> &Matrix<DATA_TYPE>::operator=(const Matrix<DATA_TYPE> &mat)
+{
+    if (this == &mat)
+        return *this;
+    if (_rows != mat._rows || _cols != mat._cols)
+    {
+        delete[] matrix;
+        _rows = mat._rows;
+        _cols = mat._cols;
+        matrix = new DATA_TYPE[_rows * _cols]();
+    }
+    std::copy(mat.matrix, mat.matrix + _rows * _cols, matrix);
+    return *this;
+}
+
+template <class DATA_TYPE>
 const DATA_TYPE &Matrix<DATA_TYPE>::operator[](unsigned num) const
 {
-    if (num >= _rows && num >= _cols)
+    if (num >= _rows * _cols)
         throw std::out_of_range("Invalid index to matrix");
-    return _rows == 1 ? *(matrix + num) : *(matrix + _cols * num);
+    return *(matrix + num);
 }
 
 template <class DATA_TYPE>
 DATA_TYPE &Matrix<DATA_TYPE>::operator[](unsigned num)
 {
-    if (num >= _rows && num >= _cols)
+    if (num >= _rows * _cols)
         throw std::out_of_range("Invalid index to matrix");
-    return _rows == 1 ? *(matrix + num) : *(matrix + _cols * num);
+    return *(matrix + num);
 }
 
 template <class DATA_TYPE>
@@ -60,22 +73,6 @@ DATA_TYPE &Matrix<DATA_TYPE>::operator()(unsigned row, unsigned col)
     if (row >= _rows || col >= _cols)
         throw std::out_of_range("Invalid index to matrix");
     return *(matrix + _cols * row + col);
-}
-
-template <class DATA_TYPE>
-Matrix<DATA_TYPE> &Matrix<DATA_TYPE>::operator=(const Matrix<DATA_TYPE> &mat)
-{
-    if (this == &mat)
-        return *this;
-    if (_rows != mat._rows || _cols != mat._cols)
-    {
-        delete[] matrix;
-        _rows = mat._rows;
-        _cols = mat._cols;
-        matrix = new DATA_TYPE[_rows * _cols];
-    }
-    std::copy(mat.matrix, mat.matrix + _rows * _cols, matrix);
-    return *this;
 }
 
 template <class DATA_TYPE>
@@ -196,7 +193,7 @@ void Matrix<DATA_TYPE>::update_from_matlab(DATA_TYPE *arr)
 }
 
 template <class DATA_TYPE>
-Matrix<DATA_TYPE> Matrix<DATA_TYPE>::gen_Transpose()
+Matrix<DATA_TYPE> Matrix<DATA_TYPE>::Transpose()
 {
     Matrix<DATA_TYPE> T(_cols, _rows);
     for (unsigned i = 0; i < _rows; i++)

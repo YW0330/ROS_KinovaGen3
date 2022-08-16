@@ -1,5 +1,5 @@
-#ifndef MYLIB_H_
-#define MYLIB_H_
+#ifndef _MYLIB_H_
+#define _MYLIB_H_
 
 #include <iomanip>
 #include <cmath>
