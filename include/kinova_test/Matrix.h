@@ -54,7 +54,7 @@ public:
     template <class TYPE>
     Matrix<DATA_TYPE> operator+(const Matrix<TYPE> &rhs)
     {
-        if (_rows != rhs.getRow() || _cols != rhs.getRow())
+        if (_rows != rhs.getRow() || _cols != rhs.getCol())
             throw std::logic_error("LHS size is not equal to RHS size.");
         Matrix<DATA_TYPE> ret(_rows, _cols);
         for (unsigned i = 0; i < _rows; i++)
@@ -77,7 +77,7 @@ public:
     template <class TYPE>
     Matrix<DATA_TYPE> operator-(const Matrix<TYPE> &rhs)
     {
-        if (_rows != rhs.getRow() || _cols != rhs.getRow())
+        if (_rows != rhs.getRow() || _cols != rhs.getCol())
             throw std::logic_error("LHS size is not equal to RHS size.");
         Matrix<DATA_TYPE> ret(_rows, _cols);
         for (unsigned i = 0; i < _rows; i++)
