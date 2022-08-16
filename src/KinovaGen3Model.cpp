@@ -3,7 +3,12 @@
 
 Matrix<double> forward_kinematic(Matrix<double> q)
 {
-    Matrix<double> A01(4, 4), A12(4, 4), A23(4, 4), A34(4, 4), A45(4, 4), A56(4, 4), A67(4, 4);
+    Matrix<double> Ab0(4, 4), A01(4, 4), A12(4, 4), A23(4, 4), A34(4, 4), A45(4, 4), A56(4, 4), A67(4, 4);
+    Ab0(0, 0) = 1;
+    Ab0(1, 1) = -1;
+    Ab0(2, 2) = -1;
+    Ab0(2, 3) = TOMETER(Params::d0);
+    Ab0(3, 3) = 1;
     A01(0, 0) = cos(q[0]);
     A01(0, 2) = sin(q[0]);
     A01(0, 3) = -TOMETER(Params::d2) * sin(q[0]);
@@ -64,7 +69,7 @@ Matrix<double> forward_kinematic(Matrix<double> q)
     A67(3, 3) = 1;
     Matrix<double> effector(4, 1), pos(3, 1);
     effector[3] = 1;
-    effector = A01 * A12 * A23 * A34 * A45 * A56 * A67 * effector;
+    effector = Ab0 * A01 * A12 * A23 * A34 * A45 * A56 * A67 * effector;
     for (int i = 0; i < 3; i++)
         pos[i] = effector[i];
     return pos;
