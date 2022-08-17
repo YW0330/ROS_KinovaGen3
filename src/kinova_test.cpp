@@ -296,7 +296,6 @@ int main(int argc, char **argv)
             // }
             //  kinovaMsg.jointPos[i] = pos_curr;
             kinovaMsg.jointPos[i] = base_feedback.actuators(i).position();
-
             kinovaMsg.jointVel[i] = base_feedback.actuators(i).velocity();
         }
         kinovaMsg.gripperPos = base_feedback.interconnect().gripper_feedback().motor(0).position();
