@@ -166,7 +166,7 @@ Matrix<DATA_TYPE> &Matrix<DATA_TYPE>::operator*=(const Matrix<DATA_TYPE> &rhs)
 template <class DATA_TYPE>
 Matrix<DATA_TYPE> Matrix<DATA_TYPE>::operator/(const DATA_TYPE rhs)
 {
-    Matrix ret(_rows, _cols);
+    Matrix<DATA_TYPE> ret(_rows, _cols);
     for (unsigned i = 0; i < _rows; i++)
         for (unsigned j = 0; j < _cols; j++)
             *(ret.matrix + _cols * i + j) = *(matrix + _cols * i + j) / rhs;
@@ -193,7 +193,7 @@ void Matrix<DATA_TYPE>::update_from_matlab(DATA_TYPE *arr)
 }
 
 template <class DATA_TYPE>
-Matrix<DATA_TYPE> Matrix<DATA_TYPE>::Transpose()
+Matrix<DATA_TYPE> Matrix<DATA_TYPE>::transpose()
 {
     Matrix<DATA_TYPE> T(_cols, _rows);
     for (unsigned i = 0; i < _rows; i++)
@@ -201,6 +201,44 @@ Matrix<DATA_TYPE> Matrix<DATA_TYPE>::Transpose()
             *(T.matrix + _rows * j + i) = *(matrix + _cols * i + j);
     return T;
 }
+
+template <class DATA_TYPE>
+Matrix<double> Matrix<DATA_TYPE>::inverse()
+{
+    if (_rows != _cols)
+        throw std::logic_error("Must be square matrix.");
+    Matrix<double> adjugate(_rows, _cols);
+    if (_rows != 1)
+    {
+        Matrix<DATA_TYPE> minorMat(_rows - 1, _cols - 1);
+        for (unsigned r = 0; r < _rows; r++)
+        {
+            for (unsigned c = 0; c < _rows; c++)
+            {
+                for (unsigned i = 0, mat_i = 0; i < _rows; i++)
+                {
+                    if (i == r)
+                        continue;
+                    for (unsigned j = 0, mat_j = 0; j < _rows; j++)
+                    {
+                        if (j == c)
+                            continue;
+                        minorMat(mat_i, mat_j++) = *(matrix + _cols * i + j);
+                    }
+                    mat_i++;
+                }
+                if ((r + c) % 2 == 0)
+                    adjugate(c, r) = det(minorMat);
+                else
+                    adjugate(c, r) = -det(minorMat);
+            }
+        }
+    }
+    else
+        adjugate(0, 0) = *(matrix) ? 1 : 0;
+    return adjugate / det(*this);
+}
+
 // ---------- Other function End ----------
 
 template class Matrix<double>;

@@ -2,6 +2,9 @@
 #define _MATRIX_H_
 
 #include <iostream>
+#include <iomanip>
+
+#define PINV(mat) mat.transpose() * (mat * mat.transpose()).inverse()
 
 template <class DATA_TYPE>
 class Matrix
@@ -108,6 +111,19 @@ public:
      *
      */
     Matrix<DATA_TYPE> operator*(const Matrix<DATA_TYPE> &rhs);
+    // 不同類型相除
+    template <class TYPE>
+    Matrix<DATA_TYPE> operator*(const Matrix<TYPE> &rhs)
+    {
+        if (_cols != rhs.getRow())
+            throw std::logic_error("LHS column is not equal to RHS row.");
+        Matrix<DATA_TYPE> ret(_rows, rhs.getCol());
+        for (unsigned i = 0; i < _rows; i++)
+            for (unsigned j = 0; j < rhs.getCol(); j++)
+                for (unsigned k = 0; k < _cols; k++)
+                    *(ret.matrix + rhs.getCol() * i + j) += *(matrix + _cols * i + k) * rhs(k, j);
+        return ret;
+    }
     Matrix<DATA_TYPE> &operator*=(const Matrix<DATA_TYPE> &rhs);
 
     /*
@@ -119,6 +135,16 @@ public:
      *
      */
     Matrix<DATA_TYPE> operator/(const DATA_TYPE rhs);
+    // 不同類型相除
+    template <class TYPE>
+    Matrix<DATA_TYPE> operator/(const TYPE &rhs)
+    {
+        Matrix<DATA_TYPE> ret(_rows, _cols);
+        for (unsigned i = 0; i < _rows; i++)
+            for (unsigned j = 0; j < _cols; j++)
+                *(ret.matrix + _cols * i + j) = *(matrix + _cols * i + j) / rhs;
+        return ret;
+    }
     Matrix<DATA_TYPE> &operator/=(const DATA_TYPE rhs);
 
     /*
@@ -130,7 +156,7 @@ public:
         for (unsigned i = 0; i < mat._rows; i++)
         {
             for (unsigned j = 0; j < mat._cols; j++)
-                std::cout << *(mat.matrix + mat._cols * i + j) << "\t";
+                std::cout << std::right << std::setw(15) << std::fixed << mat(i, j);
             std::cout << std::endl;
         }
         return os;
@@ -150,7 +176,15 @@ public:
      * @return 轉置矩陣
      *
      */
-    Matrix<DATA_TYPE> Transpose();
+    Matrix<DATA_TYPE> transpose();
+
+    /*
+     * 生成一個反矩陣。
+     *
+     * @return 反矩陣
+     *
+     */
+    Matrix<double> inverse();
 
     /*
      * 取得矩陣列數。
@@ -168,5 +202,41 @@ public:
      */
     const unsigned getCol() const { return _cols; }
 };
+
+/*
+ * 計算方陣行列式值。
+ *
+ * @return 方陣行列式值
+ *
+ */
+template <class DATA_TYPE>
+DATA_TYPE det(const Matrix<DATA_TYPE> &mat)
+{
+    if (mat.getRow() != mat.getCol())
+        throw std::logic_error("Must be square matrix.");
+    if (mat.getRow() == 2)
+        return mat(0, 0) * mat(1, 1) - mat(0, 1) * mat(1, 0);
+    else if (mat.getRow() == 1)
+        return mat(0, 0);
+    DATA_TYPE detVal = 0;
+    Matrix<DATA_TYPE> minorMat(mat.getRow() - 1, mat.getRow() - 1);
+    for (unsigned k = 0; k < mat.getRow(); k++)
+    {
+        for (unsigned i = 1, mat_i = 0; i < mat.getRow(); i++, mat_i++)
+        {
+            for (unsigned j = 0, mat_j = 0; j < mat.getRow(); j++)
+            {
+                if (j == k)
+                    continue;
+                minorMat(mat_i, mat_j++) = mat(i, j);
+            }
+        }
+        if (k % 2 == 0)
+            detVal += mat(0, k) * det(minorMat);
+        else
+            detVal -= mat(0, k) * det(minorMat);
+    }
+    return detVal;
+}
 
 #endif
