@@ -1,6 +1,9 @@
 #include "../include/kinova_test/KinovaGen3Model.h"
 #include <cmath>
 
+#include "../include/kinova_test/KinovaGen3Model.h"
+#include <cmath>
+
 Matrix<double> forward_kinematic(Matrix<double> q)
 {
     Matrix<double> Ab0(4, 4), A01(4, 4), A12(4, 4), A23(4, 4), A34(4, 4), A45(4, 4), A56(4, 4), A67(4, 4);
@@ -65,7 +68,7 @@ Matrix<double> forward_kinematic(Matrix<double> q)
     A67(1, 0) = sin(q[6]);
     A67(1, 1) = -cos(q[6]);
     A67(2, 2) = -1;
-    A67(2, 3) = -TOMETER(Params::d11);
+    A67(2, 3) = -TOMETER(Params::d11) - TOMETER(Params::d12);
     A67(3, 3) = 1;
     Matrix<double> effector(4, 1), pos(3, 1);
     effector[3] = 1;

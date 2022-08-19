@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <cmath>
 
 #define PINV(mat) mat.transpose() * (mat * mat.transpose()).inverse()
 
@@ -213,7 +214,7 @@ template <class DATA_TYPE>
 DATA_TYPE det(const Matrix<DATA_TYPE> &mat)
 {
     if (mat.getRow() != mat.getCol())
-        throw std::logic_error("Must be square matrix.");
+        throw std::logic_error("Input must be square matrix.");
     if (mat.getRow() == 2)
         return mat(0, 0) * mat(1, 1) - mat(0, 1) * mat(1, 0);
     else if (mat.getRow() == 1)
@@ -239,4 +240,21 @@ DATA_TYPE det(const Matrix<DATA_TYPE> &mat)
     return detVal;
 }
 
+/*
+ * 計算向量 Euclidean norm。
+ *
+ * @return Euclidean norm 數值
+ *
+ */
+template <class DATA_TYPE>
+double norm(const Matrix<DATA_TYPE> &mat)
+{
+    if (mat.getRow() != 1 && mat.getCol() != 1)
+        throw std::logic_error("Input must be a vector.");
+    double norm = 0;
+    for (unsigned i = 0; i < mat.getRow(); i++)
+        for (unsigned j = 0; j < mat.getCol(); j++)
+            norm += mat(i, j) * mat(i, j);
+    return sqrt(norm);
+}
 #endif
