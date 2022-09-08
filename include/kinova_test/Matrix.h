@@ -69,6 +69,23 @@ public:
     Matrix<DATA_TYPE> &operator+=(const Matrix<DATA_TYPE> &rhs);
 
     /*
+     * 生成由原矩陣各元素加上負號的新矩陣。
+     *
+     * @param mat: 矩陣
+     *
+     * @return 新矩陣
+     *
+     */
+    friend Matrix<DATA_TYPE> operator-(const Matrix<DATA_TYPE> &mat)
+    {
+        Matrix<DATA_TYPE> ret(mat._rows, mat._cols);
+        for (unsigned i = 0; i < mat._rows; i++)
+            for (unsigned j = 0; j < mat._cols; j++)
+                ret(i, j) = -mat(i, j);
+        return ret;
+    }
+
+    /*
      * 生成一個由原矩陣各元素減去另一個矩陣各元素的新矩陣。
      *
      * @param rhs: 相同大小的矩陣
@@ -94,13 +111,23 @@ public:
     /*
      * 生成一個由原矩陣各元素乘上一個常數後的新矩陣。
      *
-     * @param rhs: 浮點數常數
+     * @param rhs: 常數
      *
      * @return 新矩陣
      *
      */
     Matrix<DATA_TYPE> operator*(const DATA_TYPE rhs);
-    friend Matrix<DATA_TYPE> operator*(const DATA_TYPE lhs, Matrix<DATA_TYPE> &mat) { return mat * lhs; }
+    friend Matrix<DATA_TYPE> operator*(const DATA_TYPE lhs, Matrix<DATA_TYPE> mat) { return mat * lhs; }
+    // 不同類型相乘
+    template <class TYPE>
+    Matrix<DATA_TYPE> operator*(const TYPE &rhs)
+    {
+        Matrix<DATA_TYPE> ret(_rows, _cols);
+        for (unsigned i = 0; i < _rows; i++)
+            for (unsigned j = 0; j < _cols; j++)
+                *(ret.matrix + _cols * i + j) = *(matrix + _cols * i + j) * rhs;
+        return ret;
+    }
     Matrix<DATA_TYPE> &operator*=(const DATA_TYPE rhs);
 
     /*
@@ -112,7 +139,7 @@ public:
      *
      */
     Matrix<DATA_TYPE> operator*(const Matrix<DATA_TYPE> &rhs);
-    // 不同類型相除
+    // 不同類型相乘
     template <class TYPE>
     Matrix<DATA_TYPE> operator*(const Matrix<TYPE> &rhs)
     {
@@ -130,7 +157,7 @@ public:
     /*
      * 生成一個由原矩陣各元素除上一個常數後的新矩陣。
      *
-     * @param rhs: 浮點數常數
+     * @param rhs: 常數
      *
      * @return 新矩陣
      *
@@ -152,7 +179,7 @@ public:
      * 輸出方法
      *
      */
-    friend std::ostream &operator<<(std::ostream &os, const Matrix &mat)
+    friend std::ostream &operator<<(std::ostream &os, const Matrix<DATA_TYPE> &mat)
     {
         for (unsigned i = 0; i < mat._rows; i++)
         {
