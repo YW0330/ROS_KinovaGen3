@@ -117,6 +117,7 @@ public:
      *
      */
     Matrix<DATA_TYPE> operator*(const DATA_TYPE rhs);
+    Matrix<DATA_TYPE> operator*(const DATA_TYPE rhs) const;
     friend Matrix<DATA_TYPE> operator*(const DATA_TYPE lhs, Matrix<DATA_TYPE> mat) { return mat * lhs; }
     // 不同類型相乘
     template <class TYPE>
@@ -139,6 +140,7 @@ public:
      *
      */
     Matrix<DATA_TYPE> operator*(const Matrix<DATA_TYPE> &rhs);
+    Matrix<DATA_TYPE> operator*(const Matrix<DATA_TYPE> &rhs) const;
     // 不同類型相乘
     template <class TYPE>
     Matrix<DATA_TYPE> operator*(const Matrix<TYPE> &rhs)
@@ -205,6 +207,7 @@ public:
      *
      */
     Matrix<DATA_TYPE> transpose();
+    Matrix<DATA_TYPE> transpose() const;
 
     /*
      * 生成一個反矩陣。

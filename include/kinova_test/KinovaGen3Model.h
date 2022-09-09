@@ -38,7 +38,7 @@ void kinova_C_gripper2(double q1, double q2, double q3, double q4,
 void kinova_J_and_Jinv(double q1, double q2, double q3, double q4, double q5, double q6, double J[42], double Jinv[42]);
 
 // Parameters
-enum class Params
+enum class KinovaParams
 {
     // unit: meter*10000
     d0 = 1564,

@@ -1,4 +1,4 @@
-#include "../include/kinova_test/mylib.h"
+#include "kinova_test/mylib.h"
 #include <iostream>
 
 // Maximum allowed waiting time during actions
@@ -104,7 +104,7 @@ bool example_move_to_home_position(k_api::Base::BaseClient *base)
     }
 }
 
-void torque_satuation(Matrix<float> &tau)
+void torque_satuation(Matrix<double> &tau)
 {
     for (int i = 0; i < 7; i++)
     {

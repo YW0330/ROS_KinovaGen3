@@ -1,4 +1,4 @@
-#include "../include/kinova_test/Matrix.h"
+#include "kinova_test/Matrix.h"
 
 // ---------- Constructor Start ----------
 template <class DATA_TYPE>
@@ -138,7 +138,28 @@ Matrix<DATA_TYPE> &Matrix<DATA_TYPE>::operator*=(const DATA_TYPE rhs)
     return *this;
 }
 template <class DATA_TYPE>
+Matrix<DATA_TYPE> Matrix<DATA_TYPE>::operator*(const DATA_TYPE rhs) const
+{
+    Matrix<DATA_TYPE> ret(_rows, _cols);
+    for (unsigned i = 0; i < _rows; i++)
+        for (unsigned j = 0; j < _cols; j++)
+            *(ret.matrix + _cols * i + j) = *(matrix + _cols * i + j) * rhs;
+    return ret;
+}
+template <class DATA_TYPE>
 Matrix<DATA_TYPE> Matrix<DATA_TYPE>::operator*(const Matrix<DATA_TYPE> &rhs)
+{
+    if (_cols != rhs._rows)
+        throw std::logic_error("LHS column is not equal to RHS row.");
+    Matrix<DATA_TYPE> ret(_rows, rhs._cols);
+    for (unsigned i = 0; i < _rows; i++)
+        for (unsigned j = 0; j < rhs._cols; j++)
+            for (unsigned k = 0; k < _cols; k++)
+                *(ret.matrix + rhs._cols * i + j) += *(matrix + _cols * i + k) * *(rhs.matrix + rhs._cols * k + j);
+    return ret;
+}
+template <class DATA_TYPE>
+Matrix<DATA_TYPE> Matrix<DATA_TYPE>::operator*(const Matrix<DATA_TYPE> &rhs) const
 {
     if (_cols != rhs._rows)
         throw std::logic_error("LHS column is not equal to RHS row.");
@@ -194,6 +215,15 @@ void Matrix<DATA_TYPE>::update_from_matlab(DATA_TYPE *arr)
 
 template <class DATA_TYPE>
 Matrix<DATA_TYPE> Matrix<DATA_TYPE>::transpose()
+{
+    Matrix<DATA_TYPE> T(_cols, _rows);
+    for (unsigned i = 0; i < _rows; i++)
+        for (unsigned j = 0; j < _cols; j++)
+            *(T.matrix + _rows * j + i) = *(matrix + _cols * i + j);
+    return T;
+}
+template <class DATA_TYPE>
+Matrix<DATA_TYPE> Matrix<DATA_TYPE>::transpose() const
 {
     Matrix<DATA_TYPE> T(_cols, _rows);
     for (unsigned i = 0; i < _rows; i++)

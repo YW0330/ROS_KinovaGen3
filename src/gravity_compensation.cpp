@@ -101,7 +101,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         double exp_time = (double)(now - t_start) / 1000000;          //秒
         Matrix<double> prev_q = q;
 
-        Matrix<float> controller_tau(7, 1);
+        Matrix<double> controller_tau(7, 1);
         int loop = 1;
         //目標輸出
         Matrix<double> qd(7, 1);
@@ -129,7 +129,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     base_command.mutable_actuators(i)->set_position(base_feedback.actuators(i).position());
 
                 //控制器
-                kinova_G(GRAVITY, position_curr[0], position_curr[1], position_curr[2], position_curr[3], position_curr[4], position_curr[5], position_curr[6], G_arr);
+                kinova_G(kG, position_curr[0], position_curr[1], position_curr[2], position_curr[3], position_curr[4], position_curr[5], position_curr[6], G_arr);
                 G.update_from_matlab(G_arr);
                 P_controller = Kp * error;
 
