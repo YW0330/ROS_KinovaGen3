@@ -66,6 +66,17 @@ public:
                 ret(i, j) = *(matrix + _cols * i + j) + rhs(i, j);
         return ret;
     }
+    template <class TYPE>
+    Matrix<DATA_TYPE> operator+(const Matrix<TYPE> &rhs) const
+    {
+        if (_rows != rhs.getRow() || _cols != rhs.getCol())
+            throw std::logic_error("LHS size is not equal to RHS size.");
+        Matrix<DATA_TYPE> ret(_rows, _cols);
+        for (unsigned i = 0; i < _rows; i++)
+            for (unsigned j = 0; j < _cols; j++)
+                ret(i, j) = *(matrix + _cols * i + j) + rhs(i, j);
+        return ret;
+    }
     Matrix<DATA_TYPE> &operator+=(const Matrix<DATA_TYPE> &rhs);
 
     /*

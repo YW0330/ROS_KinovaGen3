@@ -8,7 +8,7 @@ void contrller_params(const Matrix<double> &J, const Matrix<double> &Jinv, const
     r = J * s;
 }
 
-Matrix<double> get_phi(const Matrix<double> &s, const Matrix<double> &v, const Matrix<double> &a, const Matrix<double> &q, const Matrix<double> &dq)
+Matrix<double> get_phi(const Matrix<double> &v, const Matrix<double> &a, const Matrix<double> &q, const Matrix<double> &dq)
 {
     Matrix<double> phi(NODE, 7);
     double distance_square, cj, X;

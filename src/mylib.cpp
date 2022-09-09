@@ -122,3 +122,36 @@ void torque_satuation(Matrix<double> &tau)
         }
     }
 }
+
+void gravity_compensation(const Matrix<double> &q, const double init_tau[7], Matrix<double> &tau)
+{
+    double G_arr[7];
+    Matrix<double> G(7, 1);
+    kinova_G_gripper(GRAVITY, q[0], q[1], q[2], q[3], q[4], q[5], q[6], G_arr);
+    G.update_from_matlab(G_arr);
+    tau[0] += G[0] + init_tau[0] * 0.05;
+    tau[1] += G[1] + init_tau[1] * 0.03;
+    tau[2] += G[2] + init_tau[2] * 0.1;
+    tau[3] += G[3] + init_tau[3] * 0.05;
+    tau[4] += G[4];
+    tau[5] += G[5] * 0.95 + init_tau[5] * 0.05;
+    tau[6] += G[6] + init_tau[6];
+}
+
+void q2inf(const Matrix<double> &curr_pos, const Matrix<double> &prev_q, Matrix<int> &round, Matrix<double> &q)
+{
+    q = curr_pos + 2 * M_PI * round;
+    for (int i = 0; i < 7; i++)
+    {
+        if (q[i] - prev_q[i] > 330 * DEG2RAD)
+        {
+            q[i] = q[i] - 2 * M_PI;
+            round[i] = round[i] - 1;
+        }
+        else if (q[i] - prev_q[i] < -330 * DEG2RAD)
+        {
+            q[i] = q[i] + 2 * M_PI;
+            round[i] = round[i] + 1;
+        }
+    }
+}

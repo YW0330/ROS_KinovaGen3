@@ -9,8 +9,6 @@
 
 // 自行加入的功能
 #include "kinova_test/mylib.h"
-#include "kinova_test/Matrix.h"
-#include "kinova_test/KinovaGen3Model.h"
 #include "kinova_test/controller.h"
 
 bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclicClient *base_cyclic, k_api::ActuatorConfig::ActuatorConfigClient *actuator_config)
@@ -76,8 +74,8 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         kinova_test::kinovaMsg kinovaInfo;
         //初始值參數設定
         //讀取關節角
-        Matrix<double> position_curr(7, 1); //-pi~pi
-        Matrix<int> round(7, 1);            //圈數
+        Matrix<double> position_curr(7, 1); // -pi~pi
+        Matrix<int> round(7, 1);            // 圈數
         Matrix<double> q(7, 1);             // -inf~inf
         for (int i = 0; i < 7; i++)
         {
@@ -114,18 +112,17 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         //目標輸出
         Matrix<double> circle(3, 1);
         Matrix<double> dcircle(3, 1);
-        circle[1] = 0.1 * cos(exp_time * 2 * M_PI / 4);
-        circle[2] = 0.1 * sin(exp_time * 2 * M_PI / 4);
-        dcircle[1] = -0.1 * sin(exp_time * 2 * M_PI / 4) * 2 * M_PI / 4;
-        dcircle[2] = 0.1 * cos(exp_time * 2 * M_PI / 4) * 2 * M_PI / 4;
+        circle[1] = 0.15 * cos(exp_time * 2 * M_PI / 4);
+        circle[2] = 0.15 * sin(exp_time * 2 * M_PI / 4);
+        dcircle[1] = -0.15 * sin(exp_time * 2 * M_PI / 4) * 2 * M_PI / 4;
+        dcircle[2] = 0.15 * cos(exp_time * 2 * M_PI / 4) * 2 * M_PI / 4;
         Matrix<double> Xd = X + circle;
         Matrix<double> dXd = dcircle;
         Matrix<double> error = Xd - X;
         Matrix<double> derror = dXd - dX;
         Matrix<double> param_s(3, 1), param_v(3, 1), param_a(3, 1), param_r(3, 1);
-        Matrix<double> W_hat(NODE, 1);
-        double G_arr[7];
-        Matrix<double> G(7, 1);
+        Matrix<double> W_hat(NODE, 1), subtasks(7, 1), dsubtasks(7, 1);
+
         msg_pub.publish(kinovaInfo);
         // Real-time loop
         while (ros::ok())
@@ -141,20 +138,13 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     base_command.mutable_actuators(i)->set_position(base_feedback.actuators(i).position());
 
                 //控制器
-                kinova_G_gripper(GRAVITY, q[0], q[1], q[2], q[3], q[4], q[5], q[6], G_arr);
-                G.update_from_matlab(G_arr);
-
-                Matrix<double> phi = get_phi(param_s, param_v, param_a, q, dq);
+                contrller_params(J, Jinv, dJinv, error, derror, dq, subtasks, dsubtasks, param_s, param_v, param_a, param_r);
+                // RBFNN
+                Matrix<double> phi = get_phi(param_v, param_a, q, dq);
                 Matrix<double> dW_hat = get_dW_hat(phi, param_s);
                 controller_tau = controller(J, derror, param_s, param_r, phi, W_hat);
-                //設定扭矩
-                controller_tau[0] += G[0] + init_tau[0] * 0.05;
-                controller_tau[1] += G[1] + init_tau[1] * 0.03;
-                controller_tau[2] += G[2] + init_tau[2] * 0.1;
-                controller_tau[3] += G[3] + init_tau[3] * 0.05;
-                controller_tau[4] += G[4];
-                controller_tau[5] += G[5] * 0.95 + init_tau[5] * 0.05;
-                controller_tau[6] += G[6] + init_tau[6];
+                //重力補償
+                gravity_compensation(q, init_tau, controller_tau);
                 //設定飽和器
                 torque_satuation(controller_tau);
                 //輸入扭矩
@@ -170,20 +160,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     if (position_curr[i] > M_PI)
                         position_curr[i] = -(2 * M_PI - position_curr[i]);
                 }
-                q = position_curr + 2 * M_PI * round;
-                for (int i = 0; i < 7; i++)
-                {
-                    if (q[i] - prev_q[i] > 330 * DEG2RAD)
-                    {
-                        q[i] = q[i] - 2 * M_PI;
-                        round[i] = round[i] - 1;
-                    }
-                    else if (q[i] - prev_q[i] < -330 * DEG2RAD)
-                    {
-                        q[i] = q[i] + 2 * M_PI;
-                        round[i] = round[i] + 1;
-                    }
-                }
+                q2inf(position_curr, prev_q, round, q);
                 //順向運動學
                 X = forward_kinematic(q);
                 kinovaInfo.kinova_X = {X[0], X[1], X[2]};
@@ -210,10 +187,10 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                 prev_Jinv = Jinv;
                 last = now;
 
-                circle[1] = 0.1 * cos(exp_time * 2 * M_PI / 4);
-                circle[2] = 0.1 * sin(exp_time * 2 * M_PI / 4);
-                dcircle[1] = -0.1 * sin(exp_time * 2 * M_PI / 4) * 2 * M_PI / 4;
-                dcircle[2] = 0.1 * cos(exp_time * 2 * M_PI / 4) * 2 * M_PI / 4;
+                circle[1] = 0.15 * cos(exp_time * 2 * M_PI / 4);
+                circle[2] = 0.15 * sin(exp_time * 2 * M_PI / 4);
+                dcircle[1] = -0.15 * sin(exp_time * 2 * M_PI / 4) * 2 * M_PI / 4;
+                dcircle[2] = 0.15 * cos(exp_time * 2 * M_PI / 4) * 2 * M_PI / 4;
                 Xd = X + circle;
                 dXd = dcircle;
                 error = Xd - X;
