@@ -8,9 +8,8 @@ void contrller_params(const Matrix<double> &J, const Matrix<double> &Jinv, const
     r = J * s;
 }
 
-Matrix<double> get_phi(const Matrix<double> &v, const Matrix<double> &a, const Matrix<double> &q, const Matrix<double> &dq)
+void get_phi(const Matrix<double> &v, const Matrix<double> &a, const Matrix<double> &q, const Matrix<double> &dq, Matrix<double> &phi)
 {
-    Matrix<double> phi(NODE, 7);
     double distance_square, cj, X;
     for (unsigned i = 0; i < NODE; i++)
     {
@@ -44,16 +43,15 @@ Matrix<double> get_phi(const Matrix<double> &v, const Matrix<double> &a, const M
             phi(i, j) = exp(-distance_square / (kBj * kBj));
         }
     }
-    return phi;
 }
 
-Matrix<double> get_dW_hat(const Matrix<double> &phi, const Matrix<double> &s)
+void get_dW_hat(const Matrix<double> &phi, const Matrix<double> &s, Matrix<double> &dW_hat)
 {
-    return -kEta * phi * s;
+    dW_hat = -kEta * phi * s;
 }
 
-Matrix<double> controller(const Matrix<double> &J, const Matrix<double> &de, const Matrix<double> &s, const Matrix<double> &r, const Matrix<double> &phi, const Matrix<double> &W_hat)
+void controller(const Matrix<double> &J, const Matrix<double> &de, const Matrix<double> &s, const Matrix<double> &r, const Matrix<double> &phi, const Matrix<double> &W_hat, Matrix<double> &tau)
 {
     Matrix<double> tau_bar = kKr * r - kKj * de;
-    return phi.transpose() * W_hat - kK * s - J.transpose() * tau_bar;
+    tau = phi.transpose() * W_hat - kK * s - J.transpose() * tau_bar;
 }

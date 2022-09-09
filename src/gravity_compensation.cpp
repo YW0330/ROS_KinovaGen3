@@ -6,7 +6,6 @@
 // ros 相關
 #include "ros/ros.h"
 #include "kinova_test/kinovaMsg.h"
-//#include "std_msgs/String.h"
 
 // 自行加入的功能
 #include "kinova_test/KinovaGen3Model.h"
@@ -81,7 +80,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         //初始值參數設定
         //讀取關節角
         Matrix<double> position_curr(7, 1); //-pi~pi
-        Matrix<double> round(7, 1);         //圈數
+        Matrix<int> round(7, 1);            //圈數
         Matrix<double> q(7, 1);             // -inf~inf
         for (int i = 0; i < 7; i++)
         {
@@ -90,30 +89,11 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                 position_curr[i] = -(2 * M_PI - position_curr[i]);
         }
         q = position_curr;
-        //順向運動學
-        Matrix<double> X = forward_kinematic(q);
-        kinovaInfo.kinova_X = {X[0], X[1], X[2]};
 
-        Matrix<double> dq(7, 1);
-        kinovaInfo.kinova_dX = {dq[0], dq[1], dq[2]};
-
-        int64_t t_start = GetTickUs(), now = GetTickUs(), last = now; //微秒
-        double exp_time = (double)(now - t_start) / 1000000;          //秒
+        int64_t now = GetTickUs(), last = now; //微秒
         Matrix<double> prev_q = q;
 
-        Matrix<double> controller_tau(7, 1);
         int loop = 1;
-        //目標輸出
-        Matrix<double> qd(7, 1);
-        for (int i = 0; i < 7; i++)
-            qd[i] = 0;
-        Matrix<double> error = qd - q;
-        double G_arr[7];
-        Matrix<double> G(7, 1);
-        Matrix<double> P_controller(7, 1);
-        Matrix<double> Kp(7, 7);
-        for (int i = 0; i < 7; i++)
-            Kp(i, i) = 8;
         msg_pub.publish(kinovaInfo);
         // Real-time loop
         while (ros::ok())
@@ -127,27 +107,14 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                 //        trigger a following error and switch back the actuator in position command to hold its position
                 for (int i = 0; i < actuator_count; i++)
                     base_command.mutable_actuators(i)->set_position(base_feedback.actuators(i).position());
-
                 //控制器
-                kinova_G(GRAVITY, position_curr[0], position_curr[1], position_curr[2], position_curr[3], position_curr[4], position_curr[5], position_curr[6], G_arr);
-                G.update_from_matlab(G_arr);
-                P_controller = Kp * error;
-
-                //設定扭矩
-                controller_tau[0] = P_controller[0] + G[0] + init_tau[0] * 0.3;
-                controller_tau[1] = P_controller[1] + G[1] * 1.03 + init_tau[1] * 0.1;
-                controller_tau[2] = P_controller[2] + G[2];
-                controller_tau[3] = P_controller[3] + G[3] + init_tau[3] * 0.1;
-                controller_tau[4] = P_controller[4] + G[4];
-                controller_tau[5] = P_controller[5] + G[5] + init_tau[5] * 0.1;
-                controller_tau[6] = P_controller[6] + G[6] + init_tau[6];
+                Matrix<double> controller_tau(7, 1);
+                gravity_compensation(q, init_tau, controller_tau);
                 //設定飽和器
                 torque_satuation(controller_tau);
                 //輸入扭矩
                 for (int i = 0; i < 7; i++)
-                {
                     base_command.mutable_actuators(i)->set_torque_joint(controller_tau[i]);
-                }
 
                 //讀取關節角
                 for (int i = 0; i < 7; i++)
@@ -156,37 +123,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     if (position_curr[i] > M_PI)
                         position_curr[i] = -(2 * M_PI - position_curr[i]);
                 }
-                q = position_curr + 2 * M_PI * round;
-                for (int i = 0; i < 7; i++)
-                {
-                    if (q[i] - prev_q[i] > 330 * DEG2RAD)
-                    {
-                        q[i] = q[i] - 2 * M_PI;
-                        round[i] = round[i] - 1;
-                    }
-                    else if (q[i] - prev_q[i] < -330 * DEG2RAD)
-                    {
-                        q[i] = q[i] + 2 * M_PI;
-                        round[i] = round[i] + 1;
-                    }
-                }
-
-                //順向運動學
-                X = forward_kinematic(q);
-                kinovaInfo.kinova_X = {X[0], X[1], X[2]};
-                if (loop % 500 == 0)
-                    cout << X << endl;
-
-                //更新時間、微分、積分
-                now = GetTickUs();
-                exp_time = (double)(now - t_start) / 1000000;
-                for (int i = 0; i < 7; i++)
-                    dq[i] = base_feedback.actuators(i).velocity() * DEG2RAD;
-                kinovaInfo.kinova_dX = {dq[0], dq[1], dq[2]};
-                prev_q = q;
-                last = now;
-
-                error = qd - q;
+                q2inf(position_curr, prev_q, round, q);
 
                 // Incrementing identifier ensures actuators can reject out of time frames
                 base_command.set_frame_id(base_command.frame_id() + 1);

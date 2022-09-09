@@ -121,7 +121,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         Matrix<double> error = Xd - X;
         Matrix<double> derror = dXd - dX;
         Matrix<double> param_s(3, 1), param_v(3, 1), param_a(3, 1), param_r(3, 1);
-        Matrix<double> W_hat(NODE, 1), subtasks(7, 1), dsubtasks(7, 1);
+        Matrix<double> phi(NODE, 7), dW_hat(NODE, 1), W_hat(NODE, 1), subtasks(7, 1), dsubtasks(7, 1);
 
         msg_pub.publish(kinovaInfo);
         // Real-time loop
@@ -140,11 +140,12 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                 //控制器
                 contrller_params(J, Jinv, dJinv, error, derror, dq, subtasks, dsubtasks, param_s, param_v, param_a, param_r);
                 // RBFNN
-                Matrix<double> phi = get_phi(param_v, param_a, q, dq);
-                Matrix<double> dW_hat = get_dW_hat(phi, param_s);
-                controller_tau = controller(J, derror, param_s, param_r, phi, W_hat);
+                get_phi(param_v, param_a, q, dq, phi);
+                get_dW_hat(phi, param_s, dW_hat);
+                controller(J, derror, param_s, param_r, phi, W_hat, controller_tau);
                 //重力補償
                 gravity_compensation(q, init_tau, controller_tau);
+
                 //設定飽和器
                 torque_satuation(controller_tau);
                 //輸入扭矩
