@@ -29,8 +29,8 @@
 #define PORT_REAL_TIME 10001
 #define WAITING_TIME 20
 
-#define Deg2Rad M_PI / 180
-extern const double kG = 9.80665;
+#define DEG2RAD M_PI / 180
+#define GRAVITY 9.80665
 
 namespace k_api = Kinova::Api;
 

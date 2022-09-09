@@ -83,6 +83,47 @@ target_include_directories(kinova_torque PUBLIC
 
 target_link_libraries(kinova_torque
   mylibary
+  ${PROJECT_SOURCE_DIR}/lib/release/libKortexApiCpp.a
+  ${catkin_LIBRARIES}
+)
+
+# ---------------- gravity_compensation ------------------
+add_executable(gravity_compensation src/gravity_compensation.cpp src/utilities.cpp)
+
+target_include_directories(gravity_compensation PUBLIC
+  ${PROJECT_SOURCE_DIR}/include
+  ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}
+  ${PROJECT_SOURCE_DIR}/include/client
+  ${PROJECT_SOURCE_DIR}/include/common
+  ${PROJECT_SOURCE_DIR}/include/messages
+  ${PROJECT_SOURCE_DIR}/include/client_stubs
+  ${PROJECT_SOURCE_DIR}/include/cxxopts
+  ${catkin_INCLUDE_DIRS}
+)
+
+target_link_libraries(gravity_compensation
+  mylibary
+  ${PROJECT_SOURCE_DIR}/lib/libKinovaGen3Model.a
+  ${PROJECT_SOURCE_DIR}/lib/release/libKortexApiCpp.a
+  ${catkin_LIBRARIES}
+)
+
+# ---------------- adptive_control ------------------
+add_executable(adptive_control src/adptive_control.cpp src/utilities.cpp)
+
+target_include_directories(adptive_control PUBLIC
+  ${PROJECT_SOURCE_DIR}/include
+  ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}
+  ${PROJECT_SOURCE_DIR}/include/client
+  ${PROJECT_SOURCE_DIR}/include/common
+  ${PROJECT_SOURCE_DIR}/include/messages
+  ${PROJECT_SOURCE_DIR}/include/client_stubs
+  ${PROJECT_SOURCE_DIR}/include/cxxopts
+  ${catkin_INCLUDE_DIRS}
+)
+
+target_link_libraries(adptive_control
+  mylibary
   ${PROJECT_SOURCE_DIR}/lib/libKinovaGen3Model.a
   ${PROJECT_SOURCE_DIR}/lib/release/libKortexApiCpp.a
   ${catkin_LIBRARIES}

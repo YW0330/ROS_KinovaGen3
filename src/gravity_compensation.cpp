@@ -85,7 +85,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         Matrix<double> q(7, 1);             // -inf~inf
         for (int i = 0; i < 7; i++)
         {
-            position_curr[i] = base_feedback.actuators(i).position() * Deg2Rad;
+            position_curr[i] = base_feedback.actuators(i).position() * DEG2RAD;
             if (position_curr[i] > M_PI)
                 position_curr[i] = -(2 * M_PI - position_curr[i]);
         }
@@ -129,7 +129,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     base_command.mutable_actuators(i)->set_position(base_feedback.actuators(i).position());
 
                 //控制器
-                kinova_G(kG, position_curr[0], position_curr[1], position_curr[2], position_curr[3], position_curr[4], position_curr[5], position_curr[6], G_arr);
+                kinova_G(GRAVITY, position_curr[0], position_curr[1], position_curr[2], position_curr[3], position_curr[4], position_curr[5], position_curr[6], G_arr);
                 G.update_from_matlab(G_arr);
                 P_controller = Kp * error;
 
@@ -152,19 +152,19 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                 //讀取關節角
                 for (int i = 0; i < 7; i++)
                 {
-                    position_curr[i] = base_feedback.actuators(i).position() * Deg2Rad;
+                    position_curr[i] = base_feedback.actuators(i).position() * DEG2RAD;
                     if (position_curr[i] > M_PI)
                         position_curr[i] = -(2 * M_PI - position_curr[i]);
                 }
                 q = position_curr + 2 * M_PI * round;
                 for (int i = 0; i < 7; i++)
                 {
-                    if (q[i] - prev_q[i] > 330 * Deg2Rad)
+                    if (q[i] - prev_q[i] > 330 * DEG2RAD)
                     {
                         q[i] = q[i] - 2 * M_PI;
                         round[i] = round[i] - 1;
                     }
-                    else if (q[i] - prev_q[i] < -330 * Deg2Rad)
+                    else if (q[i] - prev_q[i] < -330 * DEG2RAD)
                     {
                         q[i] = q[i] + 2 * M_PI;
                         round[i] = round[i] + 1;
@@ -181,7 +181,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                 now = GetTickUs();
                 exp_time = (double)(now - t_start) / 1000000;
                 for (int i = 0; i < 7; i++)
-                    dq[i] = base_feedback.actuators(i).velocity() * Deg2Rad;
+                    dq[i] = base_feedback.actuators(i).velocity() * DEG2RAD;
                 kinovaInfo.kinova_dX = {dq[0], dq[1], dq[2]};
                 prev_q = q;
                 last = now;
