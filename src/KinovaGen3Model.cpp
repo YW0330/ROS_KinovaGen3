@@ -1,7 +1,7 @@
 #include "kinova_test/KinovaGen3Model.h"
 #include <cmath>
 
-Matrix<double> forward_kinematic(Matrix<double> q)
+Matrix<double> forward_kinematic_3dof(const Matrix<double> &q)
 {
     Matrix<double> Ab0(4, 4), A01(4, 4), A12(4, 4), A23(4, 4), A34(4, 4), A45(4, 4), A56(4, 4), A67(4, 4);
     Ab0(0, 0) = 1;
@@ -73,4 +73,13 @@ Matrix<double> forward_kinematic(Matrix<double> q)
     for (int i = 0; i < 3; i++)
         pos[i] = effector[i];
     return pos;
+}
+
+Matrix<double> forward_kinematic_6dof(const Matrix<double> &q)
+{
+    double X_arr[7];
+    Matrix<double> X(6, 1);
+    kinova_FK(q[0], q[1], q[2], q[3], q[4], q[5], q[6], X_arr);
+    X.update_from_matlab(X_arr);
+    return X;
 }

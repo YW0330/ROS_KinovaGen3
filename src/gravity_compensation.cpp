@@ -82,6 +82,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         Matrix<double> position_curr(7, 1); //-pi~pi
         Matrix<int> round(7, 1);            //圈數
         Matrix<double> q(7, 1);             // -inf~inf
+        Matrix<double> X(6, 1);
         for (int i = 0; i < 7; i++)
         {
             position_curr[i] = base_feedback.actuators(i).position() * DEG2RAD;
@@ -108,6 +109,9 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                 //        trigger a following error and switch back the actuator in position command to hold its position
                 for (int i = 0; i < actuator_count; i++)
                     base_command.mutable_actuators(i)->set_position(base_feedback.actuators(i).position());
+                X = forward_kinematic_6dof(q);
+                if (loop % 500 == 0)
+                    cout << X << endl;
                 //控制器
                 for (int i = 0; i < 7; i++)
                     controller_tau[i] = 0;

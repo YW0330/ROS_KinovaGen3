@@ -55,3 +55,35 @@ void controller(const Matrix<double> &J, const Matrix<double> &de, const Matrix<
     Matrix<double> tau_bar = kKr * r - kKj * de;
     tau = phi.transpose() * W_hat - kK * s - J.transpose() * tau_bar;
 }
+
+void joint_angle_limit(const Matrix<double> &q, Matrix<double> &psi)
+{
+    double psi_arr[7];
+    Matrix<double> psi_tmp(7, 1);
+    kinova_psi_jointAngleLimits(q[0], q[1], q[2], q[3], q[4], q[5], q[6], q_max[0], q_max[1], q_max[2], q_max[3], q_max[4], q_max[5], q_max[6], q_min[0], q_min[1], q_min[2], q_min[3], q_min[4], q_min[5], q_min[6], psi_arr);
+    for (int i = 0; i < 7; i++)
+        if ((q_max[i] > 0 && q_min[i] < 0) || (q_max[i] < 0 && q_min[i] > 0))
+            psi[i] = -psi[i];
+    for (int i = 0; i < 7; i += 2)
+        psi_arr[i] = 0;
+    psi_tmp.update_from_matlab(psi_arr);
+    psi += -psi_tmp; // 全部的 qmax 跟 qmin 反向
+}
+
+void manipulability(const Matrix<double> &q, Matrix<double> &psi)
+{
+    double psi_arr[7];
+    Matrix<double> psi_tmp(7, 1);
+    psi_tmp.update_from_matlab(psi_arr);
+    psi += psi_tmp;
+}
+
+void null_space_subtasks(Matrix<double> &J, Matrix<double> &Jinv, Matrix<double> &psi, Matrix<double> &subtasks)
+{
+    Matrix<double> eye(7, 7);
+    for (unsigned i = 0; i < 7; i++)
+        eye(i, i) = 1;
+    subtasks = (eye - Jinv * J) * psi;
+    for (unsigned i = 0; i < 7; i++)
+        psi[i] = 0;
+}

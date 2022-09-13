@@ -30,9 +30,6 @@
 #define PORT_REAL_TIME 10001
 #define WAITING_TIME 20
 
-#define DEG2RAD M_PI / 180
-#define GRAVITY 9.80665
-
 namespace k_api = Kinova::Api;
 
 int64_t GetTickUs();
