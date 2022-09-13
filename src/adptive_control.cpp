@@ -10,6 +10,7 @@
 // 自行加入的功能
 #include "kinova_test/mylib.h"
 #include "kinova_test/controller.h"
+#include "kinova_test/conio.h"
 
 bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclicClient *base_cyclic, k_api::ActuatorConfig::ActuatorConfigClient *actuator_config)
 {
@@ -72,8 +73,8 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
             init_tau[i] = -base_feedback.actuators(i).torque();
 
         kinova_test::kinovaMsg kinovaInfo;
-        //初始值參數設定
-        //讀取關節角
+        // 初始值參數設定
+        // 讀取關節角
         Matrix<double> position_curr(7, 1); // -pi~pi
         Matrix<int> round(7, 1);            // 圈數
         Matrix<double> q(7, 1);             // -inf~inf
@@ -84,23 +85,21 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                 position_curr[i] = -(2 * M_PI - position_curr[i]);
         }
         q = position_curr;
-        //順向運動學
+        // 順向運動學
         Matrix<double> X = forward_kinematic(q);
         kinovaInfo.kinova_X = {X[0], X[1], X[2]};
         // Jacobian矩陣
-        double J_arr[42];
-        double Jinv_arr[42];
+        double J_arr[42], Jinv_arr[42];
         Matrix<double> J67(6, 7);
-        Matrix<double> J(3, 7);
-        Matrix<double> Jinv(7, 3);
+        Matrix<double> J(3, 7), Jinv(7, 3);
         kinova_J_and_Jinv(q[0], q[1], q[2], q[3], q[4], q[5], J_arr, Jinv_arr);
         J67.update_from_matlab(J_arr);
         for (int i = 0; i < 3; i++)
             for (int j = 0; j < 7; j++)
                 J(i, j) = J67(i, j);
         Jinv = PINV(J);
-        int64_t t_start = GetTickUs(), now = GetTickUs(), last = now; //微秒
-        double exp_time = (double)(now - t_start) / 1000000, dt;      //秒
+        int64_t t_start = GetTickUs(), now = GetTickUs(), last = now; // 微秒
+        double exp_time = (double)(now - t_start) / 1000000, dt;      // 秒
         Matrix<double> dq(7, 1);
         Matrix<double> dX(3, 1);
         kinovaInfo.kinova_dX = {dX[0], dX[1], dX[2]};
@@ -109,7 +108,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         Matrix<double> prev_Jinv = Jinv;
         Matrix<double> controller_tau(7, 1);
         int loop = 1;
-        //目標輸出
+        // 目標輸出
         Matrix<double> circle(3, 1);
         Matrix<double> dcircle(3, 1);
         circle[1] = 0.15 * cos(exp_time * 2 * M_PI / 4);
@@ -127,108 +126,116 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         // Real-time loop
         while (ros::ok())
         {
-            now = GetTickUs();
-            if (now - last > 1000)
+            if (!_kbhit())
             {
-                // Position command to first actuator is set to measured one to avoid following error to trigger
-                // Bonus: When doing this instead of disabling the following error, if communication is lost and first
-                //        actuator continues to move under torque command, resulting position error with command will
-                //        trigger a following error and switch back the actuator in position command to hold its position
-                for (int i = 0; i < actuator_count; i++)
-                    base_command.mutable_actuators(i)->set_position(base_feedback.actuators(i).position());
-
-                //控制器
-                contrller_params(J, Jinv, dJinv, error, derror, dq, subtasks, dsubtasks, param_s, param_v, param_a, param_r);
-                // RBFNN
-                get_phi(param_v, param_a, q, dq, phi);
-                get_dW_hat(phi, param_s, dW_hat);
-                controller(J, derror, param_s, param_r, phi, W_hat, controller_tau);
-                //重力補償
-                gravity_compensation(q, init_tau, controller_tau);
-
-                //設定飽和器
-                torque_satuation(controller_tau);
-                //輸入扭矩
-                for (int i = 0; i < 7; i++)
-                {
-                    base_command.mutable_actuators(i)->set_torque_joint(controller_tau[i]);
-                }
-                cout << error << endl;
-                //讀取關節角
-                for (int i = 0; i < 7; i++)
-                {
-                    position_curr[i] = base_feedback.actuators(i).position() * DEG2RAD;
-                    if (position_curr[i] > M_PI)
-                        position_curr[i] = -(2 * M_PI - position_curr[i]);
-                }
-                q2inf(position_curr, prev_q, round, q);
-                //順向運動學
-                X = forward_kinematic(q);
-                kinovaInfo.kinova_X = {X[0], X[1], X[2]};
-
-                // Jacobian矩陣
-                kinova_J_and_Jinv(q[0], q[1], q[2], q[3], q[4], q[5], J_arr, Jinv_arr);
-                J67.update_from_matlab(J_arr);
-                for (int i = 0; i < 3; i++)
-                    for (int j = 0; j < 7; j++)
-                        J(i, j) = J67(i, j);
-                Jinv = PINV(J);
-
-                //更新時間、微分、積分
                 now = GetTickUs();
-                exp_time = (double)(now - t_start) / 1000000;
-                dt = (double)(now - last) / 1000000;
-                for (int i = 0; i < 7; i++)
-                    dq[i] = base_feedback.actuators(i).velocity() * DEG2RAD;
-                dX = J * dq;
-                kinovaInfo.kinova_dX = {dX[0], dX[1], dX[2]};
-                dJinv = (Jinv - prev_Jinv) / dt;
-                W_hat = W_hat + dW_hat * dt;
-                prev_q = q;
-                prev_Jinv = Jinv;
-                last = now;
-
-                circle[1] = 0.15 * cos(exp_time * 2 * M_PI / 4);
-                circle[2] = 0.15 * sin(exp_time * 2 * M_PI / 4);
-                dcircle[1] = -0.15 * sin(exp_time * 2 * M_PI / 4) * 2 * M_PI / 4;
-                dcircle[2] = 0.15 * cos(exp_time * 2 * M_PI / 4) * 2 * M_PI / 4;
-                Xd = X + circle;
-                dXd = dcircle;
-                error = Xd - X;
-                derror = dXd - dX;
-
-                // Incrementing identifier ensures actuators can reject out of time frames
-                base_command.set_frame_id(base_command.frame_id() + 1);
-                if (base_command.frame_id() > 65535)
-                    base_command.set_frame_id(0);
-
-                for (int idx = 0; idx < actuator_count; idx++)
+                if (now - last > 1000)
                 {
-                    base_command.mutable_actuators(idx)->set_command_id(base_command.frame_id());
-                }
+                    // Position command to first actuator is set to measured one to avoid following error to trigger
+                    // Bonus: When doing this instead of disabling the following error, if communication is lost and first
+                    //        actuator continues to move under torque command, resulting position error with command will
+                    //        trigger a following error and switch back the actuator in position command to hold its position
+                    for (int i = 0; i < actuator_count; i++)
+                        base_command.mutable_actuators(i)->set_position(base_feedback.actuators(i).position());
 
-                try
-                {
-                    base_feedback = base_cyclic->Refresh(base_command, 0);
-                }
-                catch (k_api::KDetailedException &ex)
-                {
-                    cout << "Kortex exception: " << ex.what() << endl;
+                    // 控制器參數
+                    contrller_params(J, Jinv, dJinv, error, derror, dq, subtasks, dsubtasks, param_s, param_v, param_a, param_r);
+                    // RBFNN
+                    get_phi(param_v, param_a, q, dq, phi);
+                    get_dW_hat(phi, param_s, dW_hat);
+                    // 控制器
+                    controller(J, derror, param_s, param_r, phi, W_hat, controller_tau);
+                    // 重力補償
+                    gravity_compensation(q, init_tau, controller_tau);
+                    // 設定飽和器
+                    torque_satuation(controller_tau);
+                    // 輸入扭矩
+                    for (int i = 0; i < 7; i++)
+                    {
+                        base_command.mutable_actuators(i)->set_torque_joint(controller_tau[i]);
+                    }
+                    cout << error << endl;
+                    // 讀取關節角
+                    for (int i = 0; i < 7; i++)
+                    {
+                        position_curr[i] = base_feedback.actuators(i).position() * DEG2RAD;
+                        if (position_curr[i] > M_PI)
+                            position_curr[i] = -(2 * M_PI - position_curr[i]);
+                    }
+                    q2inf(position_curr, prev_q, round, q);
+                    // 順向運動學
+                    X = forward_kinematic(q);
+                    kinovaInfo.kinova_X = {X[0], X[1], X[2]};
 
-                    cout << "Error sub-code: " << k_api::SubErrorCodes_Name(k_api::SubErrorCodes((ex.getErrorInfo().getError().error_sub_code()))) << endl;
-                }
-                catch (runtime_error &ex2)
-                {
-                    cout << "runtime error: " << ex2.what() << endl;
-                }
-                catch (...)
-                {
-                    cout << "Unknown error." << endl;
-                }
+                    // Jacobian矩陣
+                    kinova_J_and_Jinv(q[0], q[1], q[2], q[3], q[4], q[5], J_arr, Jinv_arr);
+                    J67.update_from_matlab(J_arr);
+                    for (int i = 0; i < 3; i++)
+                        for (int j = 0; j < 7; j++)
+                            J(i, j) = J67(i, j);
+                    Jinv = PINV(J);
 
-                loop = loop + 1;
-                msg_pub.publish(kinovaInfo);
-                ros::spinOnce(); //偵測subscriber
+                    // 更新時間、微分、積分
+                    now = GetTickUs();
+                    exp_time = (double)(now - t_start) / 1000000;
+                    dt = (double)(now - last) / 1000000;
+                    for (int i = 0; i < 7; i++)
+                        dq[i] = base_feedback.actuators(i).velocity() * DEG2RAD;
+                    dX = J * dq;
+                    kinovaInfo.kinova_dX = {dX[0], dX[1], dX[2]};
+                    dJinv = (Jinv - prev_Jinv) / dt;
+                    W_hat = W_hat + dW_hat * dt;
+                    prev_q = q;
+                    prev_Jinv = Jinv;
+                    last = now;
+
+                    circle[1] = 0.15 * cos(exp_time * 2 * M_PI / 4);
+                    circle[2] = 0.15 * sin(exp_time * 2 * M_PI / 4);
+                    dcircle[1] = -0.15 * sin(exp_time * 2 * M_PI / 4) * 2 * M_PI / 4;
+                    dcircle[2] = 0.15 * cos(exp_time * 2 * M_PI / 4) * 2 * M_PI / 4;
+                    Xd = X + circle;
+                    dXd = dcircle;
+                    error = Xd - X;
+                    derror = dXd - dX;
+
+                    // Incrementing identifier ensures actuators can reject out of time frames
+                    base_command.set_frame_id(base_command.frame_id() + 1);
+                    if (base_command.frame_id() > 65535)
+                        base_command.set_frame_id(0);
+
+                    for (int idx = 0; idx < actuator_count; idx++)
+                    {
+                        base_command.mutable_actuators(idx)->set_command_id(base_command.frame_id());
+                    }
+
+                    try
+                    {
+                        base_feedback = base_cyclic->Refresh(base_command, 0);
+                    }
+                    catch (k_api::KDetailedException &ex)
+                    {
+                        cout << "Kortex exception: " << ex.what() << endl;
+
+                        cout << "Error sub-code: " << k_api::SubErrorCodes_Name(k_api::SubErrorCodes((ex.getErrorInfo().getError().error_sub_code()))) << endl;
+                    }
+                    catch (runtime_error &ex2)
+                    {
+                        cout << "runtime error: " << ex2.what() << endl;
+                    }
+                    catch (...)
+                    {
+                        cout << "Unknown error." << endl;
+                    }
+
+                    loop = loop + 1;
+                    msg_pub.publish(kinovaInfo);
+                    ros::spinOnce(); //偵測subscriber
+                }
+            }
+            else
+            {
+                if ((char)_getch() == 's')
+                    break;
             }
         }
 

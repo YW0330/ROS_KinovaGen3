@@ -89,6 +89,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                 position_curr[i] = -(2 * M_PI - position_curr[i]);
         }
         q = position_curr;
+        Matrix<double> controller_tau(7, 1);
 
         int64_t now = GetTickUs(), last = now; //微秒
         Matrix<double> prev_q = q;
@@ -108,7 +109,8 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                 for (int i = 0; i < actuator_count; i++)
                     base_command.mutable_actuators(i)->set_position(base_feedback.actuators(i).position());
                 //控制器
-                Matrix<double> controller_tau(7, 1);
+                for (int i = 0; i < 7; i++)
+                    controller_tau[i] = 0;
                 gravity_compensation(q, init_tau, controller_tau);
                 //設定飽和器
                 torque_satuation(controller_tau);

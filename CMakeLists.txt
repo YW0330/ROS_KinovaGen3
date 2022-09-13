@@ -43,6 +43,7 @@ target_sources(mylibary
   ${PROJECT_SOURCE_DIR}/src/mylib.cpp
   ${PROJECT_SOURCE_DIR}/src/KinovaGen3Model.cpp
   ${PROJECT_SOURCE_DIR}/src/controller.cpp
+  ${PROJECT_SOURCE_DIR}/src/conio.c
 )
 
 # ---------------- kinova_test ------------------
