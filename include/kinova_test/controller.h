@@ -6,7 +6,7 @@
 #include "kinova_test/KinovaGen3Model.h"
 
 // Parameters
-#define DOF 3U
+#define DOF 6U
 #define NODE 100U
 const double kLambda = 3;
 const double kK = 5;

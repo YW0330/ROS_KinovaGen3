@@ -67,7 +67,7 @@ void joint_angle_limit(const Matrix<double> &q, Matrix<double> &psi)
     for (int i = 0; i < 7; i += 2)
         psi_arr[i] = 0;
     psi_tmp.update_from_matlab(psi_arr);
-    psi += -psi_tmp; // 全部的 qmax 跟 qmin 反向
+    psi += -0.8 * psi_tmp; // 全部的 qmax 跟 qmin 反向
 }
 
 void manipulability(const Matrix<double> &q, Matrix<double> &psi)

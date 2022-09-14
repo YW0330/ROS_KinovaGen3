@@ -86,20 +86,20 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         }
         q = position_curr;
         // 順向運動學
-        Matrix<double> X = forward_kinematic_3dof(q);
+        Matrix<double> X = forward_kinematic_6dof(position_curr);
         Matrix<double> X0 = X;
         kinovaInfo.kinova_X = {X[0], X[1], X[2]};
         // Jacobian矩陣
         double J_arr[42], Jinv_arr[42];
         Matrix<double> J67(6, 7);
         Matrix<double> J(DOF, 7), Jinv(7, DOF);
-        kinova_J_and_Jinv(q[0], q[1], q[2], q[3], q[4], q[5], J_arr, Jinv_arr);
+        kinova_J_and_Jinv(position_curr[0], position_curr[1], position_curr[2], position_curr[3], position_curr[4], position_curr[5], J_arr, Jinv_arr);
         J67.update_from_matlab(J_arr);
-        // Jinv.update_from_matlab(Jinv_arr);
-        for (int i = 0; i < 3; i++)
-            for (int j = 0; j < 7; j++)
-                J(i, j) = J67(i, j);
-        Jinv = PINV(J);
+        Jinv.update_from_matlab(Jinv_arr);
+        // for (int i = 0; i < 3; i++)
+        //     for (int j = 0; j < 7; j++)
+        //         J(i, j) = J67(i, j);
+        // Jinv = PINV(J);
         Matrix<double> psi(7, 1), subtasks(7, 1);
         int64_t t_start = GetTickUs(), now = GetTickUs(), last = now; // 微秒
         double exp_time = (double)(now - t_start) / 1000000, dt;      // 秒
@@ -116,10 +116,10 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         // 目標輸出
         Matrix<double> circle(DOF, 1);
         Matrix<double> dcircle(DOF, 1);
-        circle[1] = 0.15 * cos(exp_time * 2 * M_PI / 10);
-        circle[2] = 0.15 * sin(exp_time * 2 * M_PI / 10);
-        dcircle[1] = -0.15 * sin(exp_time * 2 * M_PI / 10) * 2 * M_PI / 10;
-        dcircle[2] = 0.15 * cos(exp_time * 2 * M_PI / 10) * 2 * M_PI / 10;
+        circle[1] = 0.2 * cos(exp_time * 2 * M_PI / 10);
+        circle[2] = 0.2 * sin(exp_time * 2 * M_PI / 10);
+        dcircle[1] = -0.2 * sin(exp_time * 2 * M_PI / 10) * 2 * M_PI / 10;
+        dcircle[2] = 0.2 * cos(exp_time * 2 * M_PI / 10) * 2 * M_PI / 10;
         Matrix<double> Xd = X0 + circle;
         Matrix<double> dXd = dcircle;
         Matrix<double> error = Xd - X;
@@ -144,8 +144,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                         base_command.mutable_actuators(i)->set_position(base_feedback.actuators(i).position());
 
                     // 控制器參數
-                    joint_angle_limit(q, psi);
-                    cout << error << endl;
+                    joint_angle_limit(position_curr, psi);
                     null_space_subtasks(J, Jinv, psi, subtasks);
                     contrller_params(J, Jinv, dJinv, error, derror, dq, subtasks, dsubtasks, param_s, param_v, param_a, param_r);
                     // RBFNN
@@ -154,14 +153,12 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     // 控制器
                     controller(J, derror, param_s, param_r, phi, W_hat, controller_tau);
                     // 重力補償
-                    gravity_compensation(q, init_tau, controller_tau);
+                    gravity_compensation(position_curr, init_tau, controller_tau);
                     // 設定飽和器
                     torque_satuation(controller_tau);
                     // 輸入扭矩
                     for (int i = 0; i < 7; i++)
-                    {
                         base_command.mutable_actuators(i)->set_torque_joint(controller_tau[i]);
-                    }
 
                     // 讀取關節角
                     for (int i = 0; i < 7; i++)
@@ -171,19 +168,21 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                             position_curr[i] = -(2 * M_PI - position_curr[i]);
                     }
                     q2inf(position_curr, prev_q, round, q);
+
                     // 順向運動學
-                    X = forward_kinematic_3dof(q);
-                    // kinovaInfo.kinova_X = {X[0], X[1], X[2]};
-                    kinovaInfo.kinova_X = {error[0], error[1], error[2]};
+                    X = forward_kinematic_6dof(position_curr);
+                    kinovaInfo.kinova_X = {X[0], X[1], X[2]};
+                    // kinovaInfo.kinova_X = {error[0], error[1], error[2]};
+                    kinovaInfo.kinova_axis = {X[3], X[4], X[5]};
 
                     // Jacobian矩陣
-                    kinova_J_and_Jinv(q[0], q[1], q[2], q[3], q[4], q[5], J_arr, Jinv_arr);
+                    kinova_J_and_Jinv(position_curr[0], position_curr[1], position_curr[2], position_curr[3], position_curr[4], position_curr[5], J_arr, Jinv_arr);
                     J67.update_from_matlab(J_arr);
-                    // Jinv.update_from_matlab(Jinv_arr);
-                    for (int i = 0; i < DOF; i++)
-                        for (int j = 0; j < 7; j++)
-                            J(i, j) = J67(i, j);
-                    Jinv = PINV(J);
+                    Jinv.update_from_matlab(Jinv_arr);
+                    // for (int i = 0; i < DOF; i++)
+                    //     for (int j = 0; j < 7; j++)
+                    //         J(i, j) = J67(i, j);
+                    // Jinv = PINV(J);
 
                     // 更新時間、微分、積分
                     now = GetTickUs();
@@ -201,10 +200,10 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     prev_subtasks = subtasks;
                     last = now;
 
-                    circle[1] = 0.15 * cos(exp_time * 2 * M_PI / 10);
-                    circle[2] = 0.15 * sin(exp_time * 2 * M_PI / 10);
-                    dcircle[1] = -0.15 * sin(exp_time * 2 * M_PI / 10) * 2 * M_PI / 10;
-                    dcircle[2] = 0.15 * cos(exp_time * 2 * M_PI / 10) * 2 * M_PI / 10;
+                    circle[1] = 0.2 * cos(exp_time * 2 * M_PI / 10);
+                    circle[2] = 0.2 * sin(exp_time * 2 * M_PI / 10);
+                    dcircle[1] = -0.2 * sin(exp_time * 2 * M_PI / 10) * 2 * M_PI / 10;
+                    dcircle[2] = 0.2 * cos(exp_time * 2 * M_PI / 10) * 2 * M_PI / 10;
                     Xd = X0 + circle;
                     // Xd[3] = X[3];
                     // Xd[4] = X[4];
@@ -212,8 +211,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     dXd = dcircle;
                     error = Xd - X;
                     derror = dXd - dX;
-                    // cout << q * 180 / M_PI << endl;
-                    // cout << subtasks << endl;
+
                     // Incrementing identifier ensures actuators can reject out of time frames
                     base_command.set_frame_id(base_command.frame_id() + 1);
                     if (base_command.frame_id() > 65535)

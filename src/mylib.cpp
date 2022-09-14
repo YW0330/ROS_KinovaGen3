@@ -145,13 +145,13 @@ void q2inf(const Matrix<double> &curr_pos, const Matrix<double> &prev_q, Matrix<
     {
         if (q[i] - prev_q[i] > 330 * DEG2RAD)
         {
-            q[i] = q[i] - 2 * M_PI;
-            round[i] = round[i] - 1;
+            q[i] -= 2 * M_PI;
+            round[i]--;
         }
         else if (q[i] - prev_q[i] < -330 * DEG2RAD)
         {
-            q[i] = q[i] + 2 * M_PI;
-            round[i] = round[i] + 1;
+            q[i] += 2 * M_PI;
+            round[i]++;
         }
     }
 }

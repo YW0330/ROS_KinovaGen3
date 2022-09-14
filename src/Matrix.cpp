@@ -206,7 +206,7 @@ Matrix<DATA_TYPE> &Matrix<DATA_TYPE>::operator/=(const DATA_TYPE rhs)
 
 // ---------- Other function Start ----------
 template <class DATA_TYPE>
-void Matrix<DATA_TYPE>::update_from_matlab(DATA_TYPE *arr)
+void Matrix<DATA_TYPE>::update_from_matlab(const DATA_TYPE *arr)
 {
     for (unsigned i = 0, k = 0; i < _cols; i++)
         for (unsigned j = 0; j < _rows; j++, k++)

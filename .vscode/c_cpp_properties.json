@@ -7,8 +7,7 @@
       },
       "includePath": [
         "/home/ywchang/kinova_ws/devel/include/**",
-        "/opt/ros/kinetic/include/**",
-        "/home/ywchang/kinova_ws/src/cpp_test/include/**",
+        "/opt/ros/noetic/include/**",
         "/home/ywchang/kinova_ws/src/kinova_test/include/**",
         "/usr/include/**"
       ],

@@ -209,7 +209,7 @@ public:
      * @param array from Matlab function
      *
      */
-    void update_from_matlab(DATA_TYPE *arr);
+    void update_from_matlab(const DATA_TYPE *arr);
 
     /*
      * 生成一個轉置矩陣。
