@@ -56,7 +56,7 @@ void controller(const Matrix<double> &J, const Matrix<double> &de, const Matrix<
     tau = phi.transpose() * W_hat - kK * s - J.transpose() * tau_bar;
 }
 
-void joint_angle_limit(const Matrix<double> &q, Matrix<double> &psi)
+void joint_angle_limit_psi(const Matrix<double> &q, Matrix<double> &psi)
 {
     double psi_arr[7];
     Matrix<double> psi_tmp(7, 1);
@@ -64,18 +64,20 @@ void joint_angle_limit(const Matrix<double> &q, Matrix<double> &psi)
     for (int i = 0; i < 7; i++)
         if ((q_max[i] > 0 && q_min[i] < 0) || (q_max[i] < 0 && q_min[i] > 0))
             psi[i] = -psi[i];
+    // 僅限制第 2 4 6 軸
     for (int i = 0; i < 7; i += 2)
         psi_arr[i] = 0;
     psi_tmp.update_from_matlab(psi_arr);
-    psi += -0.8 * psi_tmp; // 全部的 qmax 跟 qmin 反向
+    psi += -3 * psi_tmp; // 全部的 qmax 跟 qmin 反向
 }
 
-void manipulability(const Matrix<double> &q, Matrix<double> &psi)
+void manipulability_psi(const Matrix<double> &q, Matrix<double> &psi)
 {
     double psi_arr[7];
     Matrix<double> psi_tmp(7, 1);
+    kinova_psi_manipulability(q[0], q[1], q[2], q[3], q[4], q[5], psi_arr);
     psi_tmp.update_from_matlab(psi_arr);
-    psi += psi_tmp;
+    psi += 2 * psi_tmp;
 }
 
 void null_space_subtasks(Matrix<double> &J, Matrix<double> &Jinv, Matrix<double> &psi, Matrix<double> &subtasks)

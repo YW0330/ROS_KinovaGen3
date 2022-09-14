@@ -45,6 +45,12 @@ void kinova_psi_jointAngleLimits(
     double q6min, double q7min, double q1max, double q2max, double q3max,
     double q4max, double q5max, double q6max, double q7max, double psi[7]);
 
+void kinova_psi_manipulability(double q1, double q2, double q3, double q4,
+                               double q5, double q6, double psi[7]);
+
+double kinova_manipulability(double q1, double q2, double q3, double q4,
+                             double q5, double q6);
+
 void kinova_FK(double q1, double q2, double q3, double q4, double q5,
                double q6, double q7, double X[6]);
 
