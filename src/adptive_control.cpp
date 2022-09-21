@@ -86,7 +86,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         }
         q = position_curr;
         // 順向運動學
-        Matrix<double> X = forward_kinematic_6dof(position_curr);
+        Matrix<double> X = forward_kinematic_3dof(position_curr);
         Matrix<double> X0 = X;
         kinovaInfo.kinova_X = {X[0], X[1], X[2]};
         // Jacobian矩陣
@@ -95,7 +95,11 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         Matrix<double> J(DOF, 7), Jinv(7, DOF);
         kinova_J_and_Jinv(position_curr[0], position_curr[1], position_curr[2], position_curr[3], position_curr[4], position_curr[5], J_arr, Jinv_arr);
         J67.update_from_matlab(J_arr);
-        Jinv.update_from_matlab(Jinv_arr);
+        // Jinv.update_from_matlab(Jinv_arr);
+        for (int i = 0; i < 3; i++)
+            for (int j = 0; j < 7; j++)
+                J(i, j) = J67(i, j);
+        Jinv = PINV(J);
 
         Matrix<double> psi(7, 1), subtasks(7, 1);
         int64_t t_start = GetTickUs(), now = GetTickUs(), last = now; // 微秒
@@ -113,11 +117,12 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         // 目標輸出
         Matrix<double> circle(DOF, 1);
         Matrix<double> dcircle(DOF, 1);
-        circle[0] = 0.1;
-        circle[1] = 0.1 * cos(exp_time * 2 * M_PI / 15);
-        circle[2] = 0.1 * sin(exp_time * 2 * M_PI / 15);
-        dcircle[1] = -0.1 * sin(exp_time * 2 * M_PI / 15) * 2 * M_PI / 15;
-        dcircle[2] = 0.1 * cos(exp_time * 2 * M_PI / 15) * 2 * M_PI / 15;
+        circle[0] = 0.1 + 0.1 * sin(exp_time * 2 * M_PI / 5);
+        circle[1] = 0.1 * cos(exp_time * 2 * M_PI / 5);
+        circle[2] = 0.1 * sin(exp_time * 2 * M_PI / 5);
+        dcircle[0] = 0.1 * cos(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
+        dcircle[1] = -0.1 * sin(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
+        dcircle[2] = 0.1 * cos(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
         Matrix<double> Xd = X0 + circle;
         Matrix<double> dXd = dcircle;
         Matrix<double> error = Xd - X;
@@ -132,6 +137,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
             if (!_kbhit())
             {
                 now = GetTickUs();
+                kinovaInfo.time = now;
                 if (now - last > 1000)
                 {
                     // Position command to first actuator is set to measured one to avoid following error to trigger
@@ -162,23 +168,30 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     // 讀取關節角
                     for (int i = 0; i < 7; i++)
                     {
-                        position_curr[i] = base_feedback.actuators(i).position() * DEG2RAD;
+                        kinovaInfo.jointPos[i] = base_feedback.actuators(i).position();
+                        kinovaInfo.jointVel[i] = base_feedback.actuators(i).velocity();
+                        position_curr[i] = kinovaInfo.jointPos[i] * DEG2RAD;
                         if (position_curr[i] > M_PI)
                             position_curr[i] = -(2 * M_PI - position_curr[i]);
                     }
                     q2inf(position_curr, prev_q, round, q);
 
                     // 順向運動學
-                    X = forward_kinematic_6dof(position_curr);
-                    // kinovaInfo.kinova_X = {X[0], X[1], X[2]};
+                    X = forward_kinematic_3dof(position_curr);
+                    kinovaInfo.kinova_X = {X[0], X[1], X[2]};
+                    kinovaInfo.kinova_Xd = {Xd[0], Xd[1], Xd[2]};
                     // kinovaInfo.kinova_axis = {X[3], X[4], X[5]};
-                    kinovaInfo.kinova_X = {error[0], error[1], error[2]};
-                    kinovaInfo.kinova_axis = {error[3], error[4], error[5]};
+                    // kinovaInfo.kinova_X = {error[0], error[1], error[2]};
+                    // kinovaInfo.kinova_axis = {error[3], error[4], error[5]};
 
                     // Jacobian矩陣
                     kinova_J_and_Jinv(position_curr[0], position_curr[1], position_curr[2], position_curr[3], position_curr[4], position_curr[5], J_arr, Jinv_arr);
                     J67.update_from_matlab(J_arr);
-                    Jinv.update_from_matlab(Jinv_arr);
+                    // Jinv.update_from_matlab(Jinv_arr);
+                    for (int i = 0; i < 3; i++)
+                        for (int j = 0; j < 7; j++)
+                            J(i, j) = J67(i, j);
+                    Jinv = PINV(J);
 
                     // 更新時間、微分、積分
                     now = GetTickUs();
@@ -196,14 +209,13 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     prev_subtasks = subtasks;
                     last = now;
 
-                    circle[1] = 0.1 * cos(exp_time * 2 * M_PI / 15);
-                    circle[2] = 0.1 * sin(exp_time * 2 * M_PI / 15);
-                    dcircle[1] = -0.1 * sin(exp_time * 2 * M_PI / 15) * 2 * M_PI / 15;
-                    dcircle[2] = 0.1 * cos(exp_time * 2 * M_PI / 15) * 2 * M_PI / 15;
+                    circle[0] = 0.1 + 0.1 * sin(exp_time * 2 * M_PI / 5);
+                    circle[1] = 0.1 * cos(exp_time * 2 * M_PI / 5);
+                    circle[2] = 0.1 * sin(exp_time * 2 * M_PI / 5);
+                    dcircle[0] = 0.1 * cos(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
+                    dcircle[1] = -0.1 * sin(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
+                    dcircle[2] = 0.1 * cos(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
                     Xd = X0 + circle;
-                    // Xd[3] = X[3];
-                    // Xd[4] = X[4];
-                    // Xd[5] = X[5];
                     dXd = dcircle;
                     error = Xd - X;
                     derror = dXd - dX;
@@ -240,6 +252,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     loop = loop + 1;
                     msg_pub.publish(kinovaInfo);
                     ros::spinOnce(); //偵測subscriber
+                    // loop_rate.sleep();
                 }
             }
             else

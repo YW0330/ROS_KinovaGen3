@@ -6,11 +6,11 @@
 #include "kinova_test/KinovaGen3Model.h"
 
 // Parameters
-#define DOF 6U
+#define DOF 3U
 #define NODE 300U
-const double kLambda = 4;
-const double kK = 5;
-const double kKj = 5;
+const double kLambda = 20;
+const double kK = 8;
+const double kKj = 1;
 const double kKr = 8;
 const double kEta = 2;
 const double kBj = 1;
