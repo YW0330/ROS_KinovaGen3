@@ -88,6 +88,8 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         // 順向運動學
         Matrix<double> X = forward_kinematic_3dof(position_curr);
         Matrix<double> X0 = X;
+        X0[0] = 0;
+        X0[1] = 0;
         kinovaInfo.kinova_X = {X[0], X[1], X[2]};
         // Jacobian矩陣
         double J_arr[42], Jinv_arr[42];
@@ -117,12 +119,18 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         // 目標輸出
         Matrix<double> circle(DOF, 1);
         Matrix<double> dcircle(DOF, 1);
-        circle[0] = 0.1 + 0.1 * sin(exp_time * 2 * M_PI / 5);
-        circle[1] = 0.1 * cos(exp_time * 2 * M_PI / 5);
-        circle[2] = 0.1 * sin(exp_time * 2 * M_PI / 5);
-        dcircle[0] = 0.1 * cos(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
-        dcircle[1] = -0.1 * sin(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
-        dcircle[2] = 0.1 * cos(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
+        // circle[0] = 0.1 + 0.1 * sin(exp_time * 2 * M_PI / 5);
+        // circle[1] = 0.1 * cos(exp_time * 2 * M_PI / 5);
+        // circle[2] = 0.1 * sin(exp_time * 2 * M_PI / 5);
+        // dcircle[0] = 0.1 * cos(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
+        // dcircle[1] = -0.1 * sin(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
+        // dcircle[2] = 0.1 * cos(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
+        circle[0] = 0.7 * sin(exp_time * 2 * M_PI / 10);
+        circle[1] = 0.7 * cos(exp_time * 2 * M_PI / 10);
+        circle[2] = 0.3 * sin(exp_time * 2 * M_PI / 5);
+        dcircle[0] = 0.7 * cos(exp_time * 2 * M_PI / 10) * 2 * M_PI / 10;
+        dcircle[1] = -0.7 * sin(exp_time * 2 * M_PI / 10) * 2 * M_PI / 10;
+        dcircle[2] = 0.3 * cos(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
         Matrix<double> Xd = X0 + circle;
         Matrix<double> dXd = dcircle;
         Matrix<double> error = Xd - X;
@@ -168,13 +176,17 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     // 讀取關節角
                     for (int i = 0; i < 7; i++)
                     {
-                        kinovaInfo.jointPos[i] = base_feedback.actuators(i).position();
                         kinovaInfo.jointVel[i] = base_feedback.actuators(i).velocity();
-                        position_curr[i] = kinovaInfo.jointPos[i] * DEG2RAD;
+                        position_curr[i] = base_feedback.actuators(i).position() * DEG2RAD;
                         if (position_curr[i] > M_PI)
                             position_curr[i] = -(2 * M_PI - position_curr[i]);
                     }
                     q2inf(position_curr, prev_q, round, q);
+
+                    for (int i = 0; i < 7; i++)
+                    {
+                        kinovaInfo.jointPos[i] = q[i] * 180 / M_PI;
+                    }
 
                     // 順向運動學
                     X = forward_kinematic_3dof(position_curr);
@@ -208,14 +220,23 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     prev_Jinv = Jinv;
                     prev_subtasks = subtasks;
                     last = now;
+                    cout << kinova_manipulability(position_curr[0], position_curr[1], position_curr[2], position_curr[3], position_curr[4], position_curr[5]) << endl;
 
-                    circle[0] = 0.1 + 0.1 * sin(exp_time * 2 * M_PI / 5);
-                    circle[1] = 0.1 * cos(exp_time * 2 * M_PI / 5);
-                    circle[2] = 0.1 * sin(exp_time * 2 * M_PI / 5);
-                    dcircle[0] = 0.1 * cos(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
-                    dcircle[1] = -0.1 * sin(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
-                    dcircle[2] = 0.1 * cos(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
+                    // circle[0] = 0.1 + 0.1 * sin(exp_time * 2 * M_PI / 5);
+                    // circle[1] = 0.1 * cos(exp_time * 2 * M_PI / 5);
+                    // circle[2] = 0.1 * sin(exp_time * 2 * M_PI / 5);
+                    // dcircle[0] = 0.1 * cos(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
+                    // dcircle[1] = -0.1 * sin(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
+                    // dcircle[2] = 0.1 * cos(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
+                    circle[0] = 0.7 * sin(exp_time * 2 * M_PI / 10);
+                    circle[1] = 0.7 * cos(exp_time * 2 * M_PI / 10);
+                    circle[2] = 0.3 * sin(exp_time * 2 * M_PI / 5);
+                    dcircle[0] = 0.7 * cos(exp_time * 2 * M_PI / 10) * 2 * M_PI / 10;
+                    dcircle[1] = -0.7 * sin(exp_time * 2 * M_PI / 10) * 2 * M_PI / 10;
+                    dcircle[2] = 0.3 * cos(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
+
                     Xd = X0 + circle;
+
                     dXd = dcircle;
                     error = Xd - X;
                     derror = dXd - dX;
