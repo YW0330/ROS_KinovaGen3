@@ -4,8 +4,15 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
+#include <initializer_list>
 
 #define PINV(mat) mat.transpose() * (mat * mat.transpose()).inverse()
+
+enum MatrixType
+{
+    Diagonal,
+    General
+};
 
 template <class DATA_TYPE>
 class Matrix
@@ -23,6 +30,7 @@ public:
      *
      */
     Matrix(unsigned rows, unsigned cols);
+    Matrix(unsigned rows, unsigned cols, MatrixType type, std::initializer_list<DATA_TYPE> l);
     Matrix(const Matrix &mat);
     ~Matrix();
     Matrix<DATA_TYPE> &operator=(const Matrix<DATA_TYPE> &mat);

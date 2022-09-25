@@ -6,6 +6,7 @@
 // ros 相關
 #include "ros/ros.h"
 #include "kinova_test/kinovaMsg.h"
+#include "std_msgs/Bool.h"
 
 // 自行加入的功能
 #include "kinova_test/mylib.h"
@@ -18,6 +19,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
     ros::NodeHandle n;
     ros::Publisher msg_pub = n.advertise<kinova_test::kinovaMsg>("kinovaInfo", 1000); // rostopic的名稱(Publish)
     ros::Rate loop_rate(10);
+    kinova_test::kinovaMsg kinovaInfo;
 
     double init_tau[7];
     bool return_status = true;
@@ -72,7 +74,6 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         for (int i = 0; i < actuator_count; i++)
             init_tau[i] = -base_feedback.actuators(i).torque();
 
-        kinova_test::kinovaMsg kinovaInfo;
         // 初始值參數設定
         // 讀取關節角
         Matrix<double> position_curr(7, 1); // -pi~pi
@@ -127,10 +128,10 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         // dcircle[2] = 0.1 * cos(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
         circle[0] = 0.7 * sin(exp_time * 2 * M_PI / 10);
         circle[1] = 0.7 * cos(exp_time * 2 * M_PI / 10);
-        circle[2] = 0.3 * sin(exp_time * 2 * M_PI / 5);
+        circle[2] = 0.3 * sin(exp_time * 2 * M_PI / 3);
         dcircle[0] = 0.7 * cos(exp_time * 2 * M_PI / 10) * 2 * M_PI / 10;
         dcircle[1] = -0.7 * sin(exp_time * 2 * M_PI / 10) * 2 * M_PI / 10;
-        dcircle[2] = 0.3 * cos(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
+        dcircle[2] = 0.3 * cos(exp_time * 2 * M_PI / 3) * 2 * M_PI / 3;
         Matrix<double> Xd = X0 + circle;
         Matrix<double> dXd = dcircle;
         Matrix<double> error = Xd - X;
@@ -138,14 +139,13 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         Matrix<double> param_s(DOF, 1), param_v(DOF, 1), param_a(DOF, 1), param_r(DOF, 1);
         Matrix<double> phi(NODE, 7), dW_hat(NODE, 1), W_hat(NODE, 1);
 
-        msg_pub.publish(kinovaInfo);
         // Real-time loop
         while (ros::ok())
         {
             if (!_kbhit())
             {
                 now = GetTickUs();
-                kinovaInfo.time = now;
+                kinovaInfo.time = exp_time;
                 if (now - last > 1000)
                 {
                     // Position command to first actuator is set to measured one to avoid following error to trigger
@@ -176,17 +176,13 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     // 讀取關節角
                     for (int i = 0; i < 7; i++)
                     {
+                        kinovaInfo.jointPos[i] = base_feedback.actuators(i).position();
                         kinovaInfo.jointVel[i] = base_feedback.actuators(i).velocity();
                         position_curr[i] = base_feedback.actuators(i).position() * DEG2RAD;
                         if (position_curr[i] > M_PI)
                             position_curr[i] = -(2 * M_PI - position_curr[i]);
                     }
                     q2inf(position_curr, prev_q, round, q);
-
-                    for (int i = 0; i < 7; i++)
-                    {
-                        kinovaInfo.jointPos[i] = q[i] * 180 / M_PI;
-                    }
 
                     // 順向運動學
                     X = forward_kinematic_3dof(position_curr);
@@ -220,7 +216,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     prev_Jinv = Jinv;
                     prev_subtasks = subtasks;
                     last = now;
-                    cout << kinova_manipulability(position_curr[0], position_curr[1], position_curr[2], position_curr[3], position_curr[4], position_curr[5]) << endl;
+                    // cout << kinova_manipulability(position_curr[0], position_curr[1], position_curr[2], position_curr[3], position_curr[4], position_curr[5]) << endl;
 
                     // circle[0] = 0.1 + 0.1 * sin(exp_time * 2 * M_PI / 5);
                     // circle[1] = 0.1 * cos(exp_time * 2 * M_PI / 5);
@@ -230,10 +226,10 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     // dcircle[2] = 0.1 * cos(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
                     circle[0] = 0.7 * sin(exp_time * 2 * M_PI / 10);
                     circle[1] = 0.7 * cos(exp_time * 2 * M_PI / 10);
-                    circle[2] = 0.3 * sin(exp_time * 2 * M_PI / 5);
+                    circle[2] = 0.3 * sin(exp_time * 2 * M_PI / 3);
                     dcircle[0] = 0.7 * cos(exp_time * 2 * M_PI / 10) * 2 * M_PI / 10;
                     dcircle[1] = -0.7 * sin(exp_time * 2 * M_PI / 10) * 2 * M_PI / 10;
-                    dcircle[2] = 0.3 * cos(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
+                    dcircle[2] = 0.3 * cos(exp_time * 2 * M_PI / 3) * 2 * M_PI / 3;
 
                     Xd = X0 + circle;
 
