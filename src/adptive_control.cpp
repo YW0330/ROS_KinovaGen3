@@ -192,6 +192,10 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     // kinovaInfo.kinova_X = {error[0], error[1], error[2]};
                     // kinovaInfo.kinova_axis = {error[3], error[4], error[5]};
 
+                    // 夾爪狀態
+                    kinovaInfo.gripperPos = base_feedback.interconnect().gripper_feedback().motor(0).position();
+                    kinovaInfo.gripperVel = base_feedback.interconnect().gripper_feedback().motor(0).velocity();
+
                     // Jacobian矩陣
                     kinova_J_and_Jinv(position_curr[0], position_curr[1], position_curr[2], position_curr[3], position_curr[4], position_curr[5], J_arr, Jinv_arr);
                     J67.update_from_matlab(J_arr);

@@ -289,12 +289,6 @@ int main(int argc, char **argv)
         base_feedback = base_cyclic->RefreshFeedback();
         for (int i = 0; i < 7; i++)
         {
-            // float pos_curr = base_feedback.actuators(i).position();
-            // if (pos_curr > 180)
-            // {
-            //     pos_curr = -(360 - pos_curr);
-            // }
-            //  kinovaMsg.jointPos[i] = pos_curr;
             kinovaMsg.jointPos[i] = base_feedback.actuators(i).position();
             kinovaMsg.jointVel[i] = base_feedback.actuators(i).velocity();
         }
