@@ -82,9 +82,7 @@ void manipulability_psi(const Matrix<double> &q, Matrix<double> &psi)
 
 void null_space_subtasks(Matrix<double> &J, Matrix<double> &Jinv, Matrix<double> &psi, Matrix<double> &subtasks)
 {
-    Matrix<double> eye(7, 7);
-    for (unsigned i = 0; i < 7; i++)
-        eye(i, i) = 1;
+    Matrix<double> eye(7, 7, MatrixType::Diagonal, {1, 1, 1, 1, 1, 1, 1});
     subtasks = (eye - Jinv * J) * psi;
     for (unsigned i = 0; i < 7; i++)
         psi[i] = 0;

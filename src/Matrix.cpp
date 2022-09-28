@@ -15,20 +15,21 @@ Matrix<DATA_TYPE>::Matrix(unsigned rows, unsigned cols, MatrixType type, std::in
     if (rows == 0 || cols == 0)
         throw std::logic_error("The rows and cols can not be zero.");
     matrix = new DATA_TYPE[_rows * _cols]();
+    unsigned k = 0;
     if (type == MatrixType::Diagonal)
     {
         if (rows != cols)
             throw std::logic_error("Must be square matrix.");
         if (l.size() != rows)
             throw std::logic_error("The numbers of list must equal to matrix dimension.");
-        for (auto i = l.begin(), k = 0; i != l.end(); i++, k++)
+        for (auto i = l.begin(); i != l.end(); i++, k++)
             *(matrix + _cols * k + k) = *i;
     }
     else if (type == MatrixType::General)
     {
         if (l.size() > rows * cols)
             throw std::logic_error("The numbers of list must less or equal to matrix dimension.");
-        for (auto i = l.begin(), k = 0; i != l.end(); i++, k++)
+        for (auto i = l.begin(); i != l.end(); i++, k++)
             *(matrix + k) = *i;
     }
 }
