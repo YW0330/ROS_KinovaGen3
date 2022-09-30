@@ -41,6 +41,10 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
     k_api::BaseCyclic::Feedback base_feedback;
     k_api::BaseCyclic::Command base_command;
 
+    // 夾爪功能開啟
+    k_api::GripperCyclic::MotorCommand *gripper_motor_command;
+    gripper_motor_command = base_command.mutable_interconnect()->mutable_gripper_command()->add_motor_cmd();
+
     vector<float> commands;
 
     auto servoing_mode = k_api::Base::ServoingModeInformation();
@@ -234,9 +238,10 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     dcircle[0] = 0.7 * cos(exp_time * 2 * M_PI / 10) * 2 * M_PI / 10;
                     dcircle[1] = -0.7 * sin(exp_time * 2 * M_PI / 10) * 2 * M_PI / 10;
                     dcircle[2] = 0.3 * cos(exp_time * 2 * M_PI / 3) * 2 * M_PI / 3;
+                    gripper_motor_command->set_position(sin(exp_time * 2 * M_PI / 5) * 50 + 50);
+                    gripper_motor_command->set_velocity(cos(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5 * 50 + 50);
 
                     Xd = X0 + circle;
-
                     dXd = dcircle;
                     error = Xd - X;
                     derror = dXd - dX;
