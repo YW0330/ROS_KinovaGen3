@@ -1,11 +1,13 @@
 <launch>
     <!-- ROS to Unity Bridge -->
-    <include file="$(find ros_tcp_endpoint)/launch/endpoint.launch" />
+    <!-- <include file="$(find ros_tcp_endpoint)/launch/endpoint.launch" /> -->
 
     <!-- KINOVA Camera Startup-->
     <!-- <include file="$(find kinova_vision)/launch/kinova_vision_color_only.launch" /> -->
 
+    <node pkg="xsens_mtw_driver" type="mt_w_manager" name="mt_w_driver" output="screen" />
+
     <!--Main Program-->
-    <node pkg="kinova_test" type="adptive_control" name="adptive_control_node" output="screen" />
+    <node pkg="kinova_test" type="adaptive_control" name="adaptive_control_node" output="screen" />
 
 </launch>

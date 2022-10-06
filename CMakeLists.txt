@@ -109,10 +109,10 @@ target_link_libraries(gravity_compensation
   ${catkin_LIBRARIES}
 )
 
-# ---------------- adptive_control ------------------
-add_executable(adptive_control src/adptive_control.cpp src/utilities.cpp)
+# ---------------- adaptive_control ------------------
+add_executable(adaptive_control src/adaptive_control.cpp src/utilities.cpp)
 
-target_include_directories(adptive_control PUBLIC
+target_include_directories(adaptive_control PUBLIC
   ${PROJECT_SOURCE_DIR}/include
   ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}
   ${PROJECT_SOURCE_DIR}/include/client
@@ -123,7 +123,7 @@ target_include_directories(adptive_control PUBLIC
   ${catkin_INCLUDE_DIRS}
 )
 
-target_link_libraries(adptive_control
+target_link_libraries(adaptive_control
   mylibary
   ${PROJECT_SOURCE_DIR}/lib/libKinovaGen3Model.a
   ${PROJECT_SOURCE_DIR}/lib/release/libKortexApiCpp.a
