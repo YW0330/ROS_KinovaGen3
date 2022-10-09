@@ -129,3 +129,24 @@ target_link_libraries(adaptive_control
   ${PROJECT_SOURCE_DIR}/lib/release/libKortexApiCpp.a
   ${catkin_LIBRARIES}
 )
+
+# ---------------- following_human_control ------------------
+add_executable(following_human_control src/following_human_control.cpp src/utilities.cpp)
+
+target_include_directories(following_human_control PUBLIC
+  ${PROJECT_SOURCE_DIR}/include
+  ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}
+  ${PROJECT_SOURCE_DIR}/include/client
+  ${PROJECT_SOURCE_DIR}/include/common
+  ${PROJECT_SOURCE_DIR}/include/messages
+  ${PROJECT_SOURCE_DIR}/include/client_stubs
+  ${PROJECT_SOURCE_DIR}/include/cxxopts
+  ${catkin_INCLUDE_DIRS}
+)
+
+target_link_libraries(following_human_control
+  mylibary
+  ${PROJECT_SOURCE_DIR}/lib/libKinovaGen3Model.a
+  ${PROJECT_SOURCE_DIR}/lib/release/libKortexApiCpp.a
+  ${catkin_LIBRARIES}
+)

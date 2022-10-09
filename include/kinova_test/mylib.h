@@ -38,7 +38,7 @@ bool example_move_to_home_position(k_api::Base::BaseClient *base);
 /*
  * 輸出扭矩飽和器。
  *
- * @param 7*1 的輸出扭矩向量
+ * @param tau: 7*1 的輸出扭矩向量
  *
  */
 void torque_satuation(Matrix<double> &tau);
@@ -47,8 +47,8 @@ void torque_satuation(Matrix<double> &tau);
  * 重力補償。
  *
  * @param q: 7*1 關節角度
- *        init_tau: 7*1 初始扭矩
- *        tau: 7*1 的輸出扭矩向量
+ * @param init_tau: 7*1 初始扭矩
+ * @param tau: 7*1 的輸出扭矩向量
  */
 void gravity_compensation(const Matrix<double> &q, const double init_tau[7], Matrix<double> &tau);
 
@@ -56,10 +56,17 @@ void gravity_compensation(const Matrix<double> &q, const double init_tau[7], Mat
  * 將關節角度轉到 -inf 到 inf。
  *
  * @param curr_pos: 7*1 當前關節角度 (-pi~pi)
- *        prev_q: 7*1 先前關節角度 (-inf~inf)
- *        round: 7*1 各關節圈數
- *        q: 7*1 當前關節角度 (-inf~inf)
+ * @param prev_q: 7*1 先前關節角度 (-inf~inf)
+ * @param round: 7*1 各關節圈數
+ * @param q: 7*1 當前關節角度 (-inf~inf)
  */
 void q2inf(const Matrix<double> &curr_pos, const Matrix<double> &prev_q, Matrix<int> &round, Matrix<double> &q);
 
+/*
+ * Kinova 末端夾爪開闔。
+ *
+ * @param gripper_motor_command: k_api::GripperCyclic::MotorCommand 指標型態
+ * @param finger_pitch: 操作員手指 IMU 的 pitch value
+ */
+void gripperControl(k_api::GripperCyclic::MotorCommand *gripper_motor_command, double finger_pitch);
 #endif

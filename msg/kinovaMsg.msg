@@ -6,4 +6,3 @@ float64[3] kinova_Xd
 float64[3] kinova_axis
 float64[3] kinova_dX
 float32 gripperPos
-float32 gripperVel
