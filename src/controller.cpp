@@ -87,3 +87,22 @@ void null_space_subtasks(Matrix<double> &J, Matrix<double> &Jinv, Matrix<double>
     for (unsigned i = 0; i < 7; i++)
         psi[i] = 0;
 }
+
+void platform_control(HumanState &humanState, geometry_msgs::Twist &twist)
+{
+    // 前進後退
+    if (humanState.Xd[2] > 0.2)
+        twist.linear.x = 1.25 * humanState.Xd[2] - 0.25; // z: 0.2~0.6
+    else if (humanState.Xd[2] < -0.2)
+        twist.linear.x = (5 / 3) * humanState.Xd[2] + (0.5 / 3); // z: -0.1~-0.4
+    else
+        twist.linear.x = 0;
+
+    // 旋轉
+    if (humanState.Xd[1] > -0.2)
+        twist.angular.z = 5 * humanState.Xd[1] + 1; // y: -0.2~0
+    else if (humanState.Xd[1] < -0.5)
+        twist.angular.z = 5 * humanState.Xd[1] + 2.5; // y: -0.5~-0.7
+    else
+        twist.angular.z = 0;
+}
