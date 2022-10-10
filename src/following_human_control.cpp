@@ -185,15 +185,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     // 夾爪狀態
                     kinovaInfo.gripperPos = base_feedback.interconnect().gripper_feedback().motor(0).position();
 
-                    // Jacobian矩陣
-                    kinova_J_and_Jinv(position_curr[0], position_curr[1], position_curr[2], position_curr[3], position_curr[4], position_curr[5], J_arr, Jinv_arr);
-                    J67.update_from_matlab(J_arr);
-                    // Jinv.update_from_matlab(Jinv_arr);
-                    for (int i = 0; i < 3; i++)
-                        for (int j = 0; j < 7; j++)
-                            J(i, j) = J67(i, j);
-                    Jinv = PINV(J);
-
+                    // Jacobian矩陣kinovaDevice
                     // 更新時間、微分、積分
                     now = GetTickUs();
                     exp_time = (double)(now - t_start) / 1000000;
