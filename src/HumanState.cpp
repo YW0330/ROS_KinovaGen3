@@ -1,7 +1,7 @@
 #include "kinova_test/HumanState.h"
 #include "kinova_test/controller.h"
 
-HumanState::HumanState() : Xd(DOF, 1), dXd(DOF, 1) {}
+HumanState::HumanState() : Xd(DOF, 1), dXd(DOF, 1), current_mode(ControlMode::Platform) {}
 
 void HumanState::updateHumanData(const xsens_mtw_driver::xsens2kinova &msg)
 {
@@ -24,4 +24,5 @@ void HumanState::updateHumanData(const xsens_mtw_driver::xsens2kinova &msg)
         }
     }
     finger_pitch = msg.finger_pitch;
+    current_mode = (ControlMode)msg.mode;
 }

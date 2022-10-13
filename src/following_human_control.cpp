@@ -14,14 +14,36 @@
 #include "kinova_test/conio.h"
 #include "kinova_test/HumanState.h"
 
-bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclicClient *base_cyclic, k_api::ActuatorConfig::ActuatorConfigClient *actuator_config)
+bool platform_control(ros::NodeHandle &n, ros::Publisher &platform_pub, HumanState &humanState)
 {
-    HumanState humanState;
     // ROS
-    ros::NodeHandle n;
+    geometry_msgs::Twist twist;
+
+    bool return_status = true;
+    while (ros::ok() && humanState.current_mode == ControlMode::Platform)
+    {
+        if (!_kbhit())
+        {
+            humanPos2platformVel(humanState, twist);
+            platform_pub.publish(twist);
+            ros::spinOnce(); // 偵測subscriber
+        }
+        else
+        {
+            if ((char)_getch() == 's')
+            {
+                return_status = false;
+                break;
+            }
+        }
+    }
+    return return_status;
+}
+
+bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclicClient *base_cyclic, k_api::ActuatorConfig::ActuatorConfigClient *actuator_config, ros::NodeHandle &n, HumanState &humanState)
+{
+    // ROS
     ros::Publisher msg_pub = n.advertise<kinova_test::kinovaMsg>("kinovaInfo", 1000); // rostopic的名稱(Publish)
-    ros::Subscriber sub = n.subscribe("xsens2kinova", 1000, &HumanState::updateHumanData, &humanState);
-    ros::Rate loop_rate(10);
     kinova_test::kinovaMsg kinovaInfo;
 
     double init_tau[7];
@@ -131,7 +153,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         double exp_time = (double)(now - t_start) / 1000000, dt;      // 秒
 
         // Real-time loop
-        while (ros::ok())
+        while (ros::ok() && humanState.current_mode == ControlMode::Manipulator)
         {
             if (!_kbhit())
             {
@@ -157,6 +179,11 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     // 控制器
                     controller(J, derror, param_s, param_r, phi, W_hat, controller_tau);
                     // 重力補償
+                    for (int i = 0; i < 7; i++)
+                    {
+                        controller_tau[i] = 0;
+                    }
+
                     gravity_compensation(position_curr, init_tau, controller_tau);
                     // 設定飽和器
                     torque_satuation(controller_tau);
@@ -164,7 +191,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     for (int i = 0; i < 7; i++)
                         base_command.mutable_actuators(i)->set_torque_joint(controller_tau[i]);
                     // 夾爪開闔
-                    gripperControl(gripper_motor_command, humanState.finger_pitch);
+                    gripper_control(gripper_motor_command, humanState.finger_pitch);
 
                     // 讀取關節角
                     for (int i = 0; i < 7; i++)
@@ -236,13 +263,16 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                         cout << "Unknown error." << endl;
                     }
                     msg_pub.publish(kinovaInfo);
-                    ros::spinOnce(); //偵測subscriber
+                    ros::spinOnce(); // 偵測subscriber
                 }
             }
             else
             {
                 if ((char)_getch() == 's')
+                {
+                    return_status = false;
                     break;
+                }
             }
         }
 
@@ -280,8 +310,12 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
 
 int main(int argc, char **argv)
 {
+    HumanState humanState;
     // ROS
-    ros::init(argc, argv, "kinovaDevice"); // rosnode的名稱
+    ros::init(argc, argv, "mobileRobotDevice"); // rosnode的名稱
+    ros::NodeHandle n;
+    ros::Publisher platform_pub = n.advertise<geometry_msgs::Twist>("cmd_vel", 1); // rostopic的名稱(Publish)
+    ros::Subscriber sub = n.subscribe("xsens2kinova", 1000, &HumanState::updateHumanData, &humanState);
 
     auto parsed_args = ParseExampleArguments(argc, argv);
 
@@ -322,11 +356,25 @@ int main(int argc, char **argv)
     // Example core
     bool success = true;
     success &= example_move_to_home_position(base);
-    success &= torque_control(base, base_cyclic, actuator_config);
+    while (success)
+    {
+        if (humanState.current_mode == ControlMode::Platform)
+        {
+            success &= example_move_to_home_position(base);
+            success &= platform_control(n, platform_pub, humanState);
+        }
+        else if (humanState.current_mode == ControlMode::Manipulator)
+        {
+            emergency_stop(platform_pub);
+            success &= torque_control(base, base_cyclic, actuator_config, n, humanState);
+        }
+    }
+
     if (!success)
     {
         cout << "There has been an unexpected error." << endl;
     }
+    emergency_stop(platform_pub);
 
     // Close API session
     session_manager->CloseSession();

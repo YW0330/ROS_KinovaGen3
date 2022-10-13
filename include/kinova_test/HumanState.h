@@ -4,6 +4,12 @@
 #include "xsens_mtw_driver/xsens2kinova.h"
 #include "kinova_test/Matrix.h"
 
+enum class ControlMode
+{
+    Platform,
+    Manipulator
+};
+
 class HumanState
 {
 public:
@@ -11,6 +17,7 @@ public:
     Matrix<double> Xd;
     Matrix<double> dXd;
     double finger_pitch;
+    ControlMode current_mode;
     void updateHumanData(const xsens_mtw_driver::xsens2kinova &msg);
 };
 

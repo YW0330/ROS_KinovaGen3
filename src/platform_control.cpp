@@ -24,7 +24,7 @@ int main(int argc, char **argv)
     {
         if (!_kbhit())
         {
-            platform_control(humanState, twist);
+            humanPos2platformVel(humanState, twist);
         }
         else
         {

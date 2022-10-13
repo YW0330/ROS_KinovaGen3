@@ -88,7 +88,7 @@ void null_space_subtasks(Matrix<double> &J, Matrix<double> &Jinv, Matrix<double>
         psi[i] = 0;
 }
 
-void platform_control(HumanState &humanState, geometry_msgs::Twist &twist)
+void humanPos2platformVel(HumanState &humanState, geometry_msgs::Twist &twist)
 {
     // 前進後退
     if (humanState.Xd[2] > 0.2)
@@ -105,4 +105,16 @@ void platform_control(HumanState &humanState, geometry_msgs::Twist &twist)
         twist.angular.z = 5 * humanState.Xd[1] + 2.5; // y: -0.5~-0.7
     else
         twist.angular.z = 0;
+}
+
+void emergency_stop(ros::Publisher &platform_pub)
+{
+    geometry_msgs::Twist twist;
+    twist.linear.x = 0;
+    twist.linear.y = 0;
+    twist.linear.z = 0;
+    twist.angular.x = 0;
+    twist.angular.y = 0;
+    twist.angular.z = 0;
+    platform_pub.publish(twist);
 }

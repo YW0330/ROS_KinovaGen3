@@ -156,7 +156,7 @@ void q2inf(const Matrix<double> &curr_pos, const Matrix<double> &prev_q, Matrix<
     }
 }
 
-void gripperControl(k_api::GripperCyclic::MotorCommand *gripper_motor_command, double finger_pitch)
+void gripper_control(k_api::GripperCyclic::MotorCommand *gripper_motor_command, double finger_pitch)
 {
     gripper_motor_command->set_velocity(100);
     if (finger_pitch > -0.5)

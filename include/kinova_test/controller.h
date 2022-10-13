@@ -5,6 +5,7 @@
 #include "kinova_test/Matrix.h"
 #include "kinova_test/KinovaGen3Model.h"
 #include "kinova_test/HumanState.h"
+#include "ros/ros.h"
 #include "geometry_msgs/Twist.h"
 
 // Parameters
@@ -31,5 +32,6 @@ void controller(const Matrix<double> &J, const Matrix<double> &de, const Matrix<
 void joint_angle_limit_psi(const Matrix<double> &q, Matrix<double> &psi);
 void manipulability_psi(const Matrix<double> &q, Matrix<double> &psi);
 void null_space_subtasks(Matrix<double> &J, Matrix<double> &Jinv, Matrix<double> &psi, Matrix<double> &subtasks);
-void platform_control(HumanState &humanState, geometry_msgs::Twist &twist);
+void humanPos2platformVel(HumanState &humanState, geometry_msgs::Twist &twist);
+void emergency_stop(ros::Publisher &platform_pub);
 #endif
