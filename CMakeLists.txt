@@ -79,13 +79,3 @@ target_link_libraries(following_human_control
   ${PROJECT_SOURCE_DIR}/lib/release/libKortexApiCpp.a
   ${catkin_LIBRARIES}
 )
-
-# ---------------- platform control ------------------
-add_executable(platform_control src/platform_control.cpp )
-
-target_link_libraries(platform_control
-  mylibary
-  ${PROJECT_SOURCE_DIR}/lib/libKinovaGen3Model.a
-  ${PROJECT_SOURCE_DIR}/lib/release/libKortexApiCpp.a
-  ${catkin_LIBRARIES}
-)
