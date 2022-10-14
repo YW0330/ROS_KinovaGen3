@@ -14,7 +14,7 @@
 #include "kinova_test/conio.h"
 #include "kinova_test/HumanState.h"
 
-bool platform_control(ros::NodeHandle &n, ros::Publisher &platform_pub, HumanState &humanState)
+bool platform_control(ros::Publisher &platform_pub, HumanState &humanState)
 {
     // ROS
     geometry_msgs::Twist twist;
@@ -40,10 +40,9 @@ bool platform_control(ros::NodeHandle &n, ros::Publisher &platform_pub, HumanSta
     return return_status;
 }
 
-bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclicClient *base_cyclic, k_api::ActuatorConfig::ActuatorConfigClient *actuator_config, ros::NodeHandle &n, HumanState &humanState)
+bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclicClient *base_cyclic, k_api::ActuatorConfig::ActuatorConfigClient *actuator_config, ros::Publisher &kinova_pub, HumanState &humanState)
 {
     // ROS
-    ros::Publisher msg_pub = n.advertise<kinova_test::kinovaMsg>("kinovaInfo", 1000); // rostopic的名稱(Publish)
     kinova_test::kinovaMsg kinovaInfo;
 
     double init_tau[7];
@@ -234,6 +233,8 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     error = Xd - X;
                     derror = dXd - dX;
 
+                    kinova_pub.publish(kinovaInfo);
+                    ros::spinOnce(); // 偵測subscriber
                     // Incrementing identifier ensures actuators can reject out of time frames
                     base_command.set_frame_id(base_command.frame_id() + 1);
                     if (base_command.frame_id() > 65535)
@@ -262,8 +263,6 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     {
                         cout << "Unknown error." << endl;
                     }
-                    msg_pub.publish(kinovaInfo);
-                    ros::spinOnce(); // 偵測subscriber
                 }
             }
             else
@@ -314,7 +313,8 @@ int main(int argc, char **argv)
     // ROS
     ros::init(argc, argv, "mobileRobotDevice"); // rosnode的名稱
     ros::NodeHandle n;
-    ros::Publisher platform_pub = n.advertise<geometry_msgs::Twist>("cmd_vel", 1); // rostopic的名稱(Publish)
+    ros::Publisher platform_pub = n.advertise<geometry_msgs::Twist>("cmd_vel", 1);       // rostopic的名稱(Publish)
+    ros::Publisher kinova_pub = n.advertise<kinova_test::kinovaMsg>("kinovaInfo", 1000); // rostopic的名稱(Publish)
     ros::Subscriber sub = n.subscribe("xsens2kinova", 1000, &HumanState::updateHumanData, &humanState);
 
     auto parsed_args = ParseExampleArguments(argc, argv);
@@ -360,20 +360,18 @@ int main(int argc, char **argv)
     {
         if (humanState.current_mode == ControlMode::Platform)
         {
-            success &= example_move_to_home_position(base);
-            success &= platform_control(n, platform_pub, humanState);
+            success &= move_to_home_position_with_ros(base, kinova_pub);
+            success &= platform_control(platform_pub, humanState);
         }
-        else if (humanState.current_mode == ControlMode::Manipulator)
+        else
         {
             emergency_stop(platform_pub);
-            success &= torque_control(base, base_cyclic, actuator_config, n, humanState);
+            success &= torque_control(base, base_cyclic, actuator_config, kinova_pub, humanState);
         }
     }
 
     if (!success)
-    {
         cout << "There has been an unexpected error." << endl;
-    }
     emergency_stop(platform_pub);
 
     // Close API session

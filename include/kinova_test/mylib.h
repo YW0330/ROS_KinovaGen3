@@ -19,6 +19,8 @@
 #include "kinova_test/Matrix.h"
 #include "kinova_test/KinovaGen3Model.h"
 
+#include "ros/ros.h"
+
 #if defined(_MSC_VER)
 #include <Windows.h>
 #else
@@ -34,6 +36,14 @@ namespace k_api = Kinova::Api;
 
 int64_t GetTickUs();
 bool example_move_to_home_position(k_api::Base::BaseClient *base);
+
+/*
+ * 回歸 Home 姿態同時傳送各關節角度。
+ *
+ * @param kinova_pub: 傳送 kinovaMsg 的 Publisher
+ *
+ */
+bool move_to_home_position_with_ros(k_api::Base::BaseClient *base, ros::Publisher &kinova_pub);
 
 /*
  * 輸出扭矩飽和器。

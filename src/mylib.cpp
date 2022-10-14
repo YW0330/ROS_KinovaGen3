@@ -1,5 +1,7 @@
-#include "kinova_test/mylib.h"
 #include <iostream>
+
+#include "kinova_test/mylib.h"
+#include "kinova_test/kinovaMsg.h"
 
 // Maximum allowed waiting time during actions
 constexpr auto TIMEOUT_PROMISE_DURATION = std::chrono::seconds{WAITING_TIME};
@@ -100,6 +102,81 @@ bool example_move_to_home_position(k_api::Base::BaseClient *base)
         std::cout << "Move to Home completed" << std::endl;
         std::cout << "Promise value : " << k_api::Base::ActionEvent_Name(promise_event) << std::endl;
 
+        return true;
+    }
+}
+
+bool move_to_home_position_with_ros(k_api::Base::BaseClient *base, ros::Publisher &kinova_pub)
+{
+    // Make sure the arm is in Single Level Servoing before executing an Action
+    auto servoingMode = k_api::Base::ServoingModeInformation();
+    servoingMode.set_servoing_mode(k_api::Base::ServoingMode::SINGLE_LEVEL_SERVOING);
+    base->SetServoingMode(servoingMode);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+    // Move arm to ready position
+    std::cout << "Moving the arm to a safe position" << std::endl;
+    auto action_type = k_api::Base::RequestedActionType();
+    action_type.set_action_type(k_api::Base::REACH_JOINT_ANGLES);
+    auto action_list = base->ReadAllActions(action_type);
+    auto action_handle = k_api::Base::ActionHandle();
+    action_handle.set_identifier(0);
+
+    for (auto action : action_list.action_list())
+    {
+        if (action.name() == "Home")
+        {
+            action_handle = action.handle();
+        }
+    }
+
+    if (action_handle.identifier() == 0)
+    {
+        std::cout << "Can't reach safe position, exiting" << std::endl;
+        return false;
+    }
+    else
+    {
+        // Connect to notification action topic
+        std::promise<k_api::Base::ActionEvent> finish_promise;
+        auto finish_future = finish_promise.get_future();
+        auto promise_notification_handle = base->OnNotificationActionTopic(
+            create_event_listener_by_promise(finish_promise),
+            k_api::Common::NotificationOptions());
+
+        // Execute action
+        base->ExecuteActionFromReference(action_handle);
+
+        kinova_test::kinovaMsg kinovaInfo;
+        while (1)
+        {
+            // Wait for future value from promise
+            const auto status = finish_future.wait_for(std::chrono::milliseconds(1));
+
+            // 讀各關節角度
+            k_api::Base::JointAngles input_joint_angles;
+            try
+            {
+                input_joint_angles = base->GetMeasuredJointAngles();
+            }
+            catch (k_api::KDetailedException &ex)
+            {
+                std::cout << "Unable to get joint angles" << std::endl;
+                return false;
+            }
+            for (auto joint_angle : input_joint_angles.joint_angles())
+                kinovaInfo.jointPos[joint_angle.joint_identifier()] = joint_angle.value();
+            kinova_pub.publish(kinovaInfo);
+
+            if (status == std::future_status::ready)
+                break;
+        }
+
+        base->Unsubscribe(promise_notification_handle);
+
+        const auto promise_event = finish_future.get();
+        std::cout << "Move to Home completed" << std::endl;
+        std::cout << "Promise value : " << k_api::Base::ActionEvent_Name(promise_event) << std::endl;
         return true;
     }
 }
