@@ -258,6 +258,13 @@ Matrix<DATA_TYPE> Matrix<DATA_TYPE>::transpose() const
 }
 
 template <class DATA_TYPE>
+void Matrix<DATA_TYPE>::zeros()
+{
+    for (unsigned i = 0; i < _rows * _cols; i++)
+        *(matrix + i) = 0;
+}
+
+template <class DATA_TYPE>
 Matrix<double> Matrix<DATA_TYPE>::inverse()
 {
     if (_rows != _cols)

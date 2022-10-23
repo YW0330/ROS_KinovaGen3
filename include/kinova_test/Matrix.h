@@ -229,6 +229,12 @@ public:
     Matrix<DATA_TYPE> transpose() const;
 
     /*
+     * 各元素歸零。
+     *
+     */
+    void zeros();
+
+    /*
      * 生成一個反矩陣。
      *
      * @return 反矩陣

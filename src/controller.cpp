@@ -84,8 +84,7 @@ void null_space_subtasks(Matrix<double> &J, Matrix<double> &Jinv, Matrix<double>
 {
     Matrix<double> eye(7, 7, MatrixType::Diagonal, {1, 1, 1, 1, 1, 1, 1});
     subtasks = (eye - Jinv * J) * psi;
-    for (unsigned i = 0; i < 7; i++)
-        psi[i] = 0;
+    psi.zeros();
 }
 
 void humanPos2platformVel(HumanState &humanState, geometry_msgs::Twist &twist)
