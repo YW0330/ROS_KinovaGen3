@@ -79,3 +79,13 @@ target_link_libraries(following_human_control
   ${PROJECT_SOURCE_DIR}/lib/release/libKortexApiCpp.a
   ${catkin_LIBRARIES}
 )
+
+# ---------------- following_human_arm ------------------
+add_executable(folowing_human_manipulator src/folowing_human_manipulator.cpp src/utilities.cpp)
+
+target_link_libraries(folowing_human_manipulator
+  mylibary
+  ${PROJECT_SOURCE_DIR}/lib/libKinovaGen3Model.a
+  ${PROJECT_SOURCE_DIR}/lib/release/libKortexApiCpp.a
+  ${catkin_LIBRARIES}
+)

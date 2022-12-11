@@ -9,9 +9,10 @@
 #include "geometry_msgs/Twist.h"
 
 // Parameters
-#define DOF 3U
+#define DOF 6U
 #define NODE 300U
-inline Matrix<double> kLambda(3, 3, MatrixType::Diagonal, {20, 20, 40});
+// inline Matrix<double> kLambda(3, 3, MatrixType::Diagonal, {20, 20, 40});
+inline Matrix<double> kLambda(6, 6, MatrixType::Diagonal, {20, 20, 40,20,20,20});
 inline Matrix<double> kK(7, 7, MatrixType::Diagonal, {8, 15, 8, 8, 8, 8, 8});
 const double kKj = 1;
 const double kKr = 8;

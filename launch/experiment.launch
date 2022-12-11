@@ -2,12 +2,22 @@
     <!-- ROS to Unity Bridge -->
     <!-- <include file="$(find ros_tcp_endpoint)/launch/endpoint.launch" /> -->
 
-    <!-- KINOVA Camera Startup-->
-    <!-- <include file="$(find kinova_vision)/launch/kinova_vision_color_only.launch" /> -->
+    <!-- KINOVA Camera Startup -->
+    <include file="$(find kinova_vision)/launch/kinova_vision_color_only.launch" />
+    <node name="image_view_kinova" pkg="image_view" type="image_view" respawn="false" output="screen">
+    <remap from="image" to="/camera/color/image_raw" />
+    </node>
 
-    <node pkg="xsens_mtw_driver" type="mt_w_manager" name="mt_w_driver" output="screen" />
+    <!-- USB Camera Startup -->
+    <node name="usb_cam" pkg="usb_cam" type="usb_cam_node"  output="screen" />
+    <node name="image_view_usb" pkg="image_view" type="image_view" respawn="false" output="screen">
+    <remap from="image" to="/usb_cam/image_raw" />
+    </node>
+
+    <!-- XSENS to KINOVA -->
+    <!-- <node pkg="xsens_mtw_driver" type="mt_w_manager" name="mt_w_driver" output="screen" /> -->
 
     <!--Main Program-->
-    <node pkg="kinova_test" type="adaptive_control" name="adaptive_control_node" output="screen" />
+    <!-- <node pkg="kinova_test" type="adaptive_control" name="adaptive_control_node" output="screen" /> -->
 
 </launch>
