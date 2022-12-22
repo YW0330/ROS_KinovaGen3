@@ -91,7 +91,6 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         // 順向運動學
         Matrix<double> X = forward_kinematic_6dof(position_curr), dX(DOF, 1);
         Matrix<double> X0 = X;
-      
 
         // Jacobian矩陣
         double J_arr[42], Jinv_arr[42];
@@ -101,24 +100,16 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         J67.update_from_matlab(J_arr);
         J = J67;
         Jinv.update_from_matlab(Jinv_arr);
-        // for (int i = 0; i < 3; i++)
-        //     for (int j = 0; j < 7; j++)
-        //         J(i, j) = J67(i, j);
-        // Jinv = PINV(J);
 
         // 微分前一筆
         Matrix<double> prev_q = q;
         Matrix<double> prev_Jinv = Jinv;
         Matrix<double> prev_subtasks(7, 1);
-        
-     
-        Matrix<double> Xd0 = humanState.Xd;
 
-        
-        
         // 目標輸出
+        Matrix<double> Xd0 = humanState.Xd;
         Matrix<double> Xd = X0 + humanState.Xd - Xd0;
-        for(int i=3;i<6;i++)
+        for (int i = 3; i < 6; i++)
             Xd[i] = X0[i];
         Matrix<double> dXd = humanState.dXd;
         Matrix<double> error = Xd - X;
@@ -130,9 +121,9 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         Matrix<double> psi(7, 1), subtasks(7, 1), dsubtasks(7, 1);
         Matrix<double> controller_tau(7, 1);
         /* ------------ 初始值參數設定結束 ------------ */
-        
-        int64_t t_start = GetTickUs(), now = GetTickUs(), last = now;            // 微秒
-        double exp_time = (double)(now - t_start) / 1000000, dt;     // 秒
+
+        int64_t t_start = GetTickUs(), now = GetTickUs(), last = now; // 微秒
+        double exp_time = (double)(now - t_start) / 1000000, dt;      // 秒
         // Real-time loop
         while (ros::ok())
         {
@@ -142,9 +133,9 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                 kinovaInfo.time = exp_time;
                 if (now - last > 1000)
                 {
-                    if (exp_time<3)
+                    if (exp_time < 3)
                         Xd0 = humanState.Xd;
-                    
+
                     // Position command to first actuator is set to measured one to avoid following error to trigger
                     // Bonus: When doing this instead of disabling the following error, if communication is lost and first
                     //        actuator continues to move under torque command, resulting position error with command will
@@ -192,23 +183,16 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     X = forward_kinematic_6dof(position_curr);
                     kinovaInfo.kinova_X = {X[0], X[1], X[2]};
                     kinovaInfo.kinova_Xd = {Xd[0], Xd[1], Xd[2]};
-
-                    kinovaInfo.kinova_axis = {humanState.Xd[0]- Xd0[0],humanState.Xd[1]- Xd0[1],humanState.Xd[2]- Xd0[2]};
-                    // kinovaInfo.kinova_axis = {Xd0[0],Xd0[1], Xd0[2]};
-                    // kinovaInfo.kinova_axis = {humanState.Xd[0],humanState.Xd[1],humanState.Xd[2]};
-
+                    kinovaInfo.kinova_axis = {X[3], X[4], X[5]};
 
                     // 夾爪狀態
                     kinovaInfo.gripperPos = base_feedback.interconnect().gripper_feedback().motor(0).position();
-
 
                     // Jacobian矩陣
                     kinova_J_and_Jinv(position_curr[0], position_curr[1], position_curr[2], position_curr[3], position_curr[4], position_curr[5], J_arr, Jinv_arr);
                     J67.update_from_matlab(J_arr);
                     J = J67;
                     Jinv.update_from_matlab(Jinv_arr);
-            
-
 
                     // 更新時間、微分、積分
                     now = GetTickUs();
@@ -226,10 +210,9 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     prev_subtasks = subtasks;
                     last = now;
 
-                    Xd = X0 + humanState.Xd- Xd0;
-                    for(int i=3;i<6;i++)
+                    Xd = X0 + humanState.Xd - Xd0;
+                    for (int i = 3; i < 6; i++)
                         Xd[i] = X0[i];
-                    
                     dXd = humanState.dXd;
                     error = Xd - X;
                     derror = dXd - dX;
