@@ -40,7 +40,7 @@ namespace protobuf_Base_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[166];
+  static const ::google::protobuf::internal::ParseTable schema[169];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -126,6 +126,12 @@ void InitDefaultsIPv4InformationImpl();
 void InitDefaultsIPv4Information();
 void InitDefaultsFullIPv4ConfigurationImpl();
 void InitDefaultsFullIPv4Configuration();
+void InitDefaultsWifiEnableStateImpl();
+void InitDefaultsWifiEnableState();
+void InitDefaultsBluetoothEnableStateImpl();
+void InitDefaultsBluetoothEnableState();
+void InitDefaultsRFConfigurationImpl();
+void InitDefaultsRFConfiguration();
 void InitDefaultsWifiInformationImpl();
 void InitDefaultsWifiInformation();
 void InitDefaultsWifiInformationListImpl();
@@ -419,6 +425,9 @@ inline void InitDefaults() {
   InitDefaultsIPv4Configuration();
   InitDefaultsIPv4Information();
   InitDefaultsFullIPv4Configuration();
+  InitDefaultsWifiEnableState();
+  InitDefaultsBluetoothEnableState();
+  InitDefaultsRFConfiguration();
   InitDefaultsWifiInformation();
   InitDefaultsWifiInformationList();
   InitDefaultsWifiConfiguration();
@@ -592,6 +601,9 @@ extern ArmStateInformationDefaultTypeInternal _ArmStateInformation_default_insta
 class ArmStateNotification;
 class ArmStateNotificationDefaultTypeInternal;
 extern ArmStateNotificationDefaultTypeInternal _ArmStateNotification_default_instance_;
+class BluetoothEnableState;
+class BluetoothEnableStateDefaultTypeInternal;
+extern BluetoothEnableStateDefaultTypeInternal _BluetoothEnableState_default_instance_;
 class BridgeConfig;
 class BridgeConfigDefaultTypeInternal;
 extern BridgeConfigDefaultTypeInternal _BridgeConfig_default_instance_;
@@ -889,6 +901,9 @@ extern ProtectionZoneNotificationListDefaultTypeInternal _ProtectionZoneNotifica
 class Query;
 class QueryDefaultTypeInternal;
 extern QueryDefaultTypeInternal _Query_default_instance_;
+class RFConfiguration;
+class RFConfigurationDefaultTypeInternal;
+extern RFConfigurationDefaultTypeInternal _RFConfiguration_default_instance_;
 class RequestedActionType;
 class RequestedActionTypeDefaultTypeInternal;
 extern RequestedActionTypeDefaultTypeInternal _RequestedActionType_default_instance_;
@@ -1030,6 +1045,9 @@ extern WifiConfigurationDefaultTypeInternal _WifiConfiguration_default_instance_
 class WifiConfigurationList;
 class WifiConfigurationListDefaultTypeInternal;
 extern WifiConfigurationListDefaultTypeInternal _WifiConfigurationList_default_instance_;
+class WifiEnableState;
+class WifiEnableStateDefaultTypeInternal;
+extern WifiEnableStateDefaultTypeInternal _WifiEnableState_default_instance_;
 class WifiInformation;
 class WifiInformationDefaultTypeInternal;
 extern WifiInformationDefaultTypeInternal _WifiInformation_default_instance_;
@@ -1666,12 +1684,16 @@ enum NetworkEvent {
   WIFI_AUTH_WRONG_KEY = 8,
   WIFI_AUTH_CONN_FAILED = 9,
   WIFI_AUTH_FAILED = 10,
+  WIFI_ENABLED = 11,
+  WIFI_DISABLED = 12,
+  BLUETOOTH_ENABLED = 13,
+  BLUETOOTH_DISABLED = 14,
   NetworkEvent_INT_MIN_SENTINEL_DO_NOT_USE_ = ::google::protobuf::kint32min,
   NetworkEvent_INT_MAX_SENTINEL_DO_NOT_USE_ = ::google::protobuf::kint32max
 };
 bool NetworkEvent_IsValid(int value);
 const NetworkEvent NetworkEvent_MIN = UNSPECIFIED_NETWORK_EVENT;
-const NetworkEvent NetworkEvent_MAX = WIFI_AUTH_FAILED;
+const NetworkEvent NetworkEvent_MAX = BLUETOOTH_DISABLED;
 const int NetworkEvent_ARRAYSIZE = NetworkEvent_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* NetworkEvent_descriptor();
@@ -7064,6 +7086,316 @@ class FullIPv4Configuration : public ::google::protobuf::Message /* @@protoc_ins
 };
 // -------------------------------------------------------------------
 
+class WifiEnableState : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:Kinova.Api.Base.WifiEnableState) */ {
+ public:
+  WifiEnableState();
+  virtual ~WifiEnableState();
+
+  WifiEnableState(const WifiEnableState& from);
+
+  inline WifiEnableState& operator=(const WifiEnableState& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  WifiEnableState(WifiEnableState&& from) noexcept
+    : WifiEnableState() {
+    *this = ::std::move(from);
+  }
+
+  inline WifiEnableState& operator=(WifiEnableState&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const WifiEnableState& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const WifiEnableState* internal_default_instance() {
+    return reinterpret_cast<const WifiEnableState*>(
+               &_WifiEnableState_default_instance_);
+  }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    40;
+
+  void Swap(WifiEnableState* other);
+  friend void swap(WifiEnableState& a, WifiEnableState& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline WifiEnableState* New() const PROTOBUF_FINAL { return New(NULL); }
+
+  WifiEnableState* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
+  void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
+  void CopyFrom(const WifiEnableState& from);
+  void MergeFrom(const WifiEnableState& from);
+  void Clear() PROTOBUF_FINAL;
+  bool IsInitialized() const PROTOBUF_FINAL;
+
+  size_t ByteSizeLong() const PROTOBUF_FINAL;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) PROTOBUF_FINAL;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const PROTOBUF_FINAL;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const PROTOBUF_FINAL;
+  int GetCachedSize() const PROTOBUF_FINAL { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const PROTOBUF_FINAL;
+  void InternalSwap(WifiEnableState* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const PROTOBUF_FINAL;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // bool enabled = 1;
+  void clear_enabled();
+  static const int kEnabledFieldNumber = 1;
+  bool enabled() const;
+  void set_enabled(bool value);
+
+  // @@protoc_insertion_point(class_scope:Kinova.Api.Base.WifiEnableState)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  bool enabled_;
+  mutable int _cached_size_;
+  friend struct ::protobuf_Base_2eproto::TableStruct;
+  friend void ::protobuf_Base_2eproto::InitDefaultsWifiEnableStateImpl();
+};
+// -------------------------------------------------------------------
+
+class BluetoothEnableState : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:Kinova.Api.Base.BluetoothEnableState) */ {
+ public:
+  BluetoothEnableState();
+  virtual ~BluetoothEnableState();
+
+  BluetoothEnableState(const BluetoothEnableState& from);
+
+  inline BluetoothEnableState& operator=(const BluetoothEnableState& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  BluetoothEnableState(BluetoothEnableState&& from) noexcept
+    : BluetoothEnableState() {
+    *this = ::std::move(from);
+  }
+
+  inline BluetoothEnableState& operator=(BluetoothEnableState&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const BluetoothEnableState& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const BluetoothEnableState* internal_default_instance() {
+    return reinterpret_cast<const BluetoothEnableState*>(
+               &_BluetoothEnableState_default_instance_);
+  }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    41;
+
+  void Swap(BluetoothEnableState* other);
+  friend void swap(BluetoothEnableState& a, BluetoothEnableState& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline BluetoothEnableState* New() const PROTOBUF_FINAL { return New(NULL); }
+
+  BluetoothEnableState* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
+  void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
+  void CopyFrom(const BluetoothEnableState& from);
+  void MergeFrom(const BluetoothEnableState& from);
+  void Clear() PROTOBUF_FINAL;
+  bool IsInitialized() const PROTOBUF_FINAL;
+
+  size_t ByteSizeLong() const PROTOBUF_FINAL;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) PROTOBUF_FINAL;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const PROTOBUF_FINAL;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const PROTOBUF_FINAL;
+  int GetCachedSize() const PROTOBUF_FINAL { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const PROTOBUF_FINAL;
+  void InternalSwap(BluetoothEnableState* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const PROTOBUF_FINAL;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // bool enabled = 1;
+  void clear_enabled();
+  static const int kEnabledFieldNumber = 1;
+  bool enabled() const;
+  void set_enabled(bool value);
+
+  // @@protoc_insertion_point(class_scope:Kinova.Api.Base.BluetoothEnableState)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  bool enabled_;
+  mutable int _cached_size_;
+  friend struct ::protobuf_Base_2eproto::TableStruct;
+  friend void ::protobuf_Base_2eproto::InitDefaultsBluetoothEnableStateImpl();
+};
+// -------------------------------------------------------------------
+
+class RFConfiguration : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:Kinova.Api.Base.RFConfiguration) */ {
+ public:
+  RFConfiguration();
+  virtual ~RFConfiguration();
+
+  RFConfiguration(const RFConfiguration& from);
+
+  inline RFConfiguration& operator=(const RFConfiguration& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  RFConfiguration(RFConfiguration&& from) noexcept
+    : RFConfiguration() {
+    *this = ::std::move(from);
+  }
+
+  inline RFConfiguration& operator=(RFConfiguration&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const RFConfiguration& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const RFConfiguration* internal_default_instance() {
+    return reinterpret_cast<const RFConfiguration*>(
+               &_RFConfiguration_default_instance_);
+  }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    42;
+
+  void Swap(RFConfiguration* other);
+  friend void swap(RFConfiguration& a, RFConfiguration& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline RFConfiguration* New() const PROTOBUF_FINAL { return New(NULL); }
+
+  RFConfiguration* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
+  void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
+  void CopyFrom(const RFConfiguration& from);
+  void MergeFrom(const RFConfiguration& from);
+  void Clear() PROTOBUF_FINAL;
+  bool IsInitialized() const PROTOBUF_FINAL;
+
+  size_t ByteSizeLong() const PROTOBUF_FINAL;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) PROTOBUF_FINAL;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const PROTOBUF_FINAL;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const PROTOBUF_FINAL;
+  int GetCachedSize() const PROTOBUF_FINAL { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const PROTOBUF_FINAL;
+  void InternalSwap(RFConfiguration* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const PROTOBUF_FINAL;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // .Kinova.Api.Base.WifiEnableState wifi_enable_state = 1;
+  bool has_wifi_enable_state() const;
+  void clear_wifi_enable_state();
+  static const int kWifiEnableStateFieldNumber = 1;
+  const ::Kinova::Api::Base::WifiEnableState& wifi_enable_state() const;
+  ::Kinova::Api::Base::WifiEnableState* release_wifi_enable_state();
+  ::Kinova::Api::Base::WifiEnableState* mutable_wifi_enable_state();
+  void set_allocated_wifi_enable_state(::Kinova::Api::Base::WifiEnableState* wifi_enable_state);
+
+  // .Kinova.Api.Base.BluetoothEnableState bluetooth_enable_state = 2;
+  bool has_bluetooth_enable_state() const;
+  void clear_bluetooth_enable_state();
+  static const int kBluetoothEnableStateFieldNumber = 2;
+  const ::Kinova::Api::Base::BluetoothEnableState& bluetooth_enable_state() const;
+  ::Kinova::Api::Base::BluetoothEnableState* release_bluetooth_enable_state();
+  ::Kinova::Api::Base::BluetoothEnableState* mutable_bluetooth_enable_state();
+  void set_allocated_bluetooth_enable_state(::Kinova::Api::Base::BluetoothEnableState* bluetooth_enable_state);
+
+  // @@protoc_insertion_point(class_scope:Kinova.Api.Base.RFConfiguration)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::Kinova::Api::Base::WifiEnableState* wifi_enable_state_;
+  ::Kinova::Api::Base::BluetoothEnableState* bluetooth_enable_state_;
+  mutable int _cached_size_;
+  friend struct ::protobuf_Base_2eproto::TableStruct;
+  friend void ::protobuf_Base_2eproto::InitDefaultsRFConfigurationImpl();
+};
+// -------------------------------------------------------------------
+
 class WifiInformation : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:Kinova.Api.Base.WifiInformation) */ {
  public:
   WifiInformation();
@@ -7099,7 +7431,7 @@ class WifiInformation : public ::google::protobuf::Message /* @@protoc_insertion
                &_WifiInformation_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    40;
+    43;
 
   void Swap(WifiInformation* other);
   friend void swap(WifiInformation& a, WifiInformation& b) {
@@ -7243,7 +7575,7 @@ class WifiInformationList : public ::google::protobuf::Message /* @@protoc_inser
                &_WifiInformationList_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    41;
+    44;
 
   void Swap(WifiInformationList* other);
   friend void swap(WifiInformationList& a, WifiInformationList& b) {
@@ -7348,7 +7680,7 @@ class WifiConfiguration : public ::google::protobuf::Message /* @@protoc_inserti
                &_WifiConfiguration_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    42;
+    45;
 
   void Swap(WifiConfiguration* other);
   friend void swap(WifiConfiguration& a, WifiConfiguration& b) {
@@ -7472,7 +7804,7 @@ class WifiConfigurationList : public ::google::protobuf::Message /* @@protoc_ins
                &_WifiConfigurationList_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    43;
+    46;
 
   void Swap(WifiConfigurationList* other);
   friend void swap(WifiConfigurationList& a, WifiConfigurationList& b) {
@@ -7577,7 +7909,7 @@ class ProtectionZoneHandle : public ::google::protobuf::Message /* @@protoc_inse
                &_ProtectionZoneHandle_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    44;
+    47;
 
   void Swap(ProtectionZoneHandle* other);
   friend void swap(ProtectionZoneHandle& a, ProtectionZoneHandle& b) {
@@ -7683,7 +8015,7 @@ class RotationMatrixRow : public ::google::protobuf::Message /* @@protoc_inserti
                &_RotationMatrixRow_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    45;
+    48;
 
   void Swap(RotationMatrixRow* other);
   friend void swap(RotationMatrixRow& a, RotationMatrixRow& b) {
@@ -7796,7 +8128,7 @@ class RotationMatrix : public ::google::protobuf::Message /* @@protoc_insertion_
                &_RotationMatrix_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    46;
+    49;
 
   void Swap(RotationMatrix* other);
   friend void swap(RotationMatrix& a, RotationMatrix& b) {
@@ -7918,7 +8250,7 @@ class Point : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
                &_Point_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    47;
+    50;
 
   void Swap(Point* other);
   friend void swap(Point& a, Point& b) {
@@ -8031,7 +8363,7 @@ class ZoneShape : public ::google::protobuf::Message /* @@protoc_insertion_point
                &_ZoneShape_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    48;
+    51;
 
   void Swap(ZoneShape* other);
   friend void swap(ZoneShape& a, ZoneShape& b) {
@@ -8171,7 +8503,7 @@ class ProtectionZone : public ::google::protobuf::Message /* @@protoc_insertion_
                &_ProtectionZone_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    49;
+    52;
 
   void Swap(ProtectionZone* other);
   friend void swap(ProtectionZone& a, ProtectionZone& b) {
@@ -8346,7 +8678,7 @@ class ProtectionZoneList : public ::google::protobuf::Message /* @@protoc_insert
                &_ProtectionZoneList_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    50;
+    53;
 
   void Swap(ProtectionZoneList* other);
   friend void swap(ProtectionZoneList& a, ProtectionZoneList& b) {
@@ -8451,7 +8783,7 @@ class CartesianLimitation : public ::google::protobuf::Message /* @@protoc_inser
                &_CartesianLimitation_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    51;
+    54;
 
   void Swap(CartesianLimitation* other);
   friend void swap(CartesianLimitation& a, CartesianLimitation& b) {
@@ -8564,7 +8896,7 @@ class TwistLimitation : public ::google::protobuf::Message /* @@protoc_insertion
                &_TwistLimitation_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    52;
+    55;
 
   void Swap(TwistLimitation* other);
   friend void swap(TwistLimitation& a, TwistLimitation& b) {
@@ -8670,7 +9002,7 @@ class WrenchLimitation : public ::google::protobuf::Message /* @@protoc_insertio
                &_WrenchLimitation_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    53;
+    56;
 
   void Swap(WrenchLimitation* other);
   friend void swap(WrenchLimitation& a, WrenchLimitation& b) {
@@ -8776,7 +9108,7 @@ class CartesianLimitationList : public ::google::protobuf::Message /* @@protoc_i
                &_CartesianLimitationList_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    54;
+    57;
 
   void Swap(CartesianLimitationList* other);
   friend void swap(CartesianLimitationList& a, CartesianLimitationList& b) {
@@ -8881,7 +9213,7 @@ class JointLimitation : public ::google::protobuf::Message /* @@protoc_insertion
                &_JointLimitation_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    55;
+    58;
 
   void Swap(JointLimitation* other);
   friend void swap(JointLimitation& a, JointLimitation& b) {
@@ -8994,7 +9326,7 @@ class JointsLimitationsList : public ::google::protobuf::Message /* @@protoc_ins
                &_JointsLimitationsList_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    56;
+    59;
 
   void Swap(JointsLimitationsList* other);
   friend void swap(JointsLimitationsList& a, JointsLimitationsList& b) {
@@ -9099,7 +9431,7 @@ class Query : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
                &_Query_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    57;
+    60;
 
   void Swap(Query* other);
   friend void swap(Query& a, Query& b) {
@@ -9241,7 +9573,7 @@ class ConfigurationChangeNotification : public ::google::protobuf::Message /* @@
                &_ConfigurationChangeNotification_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    58;
+    61;
 
   void Swap(ConfigurationChangeNotification* other);
   friend void swap(ConfigurationChangeNotification& a, ConfigurationChangeNotification& b) {
@@ -9501,7 +9833,7 @@ class MappingInfoNotification : public ::google::protobuf::Message /* @@protoc_i
                &_MappingInfoNotification_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    59;
+    62;
 
   void Swap(MappingInfoNotification* other);
   friend void swap(MappingInfoNotification& a, MappingInfoNotification& b) {
@@ -9650,7 +9982,7 @@ class ControlModeInformation : public ::google::protobuf::Message /* @@protoc_in
                &_ControlModeInformation_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    60;
+    63;
 
   void Swap(ControlModeInformation* other);
   friend void swap(ControlModeInformation& a, ControlModeInformation& b) {
@@ -9749,7 +10081,7 @@ class ControlModeNotification : public ::google::protobuf::Message /* @@protoc_i
                &_ControlModeNotification_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    61;
+    64;
 
   void Swap(ControlModeNotification* other);
   friend void swap(ControlModeNotification& a, ControlModeNotification& b) {
@@ -9878,7 +10210,7 @@ class ServoingModeInformation : public ::google::protobuf::Message /* @@protoc_i
                &_ServoingModeInformation_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    62;
+    65;
 
   void Swap(ServoingModeInformation* other);
   friend void swap(ServoingModeInformation& a, ServoingModeInformation& b) {
@@ -9977,7 +10309,7 @@ class OperatingModeInformation : public ::google::protobuf::Message /* @@protoc_
                &_OperatingModeInformation_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    63;
+    66;
 
   void Swap(OperatingModeInformation* other);
   friend void swap(OperatingModeInformation& a, OperatingModeInformation& b) {
@@ -10086,7 +10418,7 @@ class OperatingModeNotification : public ::google::protobuf::Message /* @@protoc
                &_OperatingModeNotification_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    64;
+    67;
 
   void Swap(OperatingModeNotification* other);
   friend void swap(OperatingModeNotification& a, OperatingModeNotification& b) {
@@ -10225,7 +10557,7 @@ class ServoingModeNotification : public ::google::protobuf::Message /* @@protoc_
                &_ServoingModeNotification_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    65;
+    68;
 
   void Swap(ServoingModeNotification* other);
   friend void swap(ServoingModeNotification& a, ServoingModeNotification& b) {
@@ -10354,7 +10686,7 @@ class SequenceInfoNotification : public ::google::protobuf::Message /* @@protoc_
                &_SequenceInfoNotification_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    66;
+    69;
 
   void Swap(SequenceInfoNotification* other);
   friend void swap(SequenceInfoNotification& a, SequenceInfoNotification& b) {
@@ -10514,7 +10846,7 @@ class SequenceInformation : public ::google::protobuf::Message /* @@protoc_inser
                &_SequenceInformation_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    67;
+    70;
 
   void Swap(SequenceInformation* other);
   friend void swap(SequenceInformation& a, SequenceInformation& b) {
@@ -10627,7 +10959,7 @@ class ProtectionZoneNotification : public ::google::protobuf::Message /* @@proto
                &_ProtectionZoneNotification_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    68;
+    71;
 
   void Swap(ProtectionZoneNotification* other);
   friend void swap(ProtectionZoneNotification& a, ProtectionZoneNotification& b) {
@@ -10766,7 +11098,7 @@ class ProtectionZoneInformation : public ::google::protobuf::Message /* @@protoc
                &_ProtectionZoneInformation_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    69;
+    72;
 
   void Swap(ProtectionZoneInformation* other);
   friend void swap(ProtectionZoneInformation& a, ProtectionZoneInformation& b) {
@@ -10865,7 +11197,7 @@ class UserNotification : public ::google::protobuf::Message /* @@protoc_insertio
                &_UserNotification_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    70;
+    73;
 
   void Swap(UserNotification* other);
   friend void swap(UserNotification& a, UserNotification& b) {
@@ -11004,7 +11336,7 @@ class ControllerHandle : public ::google::protobuf::Message /* @@protoc_insertio
                &_ControllerHandle_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    71;
+    74;
 
   void Swap(ControllerHandle* other);
   friend void swap(ControllerHandle& a, ControllerHandle& b) {
@@ -11116,7 +11448,7 @@ class ControllerElementHandle : public ::google::protobuf::Message /* @@protoc_i
                &_ControllerElementHandle_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    72;
+    75;
 
   void Swap(ControllerElementHandle* other);
   friend void swap(ControllerElementHandle& a, ControllerElementHandle& b) {
@@ -11256,7 +11588,7 @@ class ControllerNotification : public ::google::protobuf::Message /* @@protoc_in
                &_ControllerNotification_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    73;
+    76;
 
   void Swap(ControllerNotification* other);
   friend void swap(ControllerNotification& a, ControllerNotification& b) {
@@ -11410,7 +11742,7 @@ class ControllerList : public ::google::protobuf::Message /* @@protoc_insertion_
                &_ControllerList_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    74;
+    77;
 
   void Swap(ControllerList* other);
   friend void swap(ControllerList& a, ControllerList& b) {
@@ -11515,7 +11847,7 @@ class ControllerState : public ::google::protobuf::Message /* @@protoc_insertion
                &_ControllerState_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    75;
+    78;
 
   void Swap(ControllerState* other);
   friend void swap(ControllerState& a, ControllerState& b) {
@@ -11624,7 +11956,7 @@ class ControllerElementState : public ::google::protobuf::Message /* @@protoc_in
                &_ControllerElementState_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    76;
+    79;
 
   void Swap(ControllerElementState* other);
   friend void swap(ControllerElementState& a, ControllerElementState& b) {
@@ -11740,7 +12072,7 @@ class ActionNotification : public ::google::protobuf::Message /* @@protoc_insert
                &_ActionNotification_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    77;
+    80;
 
   void Swap(ActionNotification* other);
   friend void swap(ActionNotification& a, ActionNotification& b) {
@@ -11899,7 +12231,7 @@ class TrajectoryInfo : public ::google::protobuf::Message /* @@protoc_insertion_
                &_TrajectoryInfo_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    78;
+    81;
 
   void Swap(TrajectoryInfo* other);
   friend void swap(TrajectoryInfo& a, TrajectoryInfo& b) {
@@ -12012,7 +12344,7 @@ class ActionExecutionState : public ::google::protobuf::Message /* @@protoc_inse
                &_ActionExecutionState_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    79;
+    82;
 
   void Swap(ActionExecutionState* other);
   friend void swap(ActionExecutionState& a, ActionExecutionState& b) {
@@ -12121,7 +12453,7 @@ class RobotEventNotification : public ::google::protobuf::Message /* @@protoc_in
                &_RobotEventNotification_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    80;
+    83;
 
   void Swap(RobotEventNotification* other);
   friend void swap(RobotEventNotification& a, RobotEventNotification& b) {
@@ -12260,7 +12592,7 @@ class FactoryNotification : public ::google::protobuf::Message /* @@protoc_inser
                &_FactoryNotification_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    81;
+    84;
 
   void Swap(FactoryNotification* other);
   friend void swap(FactoryNotification& a, FactoryNotification& b) {
@@ -12389,7 +12721,7 @@ class NetworkNotification : public ::google::protobuf::Message /* @@protoc_inser
                &_NetworkNotification_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    82;
+    85;
 
   void Swap(NetworkNotification* other);
   friend void swap(NetworkNotification& a, NetworkNotification& b) {
@@ -12518,7 +12850,7 @@ class ConfigurationChangeNotificationList : public ::google::protobuf::Message /
                &_ConfigurationChangeNotificationList_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    83;
+    86;
 
   void Swap(ConfigurationChangeNotificationList* other);
   friend void swap(ConfigurationChangeNotificationList& a, ConfigurationChangeNotificationList& b) {
@@ -12623,7 +12955,7 @@ class MappingInfoNotificationList : public ::google::protobuf::Message /* @@prot
                &_MappingInfoNotificationList_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    84;
+    87;
 
   void Swap(MappingInfoNotificationList* other);
   friend void swap(MappingInfoNotificationList& a, MappingInfoNotificationList& b) {
@@ -12728,7 +13060,7 @@ class ControlModeNotificationList : public ::google::protobuf::Message /* @@prot
                &_ControlModeNotificationList_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    85;
+    88;
 
   void Swap(ControlModeNotificationList* other);
   friend void swap(ControlModeNotificationList& a, ControlModeNotificationList& b) {
@@ -12833,7 +13165,7 @@ class OperatingModeNotificationList : public ::google::protobuf::Message /* @@pr
                &_OperatingModeNotificationList_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    86;
+    89;
 
   void Swap(OperatingModeNotificationList* other);
   friend void swap(OperatingModeNotificationList& a, OperatingModeNotificationList& b) {
@@ -12938,7 +13270,7 @@ class ServoingModeNotificationList : public ::google::protobuf::Message /* @@pro
                &_ServoingModeNotificationList_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    87;
+    90;
 
   void Swap(ServoingModeNotificationList* other);
   friend void swap(ServoingModeNotificationList& a, ServoingModeNotificationList& b) {
@@ -13043,7 +13375,7 @@ class SequenceInfoNotificationList : public ::google::protobuf::Message /* @@pro
                &_SequenceInfoNotificationList_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    88;
+    91;
 
   void Swap(SequenceInfoNotificationList* other);
   friend void swap(SequenceInfoNotificationList& a, SequenceInfoNotificationList& b) {
@@ -13148,7 +13480,7 @@ class ProtectionZoneNotificationList : public ::google::protobuf::Message /* @@p
                &_ProtectionZoneNotificationList_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    89;
+    92;
 
   void Swap(ProtectionZoneNotificationList* other);
   friend void swap(ProtectionZoneNotificationList& a, ProtectionZoneNotificationList& b) {
@@ -13253,7 +13585,7 @@ class UserNotificationList : public ::google::protobuf::Message /* @@protoc_inse
                &_UserNotificationList_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    90;
+    93;
 
   void Swap(UserNotificationList* other);
   friend void swap(UserNotificationList& a, UserNotificationList& b) {
@@ -13358,7 +13690,7 @@ class SafetyNotificationList : public ::google::protobuf::Message /* @@protoc_in
                &_SafetyNotificationList_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    91;
+    94;
 
   void Swap(SafetyNotificationList* other);
   friend void swap(SafetyNotificationList& a, SafetyNotificationList& b) {
@@ -13463,7 +13795,7 @@ class ControllerNotificationList : public ::google::protobuf::Message /* @@proto
                &_ControllerNotificationList_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    92;
+    95;
 
   void Swap(ControllerNotificationList* other);
   friend void swap(ControllerNotificationList& a, ControllerNotificationList& b) {
@@ -13568,7 +13900,7 @@ class ActionNotificationList : public ::google::protobuf::Message /* @@protoc_in
                &_ActionNotificationList_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    93;
+    96;
 
   void Swap(ActionNotificationList* other);
   friend void swap(ActionNotificationList& a, ActionNotificationList& b) {
@@ -13673,7 +14005,7 @@ class RobotEventNotificationList : public ::google::protobuf::Message /* @@proto
                &_RobotEventNotificationList_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    94;
+    97;
 
   void Swap(RobotEventNotificationList* other);
   friend void swap(RobotEventNotificationList& a, RobotEventNotificationList& b) {
@@ -13778,7 +14110,7 @@ class NetworkNotificationList : public ::google::protobuf::Message /* @@protoc_i
                &_NetworkNotificationList_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    95;
+    98;
 
   void Swap(NetworkNotificationList* other);
   friend void swap(NetworkNotificationList& a, NetworkNotificationList& b) {
@@ -13883,7 +14215,7 @@ class MappingHandle : public ::google::protobuf::Message /* @@protoc_insertion_p
                &_MappingHandle_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    96;
+    99;
 
   void Swap(MappingHandle* other);
   friend void swap(MappingHandle& a, MappingHandle& b) {
@@ -13989,7 +14321,7 @@ class SafetyEvent : public ::google::protobuf::Message /* @@protoc_insertion_poi
                &_SafetyEvent_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    97;
+    100;
 
   void Swap(SafetyEvent* other);
   friend void swap(SafetyEvent& a, SafetyEvent& b) {
@@ -14091,7 +14423,7 @@ class ControllerEvent : public ::google::protobuf::Message /* @@protoc_insertion
                &_ControllerEvent_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    98;
+    101;
 
   void Swap(ControllerEvent* other);
   friend void swap(ControllerEvent& a, ControllerEvent& b) {
@@ -14204,7 +14536,7 @@ class GpioEvent : public ::google::protobuf::Message /* @@protoc_insertion_point
                &_GpioEvent_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    99;
+    102;
 
   void Swap(GpioEvent* other);
   friend void swap(GpioEvent& a, GpioEvent& b) {
@@ -14324,7 +14656,7 @@ class MapEvent : public ::google::protobuf::Message /* @@protoc_insertion_point(
                &_MapEvent_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    100;
+    103;
 
   void Swap(MapEvent* other);
   friend void swap(MapEvent& a, MapEvent& b) {
@@ -14474,7 +14806,7 @@ class MapElement : public ::google::protobuf::Message /* @@protoc_insertion_poin
                &_MapElement_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    101;
+    104;
 
   void Swap(MapElement* other);
   friend void swap(MapElement& a, MapElement& b) {
@@ -14601,7 +14933,7 @@ class ActivateMapHandle : public ::google::protobuf::Message /* @@protoc_inserti
                &_ActivateMapHandle_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    102;
+    105;
 
   void Swap(ActivateMapHandle* other);
   friend void swap(ActivateMapHandle& a, ActivateMapHandle& b) {
@@ -14723,7 +15055,7 @@ class Map : public ::google::protobuf::Message /* @@protoc_insertion_point(class
                &_Map_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    103;
+    106;
 
   void Swap(Map* other);
   friend void swap(Map& a, Map& b) {
@@ -14853,7 +15185,7 @@ class MapHandle : public ::google::protobuf::Message /* @@protoc_insertion_point
                &_MapHandle_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    104;
+    107;
 
   void Swap(MapHandle* other);
   friend void swap(MapHandle& a, MapHandle& b) {
@@ -14959,7 +15291,7 @@ class MapList : public ::google::protobuf::Message /* @@protoc_insertion_point(c
                &_MapList_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    105;
+    108;
 
   void Swap(MapList* other);
   friend void swap(MapList& a, MapList& b) {
@@ -15064,7 +15396,7 @@ class MapGroupHandle : public ::google::protobuf::Message /* @@protoc_insertion_
                &_MapGroupHandle_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    106;
+    109;
 
   void Swap(MapGroupHandle* other);
   friend void swap(MapGroupHandle& a, MapGroupHandle& b) {
@@ -15170,7 +15502,7 @@ class MapGroup : public ::google::protobuf::Message /* @@protoc_insertion_point(
                &_MapGroup_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    107;
+    110;
 
   void Swap(MapGroup* other);
   friend void swap(MapGroup& a, MapGroup& b) {
@@ -15348,7 +15680,7 @@ class MapGroupList : public ::google::protobuf::Message /* @@protoc_insertion_po
                &_MapGroupList_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    108;
+    111;
 
   void Swap(MapGroupList* other);
   friend void swap(MapGroupList& a, MapGroupList& b) {
@@ -15453,7 +15785,7 @@ class Mapping : public ::google::protobuf::Message /* @@protoc_insertion_point(c
                &_Mapping_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    109;
+    112;
 
   void Swap(Mapping* other);
   friend void swap(Mapping& a, Mapping& b) {
@@ -15638,7 +15970,7 @@ class MappingList : public ::google::protobuf::Message /* @@protoc_insertion_poi
                &_MappingList_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    110;
+    113;
 
   void Swap(MappingList* other);
   friend void swap(MappingList& a, MappingList& b) {
@@ -15743,7 +16075,7 @@ class TransformationMatrix : public ::google::protobuf::Message /* @@protoc_inse
                &_TransformationMatrix_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    111;
+    114;
 
   void Swap(TransformationMatrix* other);
   friend void swap(TransformationMatrix& a, TransformationMatrix& b) {
@@ -15875,7 +16207,7 @@ class TransformationRow : public ::google::protobuf::Message /* @@protoc_inserti
                &_TransformationRow_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    112;
+    115;
 
   void Swap(TransformationRow* other);
   friend void swap(TransformationRow& a, TransformationRow& b) {
@@ -15995,7 +16327,7 @@ class Pose : public ::google::protobuf::Message /* @@protoc_insertion_point(clas
                &_Pose_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    113;
+    116;
 
   void Swap(Pose* other);
   friend void swap(Pose& a, Pose& b) {
@@ -16129,7 +16461,7 @@ class Position : public ::google::protobuf::Message /* @@protoc_insertion_point(
                &_Position_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    114;
+    117;
 
   void Swap(Position* other);
   friend void swap(Position& a, Position& b) {
@@ -16242,7 +16574,7 @@ class Orientation : public ::google::protobuf::Message /* @@protoc_insertion_poi
                &_Orientation_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    115;
+    118;
 
   void Swap(Orientation* other);
   friend void swap(Orientation& a, Orientation& b) {
@@ -16355,7 +16687,7 @@ class CartesianSpeed : public ::google::protobuf::Message /* @@protoc_insertion_
                &_CartesianSpeed_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    116;
+    119;
 
   void Swap(CartesianSpeed* other);
   friend void swap(CartesianSpeed& a, CartesianSpeed& b) {
@@ -16467,7 +16799,7 @@ class CartesianTrajectoryConstraint : public ::google::protobuf::Message /* @@pr
                &_CartesianTrajectoryConstraint_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    117;
+    120;
 
   void Swap(CartesianTrajectoryConstraint* other);
   friend void swap(CartesianTrajectoryConstraint& a, CartesianTrajectoryConstraint& b) {
@@ -16591,7 +16923,7 @@ class JointTrajectoryConstraint : public ::google::protobuf::Message /* @@protoc
                &_JointTrajectoryConstraint_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    118;
+    121;
 
   void Swap(JointTrajectoryConstraint* other);
   friend void swap(JointTrajectoryConstraint& a, JointTrajectoryConstraint& b) {
@@ -16697,7 +17029,7 @@ class Wrench : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
                &_Wrench_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    119;
+    122;
 
   void Swap(Wrench* other);
   friend void swap(Wrench& a, Wrench& b) {
@@ -16831,7 +17163,7 @@ class Twist : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
                &_Twist_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    120;
+    123;
 
   void Swap(Twist* other);
   friend void swap(Twist& a, Twist& b) {
@@ -16965,7 +17297,7 @@ class Admittance : public ::google::protobuf::Message /* @@protoc_insertion_poin
                &_Admittance_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    121;
+    124;
 
   void Swap(Admittance* other);
   friend void swap(Admittance& a, Admittance& b) {
@@ -17064,7 +17396,7 @@ class ConstrainedPose : public ::google::protobuf::Message /* @@protoc_insertion
                &_ConstrainedPose_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    122;
+    125;
 
   void Swap(ConstrainedPose* other);
   friend void swap(ConstrainedPose& a, ConstrainedPose& b) {
@@ -17176,7 +17508,7 @@ class ConstrainedPosition : public ::google::protobuf::Message /* @@protoc_inser
                &_ConstrainedPosition_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    123;
+    126;
 
   void Swap(ConstrainedPosition* other);
   friend void swap(ConstrainedPosition& a, ConstrainedPosition& b) {
@@ -17288,7 +17620,7 @@ class ConstrainedOrientation : public ::google::protobuf::Message /* @@protoc_in
                &_ConstrainedOrientation_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    124;
+    127;
 
   void Swap(ConstrainedOrientation* other);
   friend void swap(ConstrainedOrientation& a, ConstrainedOrientation& b) {
@@ -17400,7 +17732,7 @@ class WrenchCommand : public ::google::protobuf::Message /* @@protoc_insertion_p
                &_WrenchCommand_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    125;
+    128;
 
   void Swap(WrenchCommand* other);
   friend void swap(WrenchCommand& a, WrenchCommand& b) {
@@ -17523,7 +17855,7 @@ class TwistCommand : public ::google::protobuf::Message /* @@protoc_insertion_po
                &_TwistCommand_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    126;
+    129;
 
   void Swap(TwistCommand* other);
   friend void swap(TwistCommand& a, TwistCommand& b) {
@@ -17639,7 +17971,7 @@ class ConstrainedJointAngles : public ::google::protobuf::Message /* @@protoc_in
                &_ConstrainedJointAngles_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    127;
+    130;
 
   void Swap(ConstrainedJointAngles* other);
   friend void swap(ConstrainedJointAngles& a, ConstrainedJointAngles& b) {
@@ -17751,7 +18083,7 @@ class ConstrainedJointAngle : public ::google::protobuf::Message /* @@protoc_ins
                &_ConstrainedJointAngle_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    128;
+    131;
 
   void Swap(ConstrainedJointAngle* other);
   friend void swap(ConstrainedJointAngle& a, ConstrainedJointAngle& b) {
@@ -17867,7 +18199,7 @@ class JointAngles : public ::google::protobuf::Message /* @@protoc_insertion_poi
                &_JointAngles_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    129;
+    132;
 
   void Swap(JointAngles* other);
   friend void swap(JointAngles& a, JointAngles& b) {
@@ -17972,7 +18304,7 @@ class JointAngle : public ::google::protobuf::Message /* @@protoc_insertion_poin
                &_JointAngle_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    130;
+    133;
 
   void Swap(JointAngle* other);
   friend void swap(JointAngle& a, JointAngle& b) {
@@ -18078,7 +18410,7 @@ class JointSpeeds : public ::google::protobuf::Message /* @@protoc_insertion_poi
                &_JointSpeeds_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    131;
+    134;
 
   void Swap(JointSpeeds* other);
   friend void swap(JointSpeeds& a, JointSpeeds& b) {
@@ -18190,7 +18522,7 @@ class JointSpeed : public ::google::protobuf::Message /* @@protoc_insertion_poin
                &_JointSpeed_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    132;
+    135;
 
   void Swap(JointSpeed* other);
   friend void swap(JointSpeed& a, JointSpeed& b) {
@@ -18303,7 +18635,7 @@ class JointTorques : public ::google::protobuf::Message /* @@protoc_insertion_po
                &_JointTorques_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    133;
+    136;
 
   void Swap(JointTorques* other);
   friend void swap(JointTorques& a, JointTorques& b) {
@@ -18415,7 +18747,7 @@ class JointTorque : public ::google::protobuf::Message /* @@protoc_insertion_poi
                &_JointTorque_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    134;
+    137;
 
   void Swap(JointTorque* other);
   friend void swap(JointTorque& a, JointTorque& b) {
@@ -18528,7 +18860,7 @@ class GripperCommand : public ::google::protobuf::Message /* @@protoc_insertion_
                &_GripperCommand_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    135;
+    138;
 
   void Swap(GripperCommand* other);
   friend void swap(GripperCommand& a, GripperCommand& b) {
@@ -18644,7 +18976,7 @@ class GripperRequest : public ::google::protobuf::Message /* @@protoc_insertion_
                &_GripperRequest_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    136;
+    139;
 
   void Swap(GripperRequest* other);
   friend void swap(GripperRequest& a, GripperRequest& b) {
@@ -18743,7 +19075,7 @@ class Gripper : public ::google::protobuf::Message /* @@protoc_insertion_point(c
                &_Gripper_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    137;
+    140;
 
   void Swap(Gripper* other);
   friend void swap(Gripper& a, Gripper& b) {
@@ -18848,7 +19180,7 @@ class Finger : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
                &_Finger_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    138;
+    141;
 
   void Swap(Finger* other);
   friend void swap(Finger& a, Finger& b) {
@@ -18954,7 +19286,7 @@ class GpioCommand : public ::google::protobuf::Message /* @@protoc_insertion_poi
                &_GpioCommand_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    139;
+    142;
 
   void Swap(GpioCommand* other);
   friend void swap(GpioCommand& a, GpioCommand& b) {
@@ -19074,7 +19406,7 @@ class SystemTime : public ::google::protobuf::Message /* @@protoc_insertion_poin
                &_SystemTime_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    140;
+    143;
 
   void Swap(SystemTime* other);
   friend void swap(SystemTime& a, SystemTime& b) {
@@ -19208,7 +19540,7 @@ class ControllerConfigurationMode : public ::google::protobuf::Message /* @@prot
                &_ControllerConfigurationMode_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    141;
+    144;
 
   void Swap(ControllerConfigurationMode* other);
   friend void swap(ControllerConfigurationMode& a, ControllerConfigurationMode& b) {
@@ -19307,7 +19639,7 @@ class ControllerConfiguration : public ::google::protobuf::Message /* @@protoc_i
                &_ControllerConfiguration_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    142;
+    145;
 
   void Swap(ControllerConfiguration* other);
   friend void swap(ControllerConfiguration& a, ControllerConfiguration& b) {
@@ -19464,7 +19796,7 @@ class ControllerConfigurationList : public ::google::protobuf::Message /* @@prot
                &_ControllerConfigurationList_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    143;
+    146;
 
   void Swap(ControllerConfigurationList* other);
   friend void swap(ControllerConfigurationList& a, ControllerConfigurationList& b) {
@@ -19569,7 +19901,7 @@ class ActuatorInformation : public ::google::protobuf::Message /* @@protoc_inser
                &_ActuatorInformation_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    144;
+    147;
 
   void Swap(ActuatorInformation* other);
   friend void swap(ActuatorInformation& a, ActuatorInformation& b) {
@@ -19668,7 +20000,7 @@ class ArmStateInformation : public ::google::protobuf::Message /* @@protoc_inser
                &_ArmStateInformation_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    145;
+    148;
 
   void Swap(ArmStateInformation* other);
   friend void swap(ArmStateInformation& a, ArmStateInformation& b) {
@@ -19777,7 +20109,7 @@ class ArmStateNotification : public ::google::protobuf::Message /* @@protoc_inse
                &_ArmStateNotification_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    146;
+    149;
 
   void Swap(ArmStateNotification* other);
   friend void swap(ArmStateNotification& a, ArmStateNotification& b) {
@@ -19896,7 +20228,7 @@ class CapSenseConfig : public ::google::protobuf::Message /* @@protoc_insertion_
                &_CapSenseConfig_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    147;
+    150;
 
   void Swap(CapSenseConfig* other);
   friend void swap(CapSenseConfig& a, CapSenseConfig& b) {
@@ -20030,7 +20362,7 @@ class BridgeList : public ::google::protobuf::Message /* @@protoc_insertion_poin
                &_BridgeList_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    148;
+    151;
 
   void Swap(BridgeList* other);
   friend void swap(BridgeList& a, BridgeList& b) {
@@ -20135,7 +20467,7 @@ class BridgeResult : public ::google::protobuf::Message /* @@protoc_insertion_po
                &_BridgeResult_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    149;
+    152;
 
   void Swap(BridgeResult* other);
   friend void swap(BridgeResult& a, BridgeResult& b) {
@@ -20244,7 +20576,7 @@ class BridgeIdentifier : public ::google::protobuf::Message /* @@protoc_insertio
                &_BridgeIdentifier_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    150;
+    153;
 
   void Swap(BridgeIdentifier* other);
   friend void swap(BridgeIdentifier& a, BridgeIdentifier& b) {
@@ -20343,7 +20675,7 @@ class BridgeConfig : public ::google::protobuf::Message /* @@protoc_insertion_po
                &_BridgeConfig_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    151;
+    154;
 
   void Swap(BridgeConfig* other);
   friend void swap(BridgeConfig& a, BridgeConfig& b) {
@@ -20469,7 +20801,7 @@ class BridgePortConfig : public ::google::protobuf::Message /* @@protoc_insertio
                &_BridgePortConfig_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    152;
+    155;
 
   void Swap(BridgePortConfig* other);
   friend void swap(BridgePortConfig& a, BridgePortConfig& b) {
@@ -20575,7 +20907,7 @@ class PreComputedJointTrajectory : public ::google::protobuf::Message /* @@proto
                &_PreComputedJointTrajectory_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    153;
+    156;
 
   void Swap(PreComputedJointTrajectory* other);
   friend void swap(PreComputedJointTrajectory& a, PreComputedJointTrajectory& b) {
@@ -20687,7 +21019,7 @@ class PreComputedJointTrajectoryElement : public ::google::protobuf::Message /* 
                &_PreComputedJointTrajectoryElement_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    154;
+    157;
 
   void Swap(PreComputedJointTrajectoryElement* other);
   friend void swap(PreComputedJointTrajectoryElement& a, PreComputedJointTrajectoryElement& b) {
@@ -20828,7 +21160,7 @@ class TrajectoryErrorElement : public ::google::protobuf::Message /* @@protoc_in
                &_TrajectoryErrorElement_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    155;
+    158;
 
   void Swap(TrajectoryErrorElement* other);
   friend void swap(TrajectoryErrorElement& a, TrajectoryErrorElement& b) {
@@ -20984,7 +21316,7 @@ class TrajectoryErrorReport : public ::google::protobuf::Message /* @@protoc_ins
                &_TrajectoryErrorReport_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    156;
+    159;
 
   void Swap(TrajectoryErrorReport* other);
   friend void swap(TrajectoryErrorReport& a, TrajectoryErrorReport& b) {
@@ -21089,7 +21421,7 @@ class WaypointValidationReport : public ::google::protobuf::Message /* @@protoc_
                &_WaypointValidationReport_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    157;
+    160;
 
   void Swap(WaypointValidationReport* other);
   friend void swap(WaypointValidationReport& a, WaypointValidationReport& b) {
@@ -21207,7 +21539,7 @@ class Waypoint : public ::google::protobuf::Message /* @@protoc_insertion_point(
                &_Waypoint_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    158;
+    161;
 
   void Swap(Waypoint* other);
   friend void swap(Waypoint& a, Waypoint& b) {
@@ -21346,7 +21678,7 @@ class AngularWaypoint : public ::google::protobuf::Message /* @@protoc_insertion
                &_AngularWaypoint_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    159;
+    162;
 
   void Swap(AngularWaypoint* other);
   friend void swap(AngularWaypoint& a, AngularWaypoint& b) {
@@ -21473,7 +21805,7 @@ class CartesianWaypoint : public ::google::protobuf::Message /* @@protoc_inserti
                &_CartesianWaypoint_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    160;
+    163;
 
   void Swap(CartesianWaypoint* other);
   friend void swap(CartesianWaypoint& a, CartesianWaypoint& b) {
@@ -21603,7 +21935,7 @@ class WaypointList : public ::google::protobuf::Message /* @@protoc_insertion_po
                &_WaypointList_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    161;
+    164;
 
   void Swap(WaypointList* other);
   friend void swap(WaypointList& a, WaypointList& b) {
@@ -21722,7 +22054,7 @@ class KinematicTrajectoryConstraints : public ::google::protobuf::Message /* @@p
                &_KinematicTrajectoryConstraints_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    162;
+    165;
 
   void Swap(KinematicTrajectoryConstraints* other);
   friend void swap(KinematicTrajectoryConstraints& a, KinematicTrajectoryConstraints& b) {
@@ -21842,7 +22174,7 @@ class FirmwareBundleVersions : public ::google::protobuf::Message /* @@protoc_in
                &_FirmwareBundleVersions_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    163;
+    166;
 
   void Swap(FirmwareBundleVersions* other);
   friend void swap(FirmwareBundleVersions& a, FirmwareBundleVersions& b) {
@@ -21962,7 +22294,7 @@ class FirmwareComponentVersion : public ::google::protobuf::Message /* @@protoc_
                &_FirmwareComponentVersion_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    164;
+    167;
 
   void Swap(FirmwareComponentVersion* other);
   friend void swap(FirmwareComponentVersion& a, FirmwareComponentVersion& b) {
@@ -22091,7 +22423,7 @@ class IKData : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
                &_IKData_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    165;
+    168;
 
   void Swap(IKData* other);
   friend void swap(IKData& a, IKData& b) {
@@ -25625,6 +25957,146 @@ inline void FullIPv4Configuration::set_allocated_ipv4_configuration(::Kinova::Ap
   }
   ipv4_configuration_ = ipv4_configuration;
   // @@protoc_insertion_point(field_set_allocated:Kinova.Api.Base.FullIPv4Configuration.ipv4_configuration)
+}
+
+// -------------------------------------------------------------------
+
+// WifiEnableState
+
+// bool enabled = 1;
+inline void WifiEnableState::clear_enabled() {
+  enabled_ = false;
+}
+inline bool WifiEnableState::enabled() const {
+  // @@protoc_insertion_point(field_get:Kinova.Api.Base.WifiEnableState.enabled)
+  return enabled_;
+}
+inline void WifiEnableState::set_enabled(bool value) {
+  
+  enabled_ = value;
+  // @@protoc_insertion_point(field_set:Kinova.Api.Base.WifiEnableState.enabled)
+}
+
+// -------------------------------------------------------------------
+
+// BluetoothEnableState
+
+// bool enabled = 1;
+inline void BluetoothEnableState::clear_enabled() {
+  enabled_ = false;
+}
+inline bool BluetoothEnableState::enabled() const {
+  // @@protoc_insertion_point(field_get:Kinova.Api.Base.BluetoothEnableState.enabled)
+  return enabled_;
+}
+inline void BluetoothEnableState::set_enabled(bool value) {
+  
+  enabled_ = value;
+  // @@protoc_insertion_point(field_set:Kinova.Api.Base.BluetoothEnableState.enabled)
+}
+
+// -------------------------------------------------------------------
+
+// RFConfiguration
+
+// .Kinova.Api.Base.WifiEnableState wifi_enable_state = 1;
+inline bool RFConfiguration::has_wifi_enable_state() const {
+  return this != internal_default_instance() && wifi_enable_state_ != NULL;
+}
+inline void RFConfiguration::clear_wifi_enable_state() {
+  if (GetArenaNoVirtual() == NULL && wifi_enable_state_ != NULL) {
+    delete wifi_enable_state_;
+  }
+  wifi_enable_state_ = NULL;
+}
+inline const ::Kinova::Api::Base::WifiEnableState& RFConfiguration::wifi_enable_state() const {
+  const ::Kinova::Api::Base::WifiEnableState* p = wifi_enable_state_;
+  // @@protoc_insertion_point(field_get:Kinova.Api.Base.RFConfiguration.wifi_enable_state)
+  return p != NULL ? *p : *reinterpret_cast<const ::Kinova::Api::Base::WifiEnableState*>(
+      &::Kinova::Api::Base::_WifiEnableState_default_instance_);
+}
+inline ::Kinova::Api::Base::WifiEnableState* RFConfiguration::release_wifi_enable_state() {
+  // @@protoc_insertion_point(field_release:Kinova.Api.Base.RFConfiguration.wifi_enable_state)
+  
+  ::Kinova::Api::Base::WifiEnableState* temp = wifi_enable_state_;
+  wifi_enable_state_ = NULL;
+  return temp;
+}
+inline ::Kinova::Api::Base::WifiEnableState* RFConfiguration::mutable_wifi_enable_state() {
+  
+  if (wifi_enable_state_ == NULL) {
+    wifi_enable_state_ = new ::Kinova::Api::Base::WifiEnableState;
+  }
+  // @@protoc_insertion_point(field_mutable:Kinova.Api.Base.RFConfiguration.wifi_enable_state)
+  return wifi_enable_state_;
+}
+inline void RFConfiguration::set_allocated_wifi_enable_state(::Kinova::Api::Base::WifiEnableState* wifi_enable_state) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete wifi_enable_state_;
+  }
+  if (wifi_enable_state) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      wifi_enable_state = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, wifi_enable_state, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  wifi_enable_state_ = wifi_enable_state;
+  // @@protoc_insertion_point(field_set_allocated:Kinova.Api.Base.RFConfiguration.wifi_enable_state)
+}
+
+// .Kinova.Api.Base.BluetoothEnableState bluetooth_enable_state = 2;
+inline bool RFConfiguration::has_bluetooth_enable_state() const {
+  return this != internal_default_instance() && bluetooth_enable_state_ != NULL;
+}
+inline void RFConfiguration::clear_bluetooth_enable_state() {
+  if (GetArenaNoVirtual() == NULL && bluetooth_enable_state_ != NULL) {
+    delete bluetooth_enable_state_;
+  }
+  bluetooth_enable_state_ = NULL;
+}
+inline const ::Kinova::Api::Base::BluetoothEnableState& RFConfiguration::bluetooth_enable_state() const {
+  const ::Kinova::Api::Base::BluetoothEnableState* p = bluetooth_enable_state_;
+  // @@protoc_insertion_point(field_get:Kinova.Api.Base.RFConfiguration.bluetooth_enable_state)
+  return p != NULL ? *p : *reinterpret_cast<const ::Kinova::Api::Base::BluetoothEnableState*>(
+      &::Kinova::Api::Base::_BluetoothEnableState_default_instance_);
+}
+inline ::Kinova::Api::Base::BluetoothEnableState* RFConfiguration::release_bluetooth_enable_state() {
+  // @@protoc_insertion_point(field_release:Kinova.Api.Base.RFConfiguration.bluetooth_enable_state)
+  
+  ::Kinova::Api::Base::BluetoothEnableState* temp = bluetooth_enable_state_;
+  bluetooth_enable_state_ = NULL;
+  return temp;
+}
+inline ::Kinova::Api::Base::BluetoothEnableState* RFConfiguration::mutable_bluetooth_enable_state() {
+  
+  if (bluetooth_enable_state_ == NULL) {
+    bluetooth_enable_state_ = new ::Kinova::Api::Base::BluetoothEnableState;
+  }
+  // @@protoc_insertion_point(field_mutable:Kinova.Api.Base.RFConfiguration.bluetooth_enable_state)
+  return bluetooth_enable_state_;
+}
+inline void RFConfiguration::set_allocated_bluetooth_enable_state(::Kinova::Api::Base::BluetoothEnableState* bluetooth_enable_state) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete bluetooth_enable_state_;
+  }
+  if (bluetooth_enable_state) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      bluetooth_enable_state = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, bluetooth_enable_state, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  bluetooth_enable_state_ = bluetooth_enable_state;
+  // @@protoc_insertion_point(field_set_allocated:Kinova.Api.Base.RFConfiguration.bluetooth_enable_state)
 }
 
 // -------------------------------------------------------------------
@@ -36815,6 +37287,12 @@ inline void IKData::set_allocated_guess(::Kinova::Api::Base::JointAngles* guess)
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

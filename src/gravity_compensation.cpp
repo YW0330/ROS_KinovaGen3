@@ -77,10 +77,10 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
             init_tau[i] = -base_feedback.actuators(i).torque();
 
         kinovaMsg kinovaInfo;
-        //初始值參數設定
-        //讀取關節角
+        // 初始值參數設定
+        // 讀取關節角
         Matrix<double> position_curr(7, 1); //-pi~pi
-        Matrix<int> round(7, 1);            //圈數
+        Matrix<int> round(7, 1);            // 圈數
         Matrix<double> q(7, 1);             // -inf~inf
         Matrix<double> X(6, 1);
         for (int i = 0; i < 7; i++)
@@ -92,7 +92,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         q = position_curr;
         Matrix<double> controller_tau(7, 1);
 
-        int64_t now = GetTickUs(), last = now; //微秒
+        int64_t now = GetTickUs(), last = now; // 微秒
         Matrix<double> prev_q = q;
 
         int loop = 1;
@@ -112,24 +112,25 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                 X = forward_kinematic_6dof(q);
                 kinovaInfo.kinova_X = {X[0], X[1], X[2]};
                 kinovaInfo.kinova_axis = {X[3], X[4], X[5]};
-                kinovaInfo.jointPos = {(float)q[0], (float)q[1], (float)q[2], (float)q[3], (float)q[4], (float)q[5], (float)q[6]};
+                // kinovaInfo.jointPos = {(float)q[0], (float)q[1], (float)q[2], (float)q[3], (float)q[4], (float)q[5], (float)q[6]};
                 // kinovaInfo.jointPos = {(float)position_curr[0], (float)position_curr[1], (float)position_curr[2], (float)position_curr[3], (float)position_curr[4], (float)position_curr[5], (float)position_curr[6]};
 
-                //控制器
+                // 控制器
                 for (int i = 0; i < 7; i++)
                     controller_tau[i] = 0;
                 gravity_compensation(position_curr, init_tau, controller_tau);
-                //設定飽和器
+                // 設定飽和器
                 torque_satuation(controller_tau);
-                //輸入扭矩
+                // 輸入扭矩
                 for (int i = 0; i < 7; i++)
                     base_command.mutable_actuators(i)->set_torque_joint(controller_tau[i]);
 
-                //讀取關節角
+                // 讀取關節角
                 for (int i = 0; i < 7; i++)
                 {
+                    kinovaInfo.jointPos[i] = base_feedback.actuators(i).position();
+                    kinovaInfo.jointVel[i] = base_feedback.actuators(i).velocity();
                     position_curr[i] = base_feedback.actuators(i).position() * DEG2RAD;
-
                     if (position_curr[i] > M_PI)
                         position_curr[i] = -(2 * M_PI - position_curr[i]);
                 }

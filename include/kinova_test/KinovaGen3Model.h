@@ -54,6 +54,9 @@ double kinova_manipulability(double q1, double q2, double q3, double q4,
 void kinova_FK(double q1, double q2, double q3, double q4, double q5,
                double q6, double q7, double X[6]);
 
+void kinova_FK_axisAngle(double q1, double q2, double q3, double q4,
+                         double q5, double q6, double q7, double X[7]);
+
 // Parameters
 enum class KinovaParams
 {
@@ -75,4 +78,7 @@ enum class KinovaParams
 
 Matrix<double> forward_kinematic_3dof(const Matrix<double> &q);
 Matrix<double> forward_kinematic_6dof(const Matrix<double> &q);
+Matrix<double> forward_kinematic_6dof_axisAngle(const Matrix<double> &q);
+Matrix<double> kinova_axisAngle(const Matrix<double> &q);
+Matrix<double> forward_kinematic_6dof_matlab(const Matrix<double> &q);
 #endif

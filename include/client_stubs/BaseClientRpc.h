@@ -186,6 +186,10 @@ namespace Api
 			eUidComputeForwardKinematics = 0x200e9,
 			eUidComputeInverseKinematics = 0x200ea,
 			eUidValidateWaypointList = 0x200eb,
+			eUidSetWifiEnableState = 0x200ec,
+			eUidGetWifiEnableState = 0x200ed,
+			eUidSetBluetoothEnableState = 0x200ee,
+			eUidGetBluetoothEnableState = 0x200ef,
 		};
 		
 		class BaseClient
@@ -766,6 +770,22 @@ namespace Api
 			WaypointValidationReport ValidateWaypointList(const WaypointList& waypointlist, uint32_t deviceId = 0, const RouterClientSendOptions& options = {false, 0, 3000});
 			void ValidateWaypointList_callback(const WaypointList& waypointlist, std::function< void (const Error&, const WaypointValidationReport&) > callback, uint32_t deviceId = 0);
 			std::future<WaypointValidationReport> ValidateWaypointList_async(const WaypointList& waypointlist, uint32_t deviceId = 0, const RouterClientSendOptions& options = {false, 0, 3000});
+
+			void SetWifiEnableState(const WifiEnableState& wifienablestate, uint32_t deviceId = 0, const RouterClientSendOptions& options = {false, 0, 3000});
+			void SetWifiEnableState_callback(const WifiEnableState& wifienablestate, std::function< void (const Error&) > callback, uint32_t deviceId = 0);
+			std::future<void> SetWifiEnableState_async(const WifiEnableState& wifienablestate, uint32_t deviceId = 0, const RouterClientSendOptions& options = {false, 0, 3000});
+
+			WifiEnableState GetWifiEnableState(uint32_t deviceId = 0, const RouterClientSendOptions& options = {false, 0, 3000});
+			void GetWifiEnableState_callback(std::function< void (const Error&, const WifiEnableState&) > callback, uint32_t deviceId = 0);
+			std::future<WifiEnableState> GetWifiEnableState_async(uint32_t deviceId = 0, const RouterClientSendOptions& options = {false, 0, 3000});
+
+			void SetBluetoothEnableState(const BluetoothEnableState& bluetoothenablestate, uint32_t deviceId = 0, const RouterClientSendOptions& options = {false, 0, 3000});
+			void SetBluetoothEnableState_callback(const BluetoothEnableState& bluetoothenablestate, std::function< void (const Error&) > callback, uint32_t deviceId = 0);
+			std::future<void> SetBluetoothEnableState_async(const BluetoothEnableState& bluetoothenablestate, uint32_t deviceId = 0, const RouterClientSendOptions& options = {false, 0, 3000});
+
+			BluetoothEnableState GetBluetoothEnableState(uint32_t deviceId = 0, const RouterClientSendOptions& options = {false, 0, 3000});
+			void GetBluetoothEnableState_callback(std::function< void (const Error&, const BluetoothEnableState&) > callback, uint32_t deviceId = 0);
+			std::future<BluetoothEnableState> GetBluetoothEnableState_async(uint32_t deviceId = 0, const RouterClientSendOptions& options = {false, 0, 3000});
 
 
 		private:
