@@ -25,7 +25,9 @@ generate_messages(
 catkin_package(CATKIN_DEPENDS
     message_runtime)
 
-# 加入標頭檔
+## 加入標頭檔
+# include_directories 官方文件 https://cmake.org/cmake/help/latest/command/include_directories.html
+# (推薦) target_include_directories 官方文件 https://cmake.org/cmake/help/latest/command/target_include_directories.html
 include_directories(
   ${PROJECT_SOURCE_DIR}/include
   ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}
@@ -49,43 +51,27 @@ target_sources(mylibary
   ${PROJECT_SOURCE_DIR}/src/HumanState.cpp
 )
 
-# ---------------- gravity_compensation ------------------
-# 生成執行檔
-add_executable(gravity_compensation src/gravity_compensation.cpp src/utilities.cpp)
-# 執行檔連接函式庫
-target_link_libraries(gravity_compensation
+## 連接函式庫
+# include_directories 官方文件 https://cmake.org/cmake/help/latest/command/link_libraries.html
+# (推薦) target_link_libraries 官方文件 https://cmake.org/cmake/help/latest/command/target_link_libraries.html#command:target_link_libraries
+link_libraries(
   mylibary
   ${PROJECT_SOURCE_DIR}/lib/libKinovaGen3Model.a
+  ${PROJECT_SOURCE_DIR}/lib/libkinova_FK_axisAngle.a
   ${PROJECT_SOURCE_DIR}/lib/release/libKortexApiCpp.a
   ${catkin_LIBRARIES}
 )
+
+# ---------------- gravity_compensation ------------------
+# 生成執行檔
+add_executable(gravity_compensation src/gravity_compensation.cpp src/utilities.cpp)
 
 # ---------------- adaptive_control ------------------
 add_executable(adaptive_control src/adaptive_control.cpp src/utilities.cpp)
 
-target_link_libraries(adaptive_control
-  mylibary
-  ${PROJECT_SOURCE_DIR}/lib/libKinovaGen3Model.a
-  ${PROJECT_SOURCE_DIR}/lib/release/libKortexApiCpp.a
-  ${catkin_LIBRARIES}
-)
-
 # ---------------- following_human_control ------------------
 add_executable(following_human_control src/following_human_control.cpp src/utilities.cpp)
 
-target_link_libraries(following_human_control
-  mylibary
-  ${PROJECT_SOURCE_DIR}/lib/libKinovaGen3Model.a
-  ${PROJECT_SOURCE_DIR}/lib/release/libKortexApiCpp.a
-  ${catkin_LIBRARIES}
-)
-
-# ---------------- following_human_arm ------------------
+# ---------------- folowing_human_manipulator ------------------
 add_executable(folowing_human_manipulator src/folowing_human_manipulator.cpp src/utilities.cpp)
 
-target_link_libraries(folowing_human_manipulator
-  mylibary
-  ${PROJECT_SOURCE_DIR}/lib/libKinovaGen3Model.a
-  ${PROJECT_SOURCE_DIR}/lib/release/libKortexApiCpp.a
-  ${catkin_LIBRARIES}
-)
