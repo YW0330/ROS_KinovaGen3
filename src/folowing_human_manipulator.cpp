@@ -107,10 +107,12 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         Matrix<double> prev_subtasks(7, 1);
 
         // 目標輸出
-        Matrix<double> Xd0 = humanState.Xd;
-        Matrix<double> Xd = X0 + humanState.Xd - Xd0;
-        for (int i = 3; i < 6; i++)
-            Xd[i] = X0[i];
+        // Matrix<double> Xd0 = humanState.Xd;
+        // Matrix<double> Xd = X0 + humanState.Xd - Xd0;
+        // for (int i = 3; i < 6; i++)
+        //     Xd[i] = X0[i];
+
+        Matrix<double> Xd = X0;
         Matrix<double> dXd = humanState.dXd;
         Matrix<double> error = Xd - X;
         Matrix<double> derror = dXd - dX;
@@ -133,8 +135,8 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                 kinovaInfo.time = exp_time;
                 if (now - last > 1000)
                 {
-                    if (exp_time < 3)
-                        Xd0 = humanState.Xd;
+                    // if (exp_time < 3)
+                    //     Xd0 = humanState.Xd;
 
                     // Position command to first actuator is set to measured one to avoid following error to trigger
                     // Bonus: When doing this instead of disabling the following error, if communication is lost and first
@@ -182,8 +184,8 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     // 順向運動學
                     X = forward_kinematic_6dof(position_curr);
                     kinovaInfo.kinova_X = {X[0], X[1], X[2]};
-                    kinovaInfo.kinova_Xd = {Xd[0], Xd[1], Xd[2]};
                     kinovaInfo.kinova_axis = {X[3], X[4], X[5]};
+                    kinovaInfo.kinova_Xd = {Xd[3], Xd[4], Xd[5]};
 
                     // 夾爪狀態
                     kinovaInfo.gripperPos = base_feedback.interconnect().gripper_feedback().motor(0).position();
@@ -210,10 +212,19 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     prev_subtasks = subtasks;
                     last = now;
 
-                    Xd = X0 + humanState.Xd - Xd0;
-                    for (int i = 3; i < 6; i++)
-                        Xd[i] = X0[i];
-                    dXd = humanState.dXd;
+                    Xd = X0;
+                    Xd[0] = 0;
+                    Xd[1] = 0;
+                    Xd[2] = 1.2;
+                    Xd[3] = 0;
+                    Xd[4] = 0;
+                    Xd[5] = M_PI * sin(exp_time * 2 * M_PI / 10);
+
+                    // Xd = X0 + humanState.Xd - Xd0;
+                    // for (int i = 3; i < 6; i++)
+                    //     Xd[i] = X0[i];
+                    // dXd = humanState.dXd;
+                    dXd[5] = M_PI * cos(exp_time * 2 * M_PI / 10) * 2 * M_PI / 10;
                     error = Xd - X;
                     derror = dXd - dX;
 

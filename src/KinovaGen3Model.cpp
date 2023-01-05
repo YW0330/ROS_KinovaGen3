@@ -142,27 +142,25 @@ Matrix<double> kinova_axisAngle(const Matrix<double> &q)
     angle = omega * theta;
     static Matrix<double> prev_angle = angle;
     static Matrix<double> axis_angle = angle;
-    static Matrix<double> first_angle = angle;
+    static Matrix<double> first_angle = prev_angle;
+    static Matrix<double> prev_axis_angle = axis_angle;
     static bool flag = false;
-    static Matrix<double> offset(3, 1);
 
     for (int i = 0; i < 3; i++)
     {
         if ((angle[i] - prev_angle[i] > 45 * DEG2RAD) || (angle[i] - prev_angle[i] < -45 * DEG2RAD))
         {
-            first_angle = angle;
-            offset = axis_angle - first_angle;
+            first_angle = prev_angle;
+            prev_axis_angle = axis_angle;
             flag = true;
-        }
-        if (flag)
-        {
-            axis_angle[i] = 2 * first_angle[i] + angle[i] + offset[i];
-        }
-        else
-        {
-            axis_angle = angle;
+            break;
         }
     }
+    if (flag)
+        axis_angle = prev_axis_angle + first_angle + angle;
+    else
+        axis_angle = angle;
+
     prev_angle = angle;
     return axis_angle;
 }
