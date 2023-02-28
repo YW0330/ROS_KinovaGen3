@@ -19,6 +19,9 @@ public:
     double finger_pitch;
     ControlMode current_mode;
     void updateHumanData(const xsens_mtw_driver::xsens2kinova &msg);
+
+private:
+    void manipulator_mapping();
 };
 
 #endif

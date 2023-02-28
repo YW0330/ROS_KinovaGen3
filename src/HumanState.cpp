@@ -23,7 +23,13 @@ void HumanState::updateHumanData(const xsens_mtw_driver::xsens2kinova &msg)
             dXd[i + 3] = msg.velocity_att[i];
         }
     }
-    Xd[0] *= 1.5;
     finger_pitch = msg.finger_pitch;
     current_mode = (ControlMode)msg.mode;
+    if (current_mode == ControlMode::Manipulator)
+        manipulator_mapping();
+}
+
+void HumanState::manipulator_mapping()
+{
+    Xd[0] *= 1.5;
 }
