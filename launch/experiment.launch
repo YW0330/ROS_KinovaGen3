@@ -3,8 +3,8 @@
     <!-- <include file="$(find ros_tcp_endpoint)/launch/endpoint.launch" /> -->
 
     <!-- KINOVA and USB Camera Startup -->
-    <include file="$(find kinova_vision)/launch/kinova_vision_color_only.launch" />
-    <node name="image_cam" pkg="usb_cam" type="kinova_cam.py" output="screen" />
+    <include file="$(find kinova_vision)/launch/startup.launch" />
+    <!-- <node name="image_cam" pkg="usb_cam" type="kinova_cam.py" output="screen" /> -->
 
     <!-- XSENS to KINOVA -->
     <node name="xsens2kinova"  pkg="get_hand_position_on_kinova_coord" type="get_hand_position_on_kinova_coord_node" output="screen" />
