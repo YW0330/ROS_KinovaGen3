@@ -78,7 +78,6 @@ enum class KinovaParams
 
 Matrix<double> forward_kinematic_3dof(const Matrix<double> &q);
 Matrix<double> forward_kinematic_6dof(const Matrix<double> &q);
-Matrix<double> forward_kinematic_6dof_axisAngle(const Matrix<double> &q);
 Matrix<double> kinova_axisAngle(const Matrix<double> &q);
 Matrix<double> forward_kinematic_6dof_matlab(const Matrix<double> &q);
 #endif
