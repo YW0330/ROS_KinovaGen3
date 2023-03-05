@@ -143,15 +143,15 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                         base_command.mutable_actuators(i)->set_position(base_feedback.actuators(i).position());
 
                     // 控制器參數
-                    joint_angle_limit_psi(position_curr, psi);
-                    manipulability_psi(position_curr, psi);
-                    null_space_subtasks(J, Jinv, psi, subtasks);
+                    // joint_angle_limit_psi(position_curr, psi);
+                    // manipulability_psi(position_curr, psi);
+                    // null_space_subtasks(J, Jinv, psi, subtasks);
                     contrller_params(J, Jinv, dJinv, error, derror, dq, subtasks, dsubtasks, param_s, param_v, param_a, param_r);
                     // RBFNN
                     get_phi(param_v, param_a, q, dq, phi);
                     get_dW_hat(phi, param_s, dW_hat);
                     // 控制器
-                    controller(J, derror, param_s, param_r, phi, W_hat, controller_tau);
+                    controller(J, dX, dXd, param_s, param_r, phi, W_hat, controller_tau);
 
                     gravity_compensation(position_curr, init_tau, controller_tau);
                     // 設定飽和器
@@ -166,7 +166,6 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     for (int i = 0; i < 7; i++)
                     {
                         kinovaInfo.jointPos[i] = base_feedback.actuators(i).position();
-                        kinovaInfo.jointVel[i] = base_feedback.actuators(i).velocity();
                         position_curr[i] = base_feedback.actuators(i).position() * DEG2RAD;
                         if (position_curr[i] > M_PI)
                             position_curr[i] = -(2 * M_PI - position_curr[i]);
@@ -177,8 +176,8 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     X = forward_kinematic_6dof(position_curr);
                     kinovaInfo.kinova_X = {X[0], X[1], X[2]};
                     kinovaInfo.kinova_axis = {X[3], X[4], X[5]};
-                    kinovaInfo.kinova_Xd = {Xd[3], Xd[4], Xd[5]};
-
+                    kinovaInfo.kinova_Xd = {Xd[0], Xd[1], Xd[2]};
+                    kinovaInfo.kinova_axisd = {Xd[3], Xd[4], Xd[5]};
                     // 夾爪狀態
                     kinovaInfo.gripperPos = base_feedback.interconnect().gripper_feedback().motor(0).position();
 
@@ -195,7 +194,6 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     for (int i = 0; i < 7; i++)
                         dq[i] = base_feedback.actuators(i).velocity() * DEG2RAD;
                     dX = J * dq;
-                    kinovaInfo.kinova_dX = {dX[0], dX[1], dX[2]};
                     dJinv = (Jinv - prev_Jinv) / dt;
                     dsubtasks = (subtasks - prev_subtasks) / dt;
                     W_hat = W_hat + dW_hat * dt;
@@ -211,6 +209,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
 
                     kinova_pub.publish(kinovaInfo);
                     ros::spinOnce(); // 偵測subscriber
+
                     // Incrementing identifier ensures actuators can reject out of time frames
                     base_command.set_frame_id(base_command.frame_id() + 1);
                     if (base_command.frame_id() > 65535)

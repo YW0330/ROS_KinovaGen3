@@ -20,8 +20,6 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
     // ROS
     ros::NodeHandle n;
     ros::Publisher msg_pub = n.advertise<kinovaMsg>("kinovaInfo", 1000); // rostopic的名稱(Publish)
-    // ros::Subscriber sub = n.subscribe("chatter", 1000, chatterCallback); // rostopic的名稱(subscribe)
-    ros::Rate loop_rate(10);
 
     double init_tau[7];
     bool return_status = true;
@@ -112,8 +110,6 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                 X = forward_kinematic_6dof(q);
                 kinovaInfo.kinova_X = {X[0], X[1], X[2]};
                 kinovaInfo.kinova_axis = {X[3], X[4], X[5]};
-                // kinovaInfo.jointPos = {(float)q[0], (float)q[1], (float)q[2], (float)q[3], (float)q[4], (float)q[5], (float)q[6]};
-                // kinovaInfo.jointPos = {(float)position_curr[0], (float)position_curr[1], (float)position_curr[2], (float)position_curr[3], (float)position_curr[4], (float)position_curr[5], (float)position_curr[6]};
 
                 // 控制器
                 for (int i = 0; i < 7; i++)
@@ -129,7 +125,6 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                 for (int i = 0; i < 7; i++)
                 {
                     kinovaInfo.jointPos[i] = base_feedback.actuators(i).position();
-                    kinovaInfo.jointVel[i] = base_feedback.actuators(i).velocity();
                     position_curr[i] = base_feedback.actuators(i).position() * DEG2RAD;
                     if (position_curr[i] > M_PI)
                         position_curr[i] = -(2 * M_PI - position_curr[i]);
@@ -168,7 +163,6 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
 
                 loop = loop + 1;
                 msg_pub.publish(kinovaInfo);
-                // ros::spinOnce(); //偵測subscriber
             }
         }
 
@@ -203,12 +197,6 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
 
     return return_status;
 }
-
-// ROS subscriber callback
-// void chatterCallback(const std_msgs::String::ConstPtr &msg)
-// {
-//     ROS_INFO("I heard: [%s]", msg->data.c_str());
-// }
 
 int main(int argc, char **argv)
 {
