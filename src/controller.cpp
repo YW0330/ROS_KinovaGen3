@@ -2,9 +2,10 @@
 
 void contrller_params(const Matrix<double> &J, const Matrix<double> &Jinv, const Matrix<double> &dJinv, const Matrix<double> &e, const Matrix<double> &de, const Matrix<double> &dq, const Matrix<double> &subtasks, const Matrix<double> &dsubtasks, Matrix<double> &s, Matrix<double> &v, Matrix<double> &a, Matrix<double> &r)
 {
-    s = -Jinv * kLambda * e + dq - subtasks;
-    v = Jinv * kLambda * e + subtasks;
-    a = dJinv * kLambda * e + Jinv * kLambda * de + dsubtasks;
+    Matrix<double> lambda(DOF, DOF, MatrixType::Diagonal, LAMBDA_INITLIST);
+    s = -Jinv * lambda * e + dq - subtasks;
+    v = Jinv * lambda * e + subtasks;
+    a = dJinv * lambda * e + Jinv * lambda * de + dsubtasks;
     r = J * s;
 }
 
@@ -21,43 +22,48 @@ void get_phi(const Matrix<double> &v, const Matrix<double> &a, const Matrix<doub
                 if (k == 0)
                 {
                     X = v[j];
-                    cj = kCj_v[0] + (kCj_v[1] - kCj_v[0]) * i / (NODE - 1);
+                    cj = Cj_v_LOW + (Cj_v_UP - Cj_v_LOW) * i / (NODE - 1);
                 }
                 else if (k == 1)
                 {
                     X = a[j];
-                    cj = kCj_a[0] + (kCj_a[1] - kCj_a[0]) * i / (NODE - 1);
+                    cj = Cj_a_LOW + (Cj_a_UP - Cj_a_LOW) * i / (NODE - 1);
                 }
                 else if (k == 2)
                 {
                     X = q[j];
-                    cj = kCj_q[0] + (kCj_q[1] - kCj_q[0]) * i / (NODE - 1);
+                    cj = Cj_q_LOW + (Cj_q_UP - Cj_q_LOW) * i / (NODE - 1);
                 }
                 else
                 {
                     X = dq[j];
-                    cj = kCj_dq[0] + (kCj_dq[1] - kCj_dq[0]) * i / (NODE - 1);
+                    cj = Cj_dq_LOW + (Cj_dq_UP - Cj_dq_LOW) * i / (NODE - 1);
                 }
                 distance_square += (X - cj) * (X - cj);
             }
-            phi(i, j) = exp(-distance_square / (kBj * kBj));
+            phi(i, j) = exp(-distance_square / (Bj * Bj));
         }
     }
 }
 
 void get_dW_hat(const Matrix<double> &phi, const Matrix<double> &s, Matrix<double> &dW_hat)
 {
-    dW_hat = -kEta * phi * s;
+    dW_hat = -Gamma * phi * s;
 }
 
-void controller(const Matrix<double> &J, const Matrix<double> &de, const Matrix<double> &s, const Matrix<double> &r, const Matrix<double> &phi, const Matrix<double> &W_hat, Matrix<double> &tau)
+void controller(const Matrix<double> &J, const Matrix<double> &dx, const Matrix<double> &dxd, const Matrix<double> &s, const Matrix<double> &r, const Matrix<double> &phi, const Matrix<double> &W_hat, Matrix<double> &tau)
 {
-    Matrix<double> tau_bar = kKr * r - kKj * de;
-    tau = phi.transpose() * W_hat - kK * s - J.transpose() * tau_bar;
+    Matrix<double> K(7, 7, MatrixType::Diagonal, K_INITLIST);
+    Matrix<double> tau_bar = Kr * r - Kj * (dxd - dx) + PINV(r.transpose()) * dx.transpose() * Kj * dxd;
+    // Matrix<double> tau_bar = Kr * r - Kj * (dxd - dx);
+
+    tau = phi.transpose() * W_hat - K * s - J.transpose() * tau_bar;
 }
 
 void joint_angle_limit_psi(const Matrix<double> &q, Matrix<double> &psi)
 {
+    const double q_max[7] = {q1_MAX, q2_MAX, q3_MAX, q4_MAX, q5_MAX, q6_MAX, q7_MAX};
+    const double q_min[7] = {q1_MIN, q2_MIN, q3_MIN, q4_MIN, q5_MIN, q6_MIN, q7_MIN};
     double psi_arr[7];
     Matrix<double> psi_tmp(7, 1);
     kinova_psi_jointAngleLimits(q[0], q[1], q[2], q[3], q[4], q[5], q[6], q_max[0], q_max[1], q_max[2], q_max[3], q_max[4], q_max[5], q_max[6], q_min[0], q_min[1], q_min[2], q_min[3], q_min[4], q_min[5], q_min[6], psi_arr);
@@ -68,7 +74,7 @@ void joint_angle_limit_psi(const Matrix<double> &q, Matrix<double> &psi)
     for (int i = 0; i < 7; i += 2)
         psi_arr[i] = 0;
     psi_tmp.update_from_matlab(psi_arr);
-    psi += -3 * psi_tmp; // 全部的 qmax 跟 qmin 反向
+    psi += Ks_JOINT_LIMIT * psi_tmp;
 }
 
 void manipulability_psi(const Matrix<double> &q, Matrix<double> &psi)
@@ -77,7 +83,7 @@ void manipulability_psi(const Matrix<double> &q, Matrix<double> &psi)
     Matrix<double> psi_tmp(7, 1);
     kinova_psi_manipulability(q[0], q[1], q[2], q[3], q[4], q[5], psi_arr);
     psi_tmp.update_from_matlab(psi_arr);
-    psi += 2 * psi_tmp;
+    psi += Ks_MANIPULABILITY * psi_tmp;
 }
 
 void null_space_subtasks(Matrix<double> &J, Matrix<double> &Jinv, Matrix<double> &psi, Matrix<double> &subtasks)
