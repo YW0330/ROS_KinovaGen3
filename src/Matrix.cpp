@@ -113,6 +113,18 @@ Matrix<DATA_TYPE> Matrix<DATA_TYPE>::operator+(const Matrix<DATA_TYPE> &rhs)
 }
 
 template <class DATA_TYPE>
+Matrix<DATA_TYPE> Matrix<DATA_TYPE>::operator+(const Matrix<DATA_TYPE> &rhs) const
+{
+    if (_rows != rhs._rows || _cols != rhs._cols)
+        throw std::logic_error("LHS size is not equal to RHS size.");
+    Matrix<DATA_TYPE> ret(_rows, _cols);
+    for (unsigned i = 0; i < _rows; i++)
+        for (unsigned j = 0; j < _cols; j++)
+            *(ret.matrix + _cols * i + j) = *(matrix + _cols * i + j) + *(rhs.matrix + _cols * i + j);
+    return ret;
+}
+
+template <class DATA_TYPE>
 Matrix<DATA_TYPE> &Matrix<DATA_TYPE>::operator+=(const Matrix<DATA_TYPE> &rhs)
 {
     if (_rows != rhs._rows || _cols != rhs._cols)
@@ -125,6 +137,16 @@ Matrix<DATA_TYPE> &Matrix<DATA_TYPE>::operator+=(const Matrix<DATA_TYPE> &rhs)
 
 template <class DATA_TYPE>
 Matrix<DATA_TYPE> Matrix<DATA_TYPE>::operator-(const Matrix<DATA_TYPE> &rhs)
+{
+    Matrix<DATA_TYPE> ret(_rows, _cols);
+    for (unsigned i = 0; i < _rows; i++)
+        for (unsigned j = 0; j < _cols; j++)
+            *(ret.matrix + _cols * i + j) = *(matrix + _cols * i + j) - *(rhs.matrix + _cols * i + j);
+    return ret;
+}
+
+template <class DATA_TYPE>
+Matrix<DATA_TYPE> Matrix<DATA_TYPE>::operator-(const Matrix<DATA_TYPE> &rhs) const
 {
     Matrix<DATA_TYPE> ret(_rows, _cols);
     for (unsigned i = 0; i < _rows; i++)

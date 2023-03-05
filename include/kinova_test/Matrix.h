@@ -62,6 +62,7 @@ public:
      *
      */
     Matrix<DATA_TYPE> operator+(const Matrix<DATA_TYPE> &rhs);
+    Matrix<DATA_TYPE> operator+(const Matrix<DATA_TYPE> &rhs) const;
     // 不同類型相加
     template <class TYPE>
     Matrix<DATA_TYPE> operator+(const Matrix<TYPE> &rhs)
@@ -113,6 +114,7 @@ public:
      *
      */
     Matrix<DATA_TYPE> operator-(const Matrix<DATA_TYPE> &rhs);
+    Matrix<DATA_TYPE> operator-(const Matrix<DATA_TYPE> &rhs) const;
     // 不同類型相減
     template <class TYPE>
     Matrix<DATA_TYPE> operator-(const Matrix<TYPE> &rhs)
