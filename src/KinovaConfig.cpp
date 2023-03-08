@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "kinova_test/mylib.h"
+#include "kinova_test/KinovaConfig.h"
 #include "kinova_test/kinovaMsg.h"
 
 // Maximum allowed waiting time during actions

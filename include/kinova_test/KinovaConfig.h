@@ -1,5 +1,5 @@
-#ifndef _MYLIB_H_
-#define _MYLIB_H_
+#ifndef _KINOVACONFIG_H_
+#define _KINOVACONFIG_H_
 
 #include <iomanip>
 #include <cmath>

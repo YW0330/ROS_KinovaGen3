@@ -9,7 +9,7 @@
 
 // 自行加入的功能
 #include "kinova_test/KinovaGen3Model.h"
-#include "kinova_test/mylib.h"
+#include "kinova_test/KinovaConfig.h"
 #include "kinova_test/Matrix.h"
 
 using namespace std;

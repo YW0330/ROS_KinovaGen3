@@ -44,7 +44,7 @@ add_library(mylibary "")
 target_sources(mylibary
   PRIVATE
   ${PROJECT_SOURCE_DIR}/src/Matrix.cpp
-  ${PROJECT_SOURCE_DIR}/src/mylib.cpp
+  ${PROJECT_SOURCE_DIR}/src/KinovaConfig.cpp
   ${PROJECT_SOURCE_DIR}/src/KinovaGen3Model.cpp
   ${PROJECT_SOURCE_DIR}/src/controller.cpp
   ${PROJECT_SOURCE_DIR}/src/conio.c
