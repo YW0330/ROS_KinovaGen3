@@ -15,13 +15,15 @@
 
 #include <cxxopts.hpp>
 
+#define IP_ADDR "192.168.50.130"
+
 struct ExampleArgs
 {
     std::string ip_address;
-    std::string   username;
-    std::string   password;
+    std::string username;
+    std::string password;
 };
 
 ExampleArgs ParseExampleArguments(int argc, char *argv[]);
 
-#endif //KORTEX_EXAMPLES_UTILITIES_H
+#endif // KORTEX_EXAMPLES_UTILITIES_H

@@ -6,8 +6,7 @@ ExampleArgs ParseExampleArguments(int argc, char *argv[])
 {
     cxxopts::Options options(argv[0], "Kortex example");
 
-    options.add_options()("ip", "IP address of destination", cxxopts::value<std::string>()->default_value("192.168.0.21"))("h,help", "Print help")("u,username", "username to login", cxxopts::value<std::string>()->default_value("admin"))("p,password", "password to login", cxxopts::value<std::string>()->default_value("admin"));
-
+    options.add_options()("ip", "IP address of destination", cxxopts::value<std::string>()->default_value(IP_ADDR))("h,help", "Print help")("u,username", "username to login", cxxopts::value<std::string>()->default_value("admin"))("p,password", "password to login", cxxopts::value<std::string>()->default_value("admin"));
     ExampleArgs resultArgs;
 
     try
