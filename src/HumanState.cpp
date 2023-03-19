@@ -5,31 +5,33 @@ HumanState::HumanState() : Xd(DOF, 1), dXd(DOF, 1), current_mode(ControlMode::Pl
 
 void HumanState::updateHumanData(const xsens_mtw_driver::xsens2kinova &msg)
 {
-    if (DOF == 3)
+#if (DOF == 3)
+    for (unsigned i = 0; i < 3; i++)
     {
-        for (unsigned i = 0; i < 3; i++)
-        {
-            Xd[i] = msg.position[i];
-            dXd[i] = msg.velocity_pos[i];
-        }
+        Xd[i] = msg.position[i];
+        dXd[i] = msg.velocity_pos[i];
     }
-    else
+#else
+    for (unsigned i = 0; i < 3; i++)
     {
-        for (unsigned i = 0; i < 3; i++)
-        {
-            Xd[i] = msg.position[i];
-            Xd[i + 3] = msg.attitude[i];
-            dXd[i] = msg.velocity_pos[i];
-            dXd[i + 3] = msg.velocity_att[i];
-        }
+        Xd[i] = msg.position[i];
+        Xd[i + 3] = msg.attitude[i];
+        dXd[i] = msg.velocity_pos[i];
+        dXd[i + 3] = msg.velocity_att[i];
     }
+#endif
     finger_pitch = msg.finger_pitch;
-    current_mode = (ControlMode)msg.mode;
+}
+
+void HumanState::updateControlMode(const std_msgs::Bool &msg)
+{
+    current_mode = (ControlMode)msg.data;
     if (current_mode == ControlMode::Manipulator)
         manipulator_mapping();
 }
 
 void HumanState::manipulator_mapping()
 {
-    Xd[0] *= 1.5;
+    Xd[0] *= 2;
+    Xd[2] *= 1.5;
 }

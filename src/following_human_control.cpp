@@ -9,7 +9,7 @@
 #include "std_msgs/Bool.h"
 
 // 自行加入的功能
-#include "kinova_test/mylib.h"
+#include "kinova_test/KinovaConfig.h"
 #include "kinova_test/controller.h"
 #include "kinova_test/conio.h"
 #include "kinova_test/HumanState.h"
@@ -26,7 +26,7 @@ bool platform_control(ros::Publisher &platform_pub, HumanState &humanState)
         {
             humanPos2platformVel(humanState, twist);
             platform_pub.publish(twist);
-            ros::spinOnce(); // 偵測subscriber
+            ros::spinOnce(); // 偵測subscribers
         }
         else
         {
@@ -176,12 +176,12 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     get_phi(param_v, param_a, q, dq, phi);
                     get_dW_hat(phi, param_s, dW_hat);
                     // 控制器
-                    controller(J, derror, param_s, param_r, phi, W_hat, controller_tau);
+                    controller(J, dX, dXd, param_s, param_r, phi, W_hat, controller_tau);
                     // 重力補償
-                    for (int i = 0; i < 7; i++)
-                    {
-                        controller_tau[i] = 0;
-                    }
+                    // for (int i = 0; i < 7; i++)
+                    // {
+                    //     controller_tau[i] = 0;
+                    // }
 
                     gravity_compensation(position_curr, init_tau, controller_tau);
                     // 設定飽和器
@@ -196,7 +196,6 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     for (int i = 0; i < 7; i++)
                     {
                         kinovaInfo.jointPos[i] = base_feedback.actuators(i).position();
-                        kinovaInfo.jointVel[i] = base_feedback.actuators(i).velocity();
                         position_curr[i] = base_feedback.actuators(i).position() * DEG2RAD;
                         if (position_curr[i] > M_PI)
                             position_curr[i] = -(2 * M_PI - position_curr[i]);
@@ -219,7 +218,6 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     for (int i = 0; i < 7; i++)
                         dq[i] = base_feedback.actuators(i).velocity() * DEG2RAD;
                     dX = J * dq;
-                    kinovaInfo.kinova_dX = {dX[0], dX[1], dX[2]};
                     dJinv = (Jinv - prev_Jinv) / dt;
                     dsubtasks = (subtasks - prev_subtasks) / dt;
                     W_hat = W_hat + dW_hat * dt;
@@ -315,7 +313,8 @@ int main(int argc, char **argv)
     ros::NodeHandle n;
     ros::Publisher platform_pub = n.advertise<geometry_msgs::Twist>("cmd_vel", 1);       // rostopic的名稱(Publish)
     ros::Publisher kinova_pub = n.advertise<kinova_test::kinovaMsg>("kinovaInfo", 1000); // rostopic的名稱(Publish)
-    ros::Subscriber sub = n.subscribe("xsens2kinova", 1000, &HumanState::updateHumanData, &humanState);
+    ros::Subscriber state_sub = n.subscribe("xsens2kinova", 1000, &HumanState::updateHumanData, &humanState);
+    ros::Subscriber mode_sub = n.subscribe("controlMode", 100, &HumanState::updateControlMode, &humanState);
 
     auto parsed_args = ParseExampleArguments(argc, argv);
 
