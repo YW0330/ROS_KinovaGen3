@@ -9,7 +9,7 @@
 #include "std_msgs/Bool.h"
 
 // 自行加入的功能
-#include "kinova_test/mylib.h"
+#include "kinova_test/KinovaConfig.h"
 #include "kinova_test/controller.h"
 #include "kinova_test/conio.h"
 
@@ -18,7 +18,6 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
     // ROS
     ros::NodeHandle n;
     ros::Publisher msg_pub = n.advertise<kinova_test::kinovaMsg>("kinovaInfo", 1000); // rostopic的名稱(Publish)
-    ros::Rate loop_rate(10);
     kinova_test::kinovaMsg kinovaInfo;
 
     double init_tau[7];
@@ -91,7 +90,11 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         }
         q = position_curr;
         // 順向運動學
+#if (DOF == 3)
         Matrix<double> X = forward_kinematic_3dof(position_curr);
+#else
+        Matrix<double> X = forward_kinematic_6dof(position_curr);
+#endif
         Matrix<double> X0 = X;
         X0[0] = 0;
         X0[1] = 0;
@@ -102,34 +105,31 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         Matrix<double> J(DOF, 7), Jinv(7, DOF);
         kinova_J_and_Jinv(position_curr[0], position_curr[1], position_curr[2], position_curr[3], position_curr[4], position_curr[5], J_arr, Jinv_arr);
         J67.update_from_matlab(J_arr);
-        // Jinv.update_from_matlab(Jinv_arr);
+#if (DOF == 3)
         for (int i = 0; i < 3; i++)
             for (int j = 0; j < 7; j++)
                 J(i, j) = J67(i, j);
         Jinv = PINV(J);
-
+#else
+        Jinv.update_from_matlab(Jinv_arr);
+        J = J67;
+#endif
         Matrix<double> psi(7, 1), subtasks(7, 1);
         int64_t t_start = GetTickUs(), now = GetTickUs(), last = now; // 微秒
         double exp_time = (double)(now - t_start) / 1000000, dt;      // 秒
         Matrix<double> dq(7, 1);
         Matrix<double> dX(DOF, 1);
         Matrix<double> dsubtasks(7, 1);
-        kinovaInfo.kinova_dX = {dX[0], dX[1], dX[2]};
         Matrix<double> dJinv(7, DOF);
         Matrix<double> prev_q = q;
         Matrix<double> prev_Jinv = Jinv;
         Matrix<double> prev_subtasks(7, 1);
         Matrix<double> controller_tau(7, 1);
-        int loop = 1;
+
         // 目標輸出
         Matrix<double> circle(DOF, 1);
         Matrix<double> dcircle(DOF, 1);
-        // circle[0] = 0.1 + 0.1 * sin(exp_time * 2 * M_PI / 5);
-        // circle[1] = 0.1 * cos(exp_time * 2 * M_PI / 5);
-        // circle[2] = 0.1 * sin(exp_time * 2 * M_PI / 5);
-        // dcircle[0] = 0.1 * cos(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
-        // dcircle[1] = -0.1 * sin(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
-        // dcircle[2] = 0.1 * cos(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
+
         circle[0] = 0.7 * sin(exp_time * 2 * M_PI / 10);
         circle[1] = 0.7 * cos(exp_time * 2 * M_PI / 10);
         circle[2] = 0.3 * sin(exp_time * 2 * M_PI / 3);
@@ -168,7 +168,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     get_phi(param_v, param_a, q, dq, phi);
                     get_dW_hat(phi, param_s, dW_hat);
                     // 控制器
-                    controller(J, derror, param_s, param_r, phi, W_hat, controller_tau);
+                    controller(J, dX, dXd, param_s, param_r, phi, W_hat, controller_tau);
                     // 重力補償
                     gravity_compensation(position_curr, init_tau, controller_tau);
                     // 設定飽和器
@@ -181,20 +181,25 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     for (int i = 0; i < 7; i++)
                     {
                         kinovaInfo.jointPos[i] = base_feedback.actuators(i).position();
-                        kinovaInfo.jointVel[i] = base_feedback.actuators(i).velocity();
                         position_curr[i] = base_feedback.actuators(i).position() * DEG2RAD;
+                        dq[i] = base_feedback.actuators(i).velocity() * DEG2RAD;
                         if (position_curr[i] > M_PI)
                             position_curr[i] = -(2 * M_PI - position_curr[i]);
                     }
                     q2inf(position_curr, prev_q, round, q);
 
                     // 順向運動學
+#if (DOF == 3)
                     X = forward_kinematic_3dof(position_curr);
+                    Matrix<double> tmp = forward_kinematic_6dof(position_curr);
+                    kinovaInfo.kinova_axis = {tmp[3], tmp[4], tmp[5]};
+#else
+                    X = forward_kinematic_6dof(position_curr);
+                    kinovaInfo.kinova_axis = {X[3], X[4], X[5]};
+                    kinovaInfo.kinova_axisd = {Xd[3], Xd[4], Xd[5]};
+#endif
                     kinovaInfo.kinova_X = {X[0], X[1], X[2]};
                     kinovaInfo.kinova_Xd = {Xd[0], Xd[1], Xd[2]};
-                    // kinovaInfo.kinova_axis = {X[3], X[4], X[5]};
-                    // kinovaInfo.kinova_X = {error[0], error[1], error[2]};
-                    // kinovaInfo.kinova_axis = {error[3], error[4], error[5]};
 
                     // 夾爪狀態
                     kinovaInfo.gripperPos = base_feedback.interconnect().gripper_feedback().motor(0).position();
@@ -202,20 +207,20 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     // Jacobian矩陣
                     kinova_J_and_Jinv(position_curr[0], position_curr[1], position_curr[2], position_curr[3], position_curr[4], position_curr[5], J_arr, Jinv_arr);
                     J67.update_from_matlab(J_arr);
-                    // Jinv.update_from_matlab(Jinv_arr);
+#if (DOF == 3)
                     for (int i = 0; i < 3; i++)
                         for (int j = 0; j < 7; j++)
                             J(i, j) = J67(i, j);
                     Jinv = PINV(J);
-
+#else
+                    Jinv.update_from_matlab(Jinv_arr);
+                    J = J67;
+#endif
                     // 更新時間、微分、積分
                     now = GetTickUs();
                     exp_time = (double)(now - t_start) / 1000000;
                     dt = (double)(now - last) / 1000000;
-                    for (int i = 0; i < 7; i++)
-                        dq[i] = base_feedback.actuators(i).velocity() * DEG2RAD;
                     dX = J * dq;
-                    kinovaInfo.kinova_dX = {dX[0], dX[1], dX[2]};
                     dJinv = (Jinv - prev_Jinv) / dt;
                     dsubtasks = (subtasks - prev_subtasks) / dt;
                     W_hat = W_hat + dW_hat * dt;
@@ -223,23 +228,23 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     prev_Jinv = Jinv;
                     prev_subtasks = subtasks;
                     last = now;
-                    // cout << kinova_manipulability(position_curr[0], position_curr[1], position_curr[2], position_curr[3], position_curr[4], position_curr[5]) << endl;
+                    circle[0] = 0.7 * sin(exp_time * 2 * M_PI / 20);
+                    circle[1] = 0.7 * cos(exp_time * 2 * M_PI / 20);
+                    circle[2] = 0.3 * sin(exp_time * 2 * M_PI / 6);
+                    dcircle[0] = 0.7 * cos(exp_time * 2 * M_PI / 20) * 2 * M_PI / 20;
+                    dcircle[1] = -0.7 * sin(exp_time * 2 * M_PI / 20) * 2 * M_PI / 20;
+                    dcircle[2] = 0.3 * cos(exp_time * 2 * M_PI / 6) * 2 * M_PI / 6;
+                    // gripper_motor_command->set_position(sin(exp_time * 2 * M_PI / 5) * 50 + 50);
+                    // gripper_motor_command->set_velocity(cos(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5 * 50 + 50);
+#if (DOF != 3)
+                    circle[3] = -0.085 * exp_time;
+                    circle[4] = -0.078 * exp_time;
+                    circle[5] = -0.215 * exp_time;
 
-                    // circle[0] = 0.1 + 0.1 * sin(exp_time * 2 * M_PI / 5);
-                    // circle[1] = 0.1 * cos(exp_time * 2 * M_PI / 5);
-                    // circle[2] = 0.1 * sin(exp_time * 2 * M_PI / 5);
-                    // dcircle[0] = 0.1 * cos(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
-                    // dcircle[1] = -0.1 * sin(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
-                    // dcircle[2] = 0.1 * cos(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5;
-                    circle[0] = 0.7 * sin(exp_time * 2 * M_PI / 10);
-                    circle[1] = 0.7 * cos(exp_time * 2 * M_PI / 10);
-                    circle[2] = 0.3 * sin(exp_time * 2 * M_PI / 3);
-                    dcircle[0] = 0.7 * cos(exp_time * 2 * M_PI / 10) * 2 * M_PI / 10;
-                    dcircle[1] = -0.7 * sin(exp_time * 2 * M_PI / 10) * 2 * M_PI / 10;
-                    dcircle[2] = 0.3 * cos(exp_time * 2 * M_PI / 3) * 2 * M_PI / 3;
-                    gripper_motor_command->set_position(sin(exp_time * 2 * M_PI / 5) * 50 + 50);
-                    gripper_motor_command->set_velocity(cos(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5 * 50 + 50);
-
+                    dcircle[3] = -0.085;
+                    dcircle[4] = -0.078;
+                    dcircle[5] = -0.215;
+#endif
                     Xd = X0 + circle;
                     dXd = dcircle;
                     error = Xd - X;
@@ -273,11 +278,8 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     {
                         cout << "Unknown error." << endl;
                     }
-
-                    loop = loop + 1;
                     msg_pub.publish(kinovaInfo);
-                    ros::spinOnce(); //偵測subscriber
-                    // loop_rate.sleep();
+                    ros::spinOnce(); // 偵測subscriber
                 }
             }
             else

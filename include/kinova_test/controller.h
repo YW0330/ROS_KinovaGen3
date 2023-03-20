@@ -9,13 +9,21 @@
 #include "geometry_msgs/Twist.h"
 
 // Parameters
-#define DOF 6U
+#define DOF 3U
 #define NODE 300U
 
+#if (DOF == 3)
+#define LAMBDA_INITLIST \
+    {                   \
+        20, 20, 40      \
+    }
+#else
 #define LAMBDA_INITLIST        \
     {                          \
-        20, 20, 40, 20, 20, 20 \
+        20, 20, 40, 10, 10, 10 \
     }
+#endif
+
 #define K_INITLIST           \
     {                        \
         8, 15, 8, 8, 8, 8, 8 \
