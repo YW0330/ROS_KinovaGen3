@@ -15,7 +15,7 @@
 
 #include <cxxopts.hpp>
 
-#define IP_ADDR "192.168.50.130"
+#define IP_ADDR "192.168.0.21"
 
 struct ExampleArgs
 {

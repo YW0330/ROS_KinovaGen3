@@ -9,7 +9,7 @@
 #include "std_msgs/Bool.h"
 
 // 自行加入的功能
-#include "kinova_test/mylib.h"
+#include "kinova_test/KinovaConfig.h"
 #include "kinova_test/controller.h"
 #include "kinova_test/conio.h"
 #include "kinova_test/HumanState.h"
@@ -143,9 +143,9 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                         base_command.mutable_actuators(i)->set_position(base_feedback.actuators(i).position());
 
                     // 控制器參數
-                    // joint_angle_limit_psi(position_curr, psi);
-                    // manipulability_psi(position_curr, psi);
-                    // null_space_subtasks(J, Jinv, psi, subtasks);
+                    joint_angle_limit_psi(position_curr, psi);
+                    manipulability_psi(position_curr, psi);
+                    null_space_subtasks(J, Jinv, psi, subtasks);
                     contrller_params(J, Jinv, dJinv, error, derror, dq, subtasks, dsubtasks, param_s, param_v, param_a, param_r);
                     // RBFNN
                     get_phi(param_v, param_a, q, dq, phi);
