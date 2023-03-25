@@ -9,7 +9,7 @@
 #include "geometry_msgs/Twist.h"
 
 // Parameters
-#define DOF 3U
+#define DOF 6U
 #define NODE 300U
 
 #if (DOF == 3)

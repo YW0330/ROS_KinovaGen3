@@ -152,8 +152,9 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     get_dW_hat(phi, param_s, dW_hat);
                     // 控制器
                     controller(J, dX, dXd, param_s, param_r, phi, W_hat, controller_tau);
-
+                    // 重力補償
                     gravity_compensation(position_curr, init_tau, controller_tau);
+                    
                     // 設定飽和器
                     torque_satuation(controller_tau);
                     // 輸入扭矩
