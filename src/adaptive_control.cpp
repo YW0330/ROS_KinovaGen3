@@ -130,12 +130,12 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         Matrix<double> circle(DOF, 1);
         Matrix<double> dcircle(DOF, 1);
 
-        circle[0] = 0.7 * sin(exp_time * 2 * M_PI / 10);
-        circle[1] = 0.7 * cos(exp_time * 2 * M_PI / 10);
-        circle[2] = 0.3 * sin(exp_time * 2 * M_PI / 3);
-        dcircle[0] = 0.7 * cos(exp_time * 2 * M_PI / 10) * 2 * M_PI / 10;
-        dcircle[1] = -0.7 * sin(exp_time * 2 * M_PI / 10) * 2 * M_PI / 10;
-        dcircle[2] = 0.3 * cos(exp_time * 2 * M_PI / 3) * 2 * M_PI / 3;
+        circle[0] = 0.7 * sin(exp_time * 2 * M_PI / 20);
+        circle[1] = 0.75 * cos(exp_time * 2 * M_PI / 20);
+        circle[2] = 0.3 * sin(exp_time * 2 * M_PI / 6);
+        dcircle[0] = 0.7 * cos(exp_time * 2 * M_PI / 20) * 2 * M_PI / 20;
+        dcircle[1] = -0.75 * sin(exp_time * 2 * M_PI / 20) * 2 * M_PI / 20;
+        dcircle[2] = 0.3 * cos(exp_time * 2 * M_PI / 6) * 2 * M_PI / 6;
         Matrix<double> Xd = X0 + circle;
         Matrix<double> dXd = dcircle;
         Matrix<double> error = Xd - X;
@@ -161,7 +161,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
 
                     // 控制器參數
                     joint_angle_limit_psi(position_curr, psi);
-                    manipulability_psi(position_curr, psi);
+                    // manipulability_psi(position_curr, psi);
                     null_space_subtasks(J, Jinv, psi, subtasks);
                     contrller_params(J, Jinv, dJinv, error, derror, dq, subtasks, dsubtasks, param_s, param_v, param_a, param_r);
                     // RBFNN
@@ -229,10 +229,10 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     prev_subtasks = subtasks;
                     last = now;
                     circle[0] = 0.7 * sin(exp_time * 2 * M_PI / 20);
-                    circle[1] = 0.7 * cos(exp_time * 2 * M_PI / 20);
+                    circle[1] = 0.75 * cos(exp_time * 2 * M_PI / 20);
                     circle[2] = 0.3 * sin(exp_time * 2 * M_PI / 6);
                     dcircle[0] = 0.7 * cos(exp_time * 2 * M_PI / 20) * 2 * M_PI / 20;
-                    dcircle[1] = -0.7 * sin(exp_time * 2 * M_PI / 20) * 2 * M_PI / 20;
+                    dcircle[1] = -0.75 * sin(exp_time * 2 * M_PI / 20) * 2 * M_PI / 20;
                     dcircle[2] = 0.3 * cos(exp_time * 2 * M_PI / 6) * 2 * M_PI / 6;
                     // gripper_motor_command->set_position(sin(exp_time * 2 * M_PI / 5) * 50 + 50);
                     // gripper_motor_command->set_velocity(cos(exp_time * 2 * M_PI / 5) * 2 * M_PI / 5 * 50 + 50);
