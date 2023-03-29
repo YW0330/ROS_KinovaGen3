@@ -20,7 +20,11 @@ void HumanState::updateHumanData(const xsens_mtw_driver::xsens2kinova &msg)
         dXd[i + 3] = msg.velocity_att[i];
     }
 #endif
-    finger_pitch = msg.finger_pitch;
+}
+
+void HumanState::updateTriggerValue(const std_msgs::Float32 &msg)
+{
+    triggerVal = msg.data;
 }
 
 void HumanState::updateControlMode(const std_msgs::Bool &msg)

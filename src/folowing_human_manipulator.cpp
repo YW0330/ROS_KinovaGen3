@@ -154,14 +154,14 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     controller(J, dX, dXd, param_s, param_r, phi, W_hat, controller_tau);
                     // 重力補償
                     gravity_compensation(position_curr, init_tau, controller_tau);
-                    
+
                     // 設定飽和器
                     torque_satuation(controller_tau);
                     // 輸入扭矩
                     for (int i = 0; i < 7; i++)
                         base_command.mutable_actuators(i)->set_torque_joint(controller_tau[i]);
                     // 夾爪開闔
-                    gripper_control(gripper_motor_command, humanState.finger_pitch);
+                    gripper_control(gripper_motor_command, humanState.triggerVal);
 
                     // 讀取關節角
                     for (int i = 0; i < 7; i++)
@@ -289,9 +289,9 @@ int main(int argc, char **argv)
     // ROS
     ros::init(argc, argv, "mobileRobotDevice"); // rosnode的名稱
     ros::NodeHandle n;
-    ros::Publisher platform_pub = n.advertise<geometry_msgs::Twist>("cmd_vel", 1);       // rostopic的名稱(Publish)
     ros::Publisher kinova_pub = n.advertise<kinova_test::kinovaMsg>("kinovaInfo", 1000); // rostopic的名稱(Publish)
-    ros::Subscriber sub = n.subscribe("xsens2kinova", 1000, &HumanState::updateHumanData, &humanState);
+    ros::Subscriber state_sub = n.subscribe("xsens2kinova", 1000, &HumanState::updateHumanData, &humanState);
+    ros::Subscriber trigger_sub = n.subscribe("triggerVal", 1000, &HumanState::updateTriggerValue, &humanState);
 
     auto parsed_args = ParseExampleArguments(argc, argv);
 
@@ -339,7 +339,6 @@ int main(int argc, char **argv)
 
     if (!success)
         cout << "There has been an unexpected error." << endl;
-    emergency_stop(platform_pub);
 
     // Close API session
     session_manager->CloseSession();

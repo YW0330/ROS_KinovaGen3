@@ -76,7 +76,7 @@ void q2inf(const Matrix<double> &curr_pos, const Matrix<double> &prev_q, Matrix<
  * Kinova 末端夾爪開闔。
  *
  * @param gripper_motor_command: k_api::GripperCyclic::MotorCommand 指標型態
- * @param finger_pitch: 操作員手指 IMU 的 pitch value
+ * @param triggerVal: 操作員左手控制器的 trigger button value
  */
-void gripper_control(k_api::GripperCyclic::MotorCommand *gripper_motor_command, double finger_pitch);
+void gripper_control(k_api::GripperCyclic::MotorCommand *gripper_motor_command, float triggerVal);
 #endif

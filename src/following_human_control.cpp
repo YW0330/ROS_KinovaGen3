@@ -200,7 +200,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     for (int i = 0; i < 7; i++)
                         base_command.mutable_actuators(i)->set_torque_joint(controller_tau[i]);
                     // 夾爪開闔
-                    gripper_control(gripper_motor_command, humanState.finger_pitch);
+                    gripper_control(gripper_motor_command, humanState.triggerVal);
 
                     // 讀取關節角
                     for (int i = 0; i < 7; i++)
@@ -346,6 +346,7 @@ int main(int argc, char **argv)
     ros::Publisher kinova_pub = n.advertise<kinova_test::kinovaMsg>("kinovaInfo", 1000); // rostopic的名稱(Publish)
     ros::Subscriber state_sub = n.subscribe("xsens2kinova", 1000, &HumanState::updateHumanData, &humanState);
     ros::Subscriber mode_sub = n.subscribe("controlMode", 100, &HumanState::updateControlMode, &humanState);
+    ros::Subscriber trigger_sub = n.subscribe("triggerVal", 100, &HumanState::updateTriggerValue, &humanState);
 
     auto parsed_args = ParseExampleArguments(argc, argv);
 
