@@ -22,13 +22,13 @@ bool platform_control(ros::Publisher &platform_pub, HumanState &humanState)
     bool return_status = true;
     while (ros::ok() && humanState.current_mode == ControlMode::Platform)
     {
-        if (!_kbhit() && !(humanState.stop))
+        if (!(humanState.stop) && !_kbhit())
         {
             humanPos2platformVel(humanState, twist);
             platform_pub.publish(twist);
             ros::spinOnce(); // 偵測subscribers
         }
-        else if ((char)_getch() == 's')
+        else if (humanState.stop || (char)_getch() == 's')
         {
             return_status = false;
             break;
@@ -162,7 +162,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         // Real-time loop
         while (ros::ok() && humanState.current_mode == ControlMode::Manipulator)
         {
-            if (!_kbhit() && !(humanState.stop))
+            if (!(humanState.stop) && !_kbhit())
             {
                 now = GetTickUs();
                 kinovaInfo.time = exp_time;
@@ -189,6 +189,8 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     // 控制器
                     controller(J, dX, dXd, param_s, param_r, phi, W_hat, controller_tau);
                     // 重力補償
+                    for (int i = 0; i < 7; i++)
+                        controller_tau[i] = 0;
                     gravity_compensation(position_curr, init_tau, controller_tau);
 
                     // 設定飽和器
@@ -291,7 +293,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     }
                 }
             }
-            else if ((char)_getch() == 's')
+            else if (humanState.stop || (char)_getch() == 's')
             {
                 return_status = false;
                 break;
