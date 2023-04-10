@@ -1,0 +1,4 @@
+<launch>
+    <!-- XSENS to KINOVA -->
+    <node name="xsens2kinova"  pkg="get_hand_position_on_kinova_coord" type="get_hand_position_on_kinova_coord_node" output="screen" />
+</launch>
