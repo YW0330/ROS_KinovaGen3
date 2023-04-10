@@ -20,9 +20,11 @@ public:
     Matrix<double> dXd;
     float triggerVal;
     ControlMode current_mode;
+    bool stop;
     void updateHumanData(const xsens_mtw_driver::xsens2kinova &msg);
     void updateControlMode(const std_msgs::Bool &msg);
     void updateTriggerValue(const std_msgs::Float32 &msg);
+    void updateStopState(const std_msgs::Bool &msg);
 
 private:
     void manipulator_mapping();

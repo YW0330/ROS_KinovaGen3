@@ -22,19 +22,16 @@ bool platform_control(ros::Publisher &platform_pub, HumanState &humanState)
     bool return_status = true;
     while (ros::ok() && humanState.current_mode == ControlMode::Platform)
     {
-        if (!_kbhit())
+        if (!_kbhit() && !(humanState.stop))
         {
             humanPos2platformVel(humanState, twist);
             platform_pub.publish(twist);
             ros::spinOnce(); // 偵測subscribers
         }
-        else
+        else if ((char)_getch() == 's')
         {
-            if ((char)_getch() == 's')
-            {
-                return_status = false;
-                break;
-            }
+            return_status = false;
+            break;
         }
     }
     return return_status;
@@ -165,7 +162,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         // Real-time loop
         while (ros::ok() && humanState.current_mode == ControlMode::Manipulator)
         {
-            if (!_kbhit())
+            if (!_kbhit() && !(humanState.stop))
             {
                 now = GetTickUs();
                 kinovaInfo.time = exp_time;
@@ -294,13 +291,10 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     }
                 }
             }
-            else
+            else if ((char)_getch() == 's')
             {
-                if ((char)_getch() == 's')
-                {
-                    return_status = false;
-                    break;
-                }
+                return_status = false;
+                break;
             }
         }
 
@@ -347,6 +341,7 @@ int main(int argc, char **argv)
     ros::Subscriber state_sub = n.subscribe("xsens2kinova", 1000, &HumanState::updateHumanData, &humanState);
     ros::Subscriber mode_sub = n.subscribe("controlMode", 100, &HumanState::updateControlMode, &humanState);
     ros::Subscriber trigger_sub = n.subscribe("triggerVal", 100, &HumanState::updateTriggerValue, &humanState);
+    ros::Subscriber stop_sub = n.subscribe("stop", 100, &HumanState::updateStopState, &humanState);
 
     auto parsed_args = ParseExampleArguments(argc, argv);
 
