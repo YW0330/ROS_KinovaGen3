@@ -16,6 +16,7 @@
 
 bool platform_control(ros::Publisher &platform_pub, HumanState &humanState)
 {
+    cout << "--------- Platform Mode ----------" << endl;
     // ROS
     geometry_msgs::Twist twist;
 
@@ -39,6 +40,7 @@ bool platform_control(ros::Publisher &platform_pub, HumanState &humanState)
 
 bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclicClient *base_cyclic, k_api::ActuatorConfig::ActuatorConfigClient *actuator_config, ros::Publisher &kinova_pub, HumanState &humanState)
 {
+    cout << "--------- Manipulator Mode ----------" << endl;
     // ROS
     kinova_test::kinovaMsg kinovaInfo;
 
@@ -189,8 +191,6 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     // 控制器
                     controller(J, dX, dXd, param_s, param_r, phi, W_hat, controller_tau);
                     // 重力補償
-                    for (int i = 0; i < 7; i++)
-                        controller_tau[i] = 0;
                     gravity_compensation(position_curr, init_tau, controller_tau);
 
                     // 設定飽和器
@@ -255,7 +255,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
 
                     Xd = X0 + humanState.Xd - Xd0;
                     for (int i = 3; i < 6; i++)
-                        Xd[i] = X[i];
+                        Xd[i] = X0[i];
 
                     dXd = humanState.dXd;
                     error = Xd - X;
@@ -336,14 +336,14 @@ int main(int argc, char **argv)
 {
     HumanState humanState;
     // ROS
-    ros::init(argc, argv, "mobileRobotDevice"); // rosnode的名稱
+    ros::init(argc, argv, "mobileManipulatorDevice"); // rosnode的名稱
     ros::NodeHandle n;
-    ros::Publisher platform_pub = n.advertise<geometry_msgs::Twist>("cmd_vel", 1);       // rostopic的名稱(Publish)
-    ros::Publisher kinova_pub = n.advertise<kinova_test::kinovaMsg>("kinovaInfo", 1000); // rostopic的名稱(Publish)
-    ros::Subscriber state_sub = n.subscribe("xsens2kinova", 1000, &HumanState::updateHumanData, &humanState);
-    ros::Subscriber mode_sub = n.subscribe("controlMode", 100, &HumanState::updateControlMode, &humanState);
-    ros::Subscriber trigger_sub = n.subscribe("triggerVal", 100, &HumanState::updateTriggerValue, &humanState);
-    ros::Subscriber stop_sub = n.subscribe("stop", 100, &HumanState::updateStopState, &humanState);
+    ros::Publisher platform_pub = n.advertise<geometry_msgs::Twist>("cmd_vel", 1);    // rostopic的名稱(Publish)
+    ros::Publisher kinova_pub = n.advertise<kinova_test::kinovaMsg>("kinovaInfo", 5); // rostopic的名稱(Publish)
+    ros::Subscriber state_sub = n.subscribe("xsens2kinova", 1, &HumanState::updateHumanData, &humanState);
+    ros::Subscriber mode_sub = n.subscribe("controlMode", 1, &HumanState::updateControlMode, &humanState);
+    ros::Subscriber trigger_sub = n.subscribe("triggerVal", 1, &HumanState::updateTriggerValue, &humanState);
+    ros::Subscriber stop_sub = n.subscribe("stop", 1, &HumanState::updateStopState, &humanState);
 
     auto parsed_args = ParseExampleArguments(argc, argv);
 
