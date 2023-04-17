@@ -20,6 +20,8 @@ void HumanState::updateHumanData(const xsens_mtw_driver::xsens2kinova &msg)
         dXd[i + 3] = msg.velocity_att[i];
     }
 #endif
+    if (current_mode == ControlMode::Manipulator)
+        manipulator_mapping();
 }
 
 void HumanState::updateTriggerValue(const std_msgs::Float32 &msg)
@@ -35,12 +37,10 @@ void HumanState::updateStopState(const std_msgs::Bool &msg)
 void HumanState::updateControlMode(const std_msgs::Bool &msg)
 {
     current_mode = (ControlMode)msg.data;
-    if (current_mode == ControlMode::Manipulator)
-        manipulator_mapping();
 }
 
 void HumanState::manipulator_mapping()
 {
-    Xd[0] *= 2;
-    Xd[2] *= 1.5;
+    Xd[0] *= X_MAPPING;
+    Xd[2] *= Z_MAPPING;
 }
