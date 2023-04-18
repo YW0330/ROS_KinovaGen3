@@ -17,14 +17,14 @@
 bool platform_control(ros::Publisher &platform_pub, HumanState &humanState)
 {
     cout << "--------- Platform Mode ----------" << endl;
-    // ROS
-    geometry_msgs::Twist twist;
 
     bool return_status = true;
     while (ros::ok() && humanState.current_mode == ControlMode::Platform)
     {
         if (!(humanState.stop) && !_kbhit())
         {
+            // ROS
+            geometry_msgs::Twist twist;
             humanPos2platformVel(humanState, twist);
             platform_pub.publish(twist);
             ros::spinOnce(); // 偵測subscribers

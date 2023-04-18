@@ -72,6 +72,6 @@ add_executable(adaptive_control src/adaptive_control.cpp src/utilities.cpp)
 # ---------------- following_human_control ------------------
 add_executable(following_human_control src/following_human_control.cpp src/utilities.cpp)
 
-# ---------------- folowing_human_manipulator ------------------
-add_executable(folowing_human_manipulator src/folowing_human_manipulator.cpp src/utilities.cpp)
+# ---------------- following_human_manipulator ------------------
+add_executable(following_human_manipulator src/following_human_manipulator.cpp src/utilities.cpp)
 
