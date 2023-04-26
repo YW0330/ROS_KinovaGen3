@@ -16,6 +16,7 @@
 
 bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclicClient *base_cyclic, k_api::ActuatorConfig::ActuatorConfigClient *actuator_config, ros::Publisher &kinova_pub, HumanState &humanState)
 {
+    humanState.current_mode = ControlMode::Manipulator;
     // ROS
     kinova_test::kinovaMsg kinovaInfo;
 
@@ -204,6 +205,10 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     last = now;
 
                     Xd = X0 + humanState.Xd - Xd0;
+                    // Fixed the orientation to initialize pose, please uncomment the following code
+                    // for (int i = 3; i < 6; i++)
+                    //     Xd[i] = X0[i];
+
                     dXd = humanState.dXd;
                     error = Xd - X;
                     derror = dXd - dX;
