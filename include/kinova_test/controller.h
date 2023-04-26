@@ -20,13 +20,13 @@
 #else
 #define LAMBDA_INITLIST        \
     {                          \
-        20, 20, 40, 10, 10, 10 \
+        20, 20, 40, 10, 15, 15 \
     }
 #endif
 
 #define K_INITLIST           \
     {                        \
-        8, 15, 8, 8, 8, 8, 8 \
+        8, 15, 8, 8, 5, 5, 8 \
     }
 #define Kj 1U
 #define Kr 8U
@@ -38,8 +38,8 @@
 #define Cj_a_LOW (-1)
 #define Cj_q_UP (2 * M_PI)
 #define Cj_q_LOW (-2 * M_PI)
-#define Cj_dq_UP (-2)
-#define Cj_dq_LOW 2U
+#define Cj_dq_UP 2U
+#define Cj_dq_LOW (-2)
 
 #define q1_MAX 100U
 #define q1_MIN (-100)

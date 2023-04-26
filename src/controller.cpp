@@ -22,22 +22,22 @@ void get_phi(const Matrix<double> &v, const Matrix<double> &a, const Matrix<doub
                 if (k == 0)
                 {
                     X = v[j];
-                    cj = Cj_v_LOW + (Cj_v_UP - Cj_v_LOW) * i / (NODE - 1);
+                    cj = Cj_v_LOW + ((Cj_v_UP - Cj_v_LOW) / (NODE - 1)) * i;
                 }
                 else if (k == 1)
                 {
                     X = a[j];
-                    cj = Cj_a_LOW + (Cj_a_UP - Cj_a_LOW) * i / (NODE - 1);
+                    cj = Cj_a_LOW + ((Cj_a_UP - Cj_a_LOW) / (NODE - 1)) * i;
                 }
                 else if (k == 2)
                 {
                     X = q[j];
-                    cj = Cj_q_LOW + (Cj_q_UP - Cj_q_LOW) * i / (NODE - 1);
+                    cj = Cj_q_LOW + ((Cj_q_UP - Cj_q_LOW) / (NODE - 1)) * i;
                 }
                 else
                 {
                     X = dq[j];
-                    cj = Cj_dq_LOW + (Cj_dq_UP - Cj_dq_LOW) * i / (NODE - 1);
+                    cj = Cj_dq_LOW + ((Cj_dq_UP - Cj_dq_LOW) / (NODE - 1)) * i;
                 }
                 distance_square += (X - cj) * (X - cj);
             }
