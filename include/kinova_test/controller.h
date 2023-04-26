@@ -20,17 +20,17 @@
 #else
 #define LAMBDA_INITLIST        \
     {                          \
-        20, 20, 40, 10, 15, 15 \
+        20, 20, 40, 15, 15, 15 \
     }
 #endif
 
 #define K_INITLIST           \
     {                        \
-        8, 15, 8, 8, 5, 5, 8 \
+        8, 15, 8, 8, 8, 8, 8 \
     }
 #define Kj 1U
-#define Kr 8U
-#define Gamma 2U
+#define Kr 10U
+#define Gamma 0.5
 #define Bj 1U
 #define Cj_v_UP 1U
 #define Cj_v_LOW (-1)
