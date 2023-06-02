@@ -62,8 +62,8 @@ link_libraries(
   ${catkin_LIBRARIES}
 )
 
-# ---------------- gravity_compensation ------------------
 # 生成執行檔
+# ---------------- gravity_compensation ------------------
 add_executable(gravity_compensation src/gravity_compensation.cpp src/utilities.cpp)
 
 # ---------------- adaptive_control ------------------
@@ -74,4 +74,3 @@ add_executable(following_human_control src/following_human_control.cpp src/utili
 
 # ---------------- following_human_manipulator ------------------
 add_executable(following_human_manipulator src/following_human_manipulator.cpp src/utilities.cpp)
-
