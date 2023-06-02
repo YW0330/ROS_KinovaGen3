@@ -6,7 +6,7 @@
 #include "std_msgs/Bool.h"
 #include "std_msgs/Float32.h"
 
-#define X_MAPPING 2
+#define X_MAPPING 2.5
 #define Z_MAPPING 1.5
 
 enum class ControlMode
