@@ -127,7 +127,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         // Real-time loop
         while (ros::ok())
         {
-            if (!_kbhit())
+            if (!(humanState.stop) && !_kbhit())
             {
                 now = GetTickUs();
                 kinovaInfo.time = exp_time;
@@ -294,9 +294,10 @@ int main(int argc, char **argv)
     // ROS
     ros::init(argc, argv, "mobileRobotDevice"); // rosnode的名稱
     ros::NodeHandle n;
-    ros::Publisher kinova_pub = n.advertise<kinova_test::kinovaMsg>("kinovaInfo", 1000); // rostopic的名稱(Publish)
-    ros::Subscriber state_sub = n.subscribe("xsens2kinova", 1000, &HumanState::updateHumanData, &humanState);
-    ros::Subscriber trigger_sub = n.subscribe("triggerVal", 1000, &HumanState::updateTriggerValue, &humanState);
+    ros::Publisher kinova_pub = n.advertise<kinova_test::kinovaMsg>("kinovaInfo", 5); // rostopic的名稱(Publish)
+    ros::Subscriber state_sub = n.subscribe("xsens2kinova", 1, &HumanState::updateHumanData, &humanState);
+    ros::Subscriber trigger_sub = n.subscribe("triggerVal", 1, &HumanState::updateTriggerValue, &humanState);
+    ros::Subscriber stop_sub = n.subscribe("stop", 1, &HumanState::updateStopState, &humanState);
 
     auto parsed_args = ParseExampleArguments(argc, argv);
 
