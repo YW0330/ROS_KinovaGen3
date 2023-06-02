@@ -245,6 +245,14 @@ public:
     Matrix<double> inverse();
 
     /*
+     * 計算 Euclidean norm。
+     *
+     * @return Euclidean norm
+     *
+     */
+    double norm();
+
+    /*
      * 取得矩陣列數。
      *
      * @return 矩陣列數
@@ -259,6 +267,14 @@ public:
      *
      */
     const unsigned getCol() const { return _cols; }
+
+    /*
+     * 取得矩陣元素數量。
+     *
+     * @return 矩陣元素數量
+     *
+     */
+    const unsigned getSize() const { return _rows * _cols; }
 };
 
 /*

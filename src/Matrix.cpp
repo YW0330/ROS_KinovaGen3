@@ -323,6 +323,14 @@ Matrix<double> Matrix<DATA_TYPE>::inverse()
     return adjugate / det(*this);
 }
 
+template <class DATA_TYPE>
+double Matrix<DATA_TYPE>::norm()
+{
+    double tmp = 0;
+    for (unsigned i = 0; i < _rows * _cols; i++)
+        tmp += (*(matrix + i)) * (*(matrix + i));
+    return sqrt(tmp);
+}
 // ---------- Other function End ----------
 
 template class Matrix<double>;
