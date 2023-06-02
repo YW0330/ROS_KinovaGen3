@@ -5,3 +5,4 @@ float64[3] kinova_Xd
 float64[3] kinova_axis
 float64[3] kinova_axisd
 float32 gripperPos
+float32[7] torque 
