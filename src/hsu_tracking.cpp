@@ -165,10 +165,10 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     null_space_subtasks(J, Jinv, psi, subtasks);
                     contrller_params(J, Jinv, dJinv, error, derror, dq, subtasks, dsubtasks, param_s, param_v, param_a, param_r);
                     // RBFNN
-                    get_phi(param_v, param_a, q, dq, phi);
-                    get_dW_hat(phi, param_s, dW_hat);
+                    hsu::get_phi(param_v, param_a, q, dq, phi);
+                    hsu::get_dW_hat(phi, param_s, dW_hat);
                     // 控制器
-                    controller(J, dX, dXd, param_s, param_r, phi, W_hat, controller_tau);
+                    hsu::controller(J, dX, dXd, param_s, param_r, phi, W_hat, controller_tau);
                     // 重力補償
                     gravity_compensation(position_curr, init_tau, controller_tau);
                     // 設定飽和器

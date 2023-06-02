@@ -8,56 +8,133 @@ void contrller_params(const Matrix<double> &J, const Matrix<double> &Jinv, const
     a = dJinv * lambda * e + Jinv * lambda * de + dsubtasks;
     r = J * s;
 }
-
-void get_phi(const Matrix<double> &v, const Matrix<double> &a, const Matrix<double> &q, const Matrix<double> &dq, Matrix<double> &phi)
+namespace hsu
 {
-    double distance_square, cj, X;
-    for (unsigned i = 0; i < NODE; i++)
+    void get_phi(const Matrix<double> &v, const Matrix<double> &a, const Matrix<double> &q, const Matrix<double> &dq, Matrix<double> &phi)
     {
-        for (unsigned j = 0; j < 7; j++)
+        double distance_square, cj, X;
+        for (unsigned i = 0; i < NODE; i++)
         {
-            distance_square = 0;
-            for (unsigned k = 0; k < 4; k++)
+            for (unsigned j = 0; j < 7; j++)
             {
-                if (k == 0)
+                distance_square = 0;
+                for (unsigned k = 0; k < 4; k++)
                 {
-                    X = v[j];
-                    cj = Cj_v_LOW + ((Cj_v_UP - Cj_v_LOW) / (NODE - 1)) * i;
+                    if (k == 0)
+                    {
+                        X = v[j];
+                        cj = Cj_v_LOW + ((Cj_v_UP - Cj_v_LOW) / (NODE - 1)) * i;
+                    }
+                    else if (k == 1)
+                    {
+                        X = a[j];
+                        cj = Cj_a_LOW + ((Cj_a_UP - Cj_a_LOW) / (NODE - 1)) * i;
+                    }
+                    else if (k == 2)
+                    {
+                        X = q[j];
+                        cj = Cj_q_LOW + ((Cj_q_UP - Cj_q_LOW) / (NODE - 1)) * i;
+                    }
+                    else
+                    {
+                        X = dq[j];
+                        cj = Cj_dq_LOW + ((Cj_dq_UP - Cj_dq_LOW) / (NODE - 1)) * i;
+                    }
+                    distance_square += (X - cj) * (X - cj);
                 }
-                else if (k == 1)
-                {
-                    X = a[j];
-                    cj = Cj_a_LOW + ((Cj_a_UP - Cj_a_LOW) / (NODE - 1)) * i;
-                }
-                else if (k == 2)
-                {
-                    X = q[j];
-                    cj = Cj_q_LOW + ((Cj_q_UP - Cj_q_LOW) / (NODE - 1)) * i;
-                }
-                else
-                {
-                    X = dq[j];
-                    cj = Cj_dq_LOW + ((Cj_dq_UP - Cj_dq_LOW) / (NODE - 1)) * i;
-                }
-                distance_square += (X - cj) * (X - cj);
+                phi(i, j) = exp(-distance_square / (Bj * Bj));
             }
-            phi(i, j) = exp(-distance_square / (Bj * Bj));
         }
+    }
+
+    void get_dW_hat(const Matrix<double> &phi, const Matrix<double> &s, Matrix<double> &dW_hat)
+    {
+        dW_hat = -Gamma * phi * s;
+    }
+
+    void controller(const Matrix<double> &J, const Matrix<double> &dx, const Matrix<double> &dxd, const Matrix<double> &s, const Matrix<double> &r, const Matrix<double> &phi, const Matrix<double> &W_hat, Matrix<double> &tau)
+    {
+        Matrix<double> K(7, 7, MatrixType::Diagonal, K_INITLIST);
+        // Matrix<double> tau_bar = Kr * r - Kj * (dxd - dx) + PINV(r.transpose()) * dx.transpose() * Kj * dxd;
+        Matrix<double> tau_bar = Kr * r;
+
+        tau = phi.transpose() * W_hat - K * s - J.transpose() * tau_bar;
     }
 }
 
-void get_dW_hat(const Matrix<double> &phi, const Matrix<double> &s, Matrix<double> &dW_hat)
+namespace chang
 {
-    dW_hat = -Gamma * phi * s;
-}
+    void get_phi(const Matrix<double> &v, const Matrix<double> &a, const Matrix<double> &q, const Matrix<double> &dq, Matrix<double> &phi)
+    {
+        Matrix<double> X(28, 1);
+        for (unsigned i = 0; i < X.getSize(); i++)
+        {
+            if (i < 7) // v
+            {
+                X[i] = v[i];
+            }
+            else if (i < 14) // a
+            {
+                X[i] = a[i - 7];
+            }
+            else if (i < 21) // q
+            {
+                X[i] = q[i - 14];
+            }
+            else // dq
+            {
+                X[i] = q[i - 21];
+            }
+        }
 
-void controller(const Matrix<double> &J, const Matrix<double> &dx, const Matrix<double> &dxd, const Matrix<double> &s, const Matrix<double> &r, const Matrix<double> &phi, const Matrix<double> &W_hat, Matrix<double> &tau)
-{
-    Matrix<double> K(7, 7, MatrixType::Diagonal, K_INITLIST);
-    Matrix<double> tau_bar = Kr * r - Kj * (dxd - dx) + PINV(r.transpose()) * dx.transpose() * Kj * dxd;
-    // Matrix<double> tau_bar = Kr * r - Kj * (dxd - dx);
+        Matrix<double> cj(28, 1);
+        for (unsigned i = 0; i < NODE; i++)
+        {
+            for (unsigned i = 0; i < cj.getSize(); i++)
+            {
+                if (i < 7) // v
+                {
+                    cj[i] = -10 + ((10 - (-10)) / (NODE - 1)) * i;
+                }
+                else if (i < 14) // a
+                {
+                    cj[i] = -10 + ((10 - (-10)) / (NODE - 1)) * i;
+                }
+                else if (i < 21) // q
+                {
+                    if ((i - 14) == 1)
+                        cj[i] = (-128.9 * DEG2RAD) + (((128.9 * DEG2RAD) - (-128.9 * DEG2RAD)) / (NODE - 1)) * i;
+                    else if ((i - 14) == 3)
+                        cj[i] = (-147.9 * DEG2RAD) + (((147.9 * DEG2RAD) - (-147.9 * DEG2RAD)) / (NODE - 1)) * i;
+                    else if ((i - 14) == 5)
+                        cj[i] = (-120.3 * DEG2RAD) + (((120.3 * DEG2RAD) - (-120.3 * DEG2RAD)) / (NODE - 1)) * i;
+                    else
+                        cj[i] = (-2 * M_PI) + (((2 * M_PI) - (-2 * M_PI)) / (NODE - 1)) * i;
+                }
+                else // dq
+                {
+                    if ((i - 21) < 4)
+                        cj[i] = (-1.39) + (((1.39) - (-1.39)) / (NODE - 1)) * i;
+                    else
+                        cj[i] = (-1.22) + (((1.22) - (-1.22)) / (NODE - 1)) * i;
+                }
+            }
+            double norm = (X - cj).norm();
+            phi[i] = exp(-((norm * norm) / (Bj * Bj)));
+        }
+    }
 
-    tau = phi.transpose() * W_hat - K * s - J.transpose() * tau_bar;
+    void get_dW_hat(const Matrix<double> &phi, const Matrix<double> &s, Matrix<double> &dW_hat)
+    {
+        dW_hat = -Gamma * phi * s.transpose();
+    }
+
+    void controller(const Matrix<double> &J, const Matrix<double> &dx, const Matrix<double> &dxd, const Matrix<double> &s, const Matrix<double> &r, const Matrix<double> &phi, const Matrix<double> &W_hat, Matrix<double> &tau)
+    {
+        Matrix<double> K(7, 7, MatrixType::Diagonal, K_INITLIST);
+        Matrix<double> tau_bar = Kr * r - Kj * (dxd - dx) + PINV(r.transpose()) * dx.transpose() * Kj * dxd;
+        tau = W_hat.transpose() * phi - K * s - J.transpose() * tau_bar;
+    }
 }
 
 void joint_angle_limit_psi(const Matrix<double> &q, Matrix<double> &psi)

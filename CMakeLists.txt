@@ -66,8 +66,11 @@ link_libraries(
 # ---------------- gravity_compensation ------------------
 add_executable(gravity_compensation src/gravity_compensation.cpp src/utilities.cpp)
 
-# ---------------- adaptive_control ------------------
-add_executable(adaptive_control src/adaptive_control.cpp src/utilities.cpp)
+# ---------------- chang_tracking ------------------
+add_executable(chang_tracking src/chang_tracking.cpp src/utilities.cpp)
+
+# ---------------- hsu_tracking ------------------
+add_executable(hsu_tracking src/hsu_tracking.cpp src/utilities.cpp)
 
 # ---------------- following_human_control ------------------
 add_executable(following_human_control src/following_human_control.cpp src/utilities.cpp)

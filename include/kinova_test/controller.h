@@ -9,7 +9,7 @@
 #include "geometry_msgs/Twist.h"
 
 // Parameters
-#define DOF 6U
+#define DOF 3U
 #define NODE 300U
 
 #if (DOF == 3)
@@ -28,10 +28,10 @@
     {                        \
         8, 15, 8, 8, 5, 5, 5 \
     }
-#define Kj 0.5
+#define Kj 0.8
 #define Kr 10U
-#define Gamma 0.5
-#define Bj 1U
+#define Gamma 1.5
+#define Bj 2U
 #define Cj_v_UP 1U
 #define Cj_v_LOW (-1)
 #define Cj_a_UP 1U
@@ -60,10 +60,19 @@
 #define Ks_JOINT_LIMIT (-3) // 全部的 qmax 跟 qmin 反向
 
 // functions
+namespace hsu
+{
+    void get_phi(const Matrix<double> &v, const Matrix<double> &a, const Matrix<double> &q, const Matrix<double> &dq, Matrix<double> &phi);
+    void get_dW_hat(const Matrix<double> &phi, const Matrix<double> &s, Matrix<double> &dW_hat);
+    void controller(const Matrix<double> &J, const Matrix<double> &dx, const Matrix<double> &dxd, const Matrix<double> &s, const Matrix<double> &r, const Matrix<double> &phi, const Matrix<double> &W_hat, Matrix<double> &tau);
+}
+namespace chang
+{
+    void get_phi(const Matrix<double> &v, const Matrix<double> &a, const Matrix<double> &q, const Matrix<double> &dq, Matrix<double> &phi);
+    void get_dW_hat(const Matrix<double> &phi, const Matrix<double> &s, Matrix<double> &dW_hat);
+    void controller(const Matrix<double> &J, const Matrix<double> &dx, const Matrix<double> &dxd, const Matrix<double> &s, const Matrix<double> &r, const Matrix<double> &phi, const Matrix<double> &W_hat, Matrix<double> &tau);
+}
 void contrller_params(const Matrix<double> &J, const Matrix<double> &Jinv, const Matrix<double> &dJinv, const Matrix<double> &e, const Matrix<double> &de, const Matrix<double> &dq, const Matrix<double> &subtasks, const Matrix<double> &dsubtasks, Matrix<double> &s, Matrix<double> &v, Matrix<double> &a, Matrix<double> &r);
-void get_phi(const Matrix<double> &v, const Matrix<double> &a, const Matrix<double> &q, const Matrix<double> &dq, Matrix<double> &phi);
-void get_dW_hat(const Matrix<double> &phi, const Matrix<double> &s, Matrix<double> &dW_hat);
-void controller(const Matrix<double> &J, const Matrix<double> &dx, const Matrix<double> &dxd, const Matrix<double> &s, const Matrix<double> &r, const Matrix<double> &phi, const Matrix<double> &W_hat, Matrix<double> &tau);
 void joint_angle_limit_psi(const Matrix<double> &q, Matrix<double> &psi);
 void manipulability_psi(const Matrix<double> &q, Matrix<double> &psi);
 void null_space_subtasks(Matrix<double> &J, Matrix<double> &Jinv, Matrix<double> &psi, Matrix<double> &subtasks);
