@@ -152,10 +152,16 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         Matrix<double> derror = dXd - dX;
 
         // 控制器相關
-        Matrix<double> param_s(DOF, 1), param_v(DOF, 1), param_a(DOF, 1), param_r(DOF, 1);
-        Matrix<double> phi(NODE, 7), dW_hat(NODE, 1), W_hat(NODE, 1);
+        Matrix<double> param_s(7, 1), param_v(7, 1), param_a(7, 1), param_r(DOF, 1);
         Matrix<double> psi(7, 1), subtasks(7, 1), dsubtasks(7, 1);
-        Matrix<double> controller_tau(7, 1);
+        std::vector<Matrix<double>> phi, dW_hat, W_hat;
+        for (int i = 0; i < 7; i++)
+        {
+            phi.emplace_back(Matrix<double>(NODE, 1));
+            dW_hat.emplace_back(Matrix<double>(NODE, 1));
+            W_hat.emplace_back(Matrix<double>(NODE, 1));
+        }
+        Matrix<double> sigma(7, 1), controller_tau(7, 1);
         /* ------------ 初始值參數設定結束 ------------ */
 
         int64_t t_start = GetTickUs(), now = GetTickUs(), last = now; // 微秒
@@ -166,7 +172,6 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         {
             if (!(humanState.stop) && !_kbhit())
             {
-                now = GetTickUs();
                 kinovaInfo.time = exp_time;
                 if (now - last > 1000)
                 {
@@ -186,10 +191,14 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     null_space_subtasks(J, Jinv, psi, subtasks);
                     contrller_params(J, Jinv, dJinv, error, derror, dq, subtasks, dsubtasks, param_s, param_v, param_a, param_r);
                     // RBFNN
-                    get_phi(param_v, param_a, q, dq, phi);
-                    get_dW_hat(phi, param_s, dW_hat);
+                    for (unsigned i = 0; i < 7; i++)
+                    {
+                        chang::get_phi(param_v, param_a, q, dq, phi.at(i), i);
+                        chang::get_dW_hat(phi.at(i), param_s, dW_hat.at(i), i);
+                        sigma[i] = (W_hat.at(i).transpose() * phi.at(i))[0];
+                    }
                     // 控制器
-                    controller(J, dX, dXd, param_s, param_r, phi, W_hat, controller_tau);
+                    chang::controller(J, dX, dXd, param_s, param_r, sigma, controller_tau);
                     // 重力補償
                     gravity_compensation(position_curr, init_tau, controller_tau);
 
@@ -197,7 +206,10 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     torque_satuation(controller_tau);
                     // 輸入扭矩
                     for (int i = 0; i < 7; i++)
+                    {
                         base_command.mutable_actuators(i)->set_torque_joint(controller_tau[i]);
+                        kinovaInfo.torque[i] = controller_tau[i];
+                    }
                     // 夾爪開闔
                     gripper_control(gripper_motor_command, humanState.triggerVal);
 
@@ -242,20 +254,23 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     now = GetTickUs();
                     exp_time = (double)(now - t_start) / 1000000;
                     dt = (double)(now - last) / 1000000;
-                    for (int i = 0; i < 7; i++)
-                        dq[i] = base_feedback.actuators(i).velocity() * DEG2RAD;
-                    dX = J * dq;
                     dJinv = (Jinv - prev_Jinv) / dt;
                     dsubtasks = (subtasks - prev_subtasks) / dt;
-                    W_hat = W_hat + dW_hat * dt;
+                    for (unsigned i = 0; i < 7; i++)
+                    {
+                        W_hat.at(i) += dW_hat.at(i) * dt;
+                        dq[i] = base_feedback.actuators(i).velocity() * DEG2RAD;
+                    }
+                    dX = J * dq;
                     prev_q = q;
                     prev_Jinv = Jinv;
                     prev_subtasks = subtasks;
                     last = now;
 
                     Xd = X0 + humanState.Xd - Xd0;
-                    for (int i = 3; i < 6; i++)
-                        Xd[i] = X0[i];
+                    // Fixed the orientation to initialize pose, please uncomment the following code
+                    // for (int i = 3; i < 6; i++)
+                    //     Xd[i] = X0[i];
 
                     dXd = humanState.dXd;
                     error = Xd - X;

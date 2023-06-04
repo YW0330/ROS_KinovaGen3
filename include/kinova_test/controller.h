@@ -9,7 +9,7 @@
 #include "geometry_msgs/Twist.h"
 
 // Parameters
-#define DOF 3U
+#define DOF 6U
 #define NODE 25U
 
 #if (DOF == 3)
@@ -20,13 +20,13 @@
 #else
 #define LAMBDA_INITLIST        \
     {                          \
-        20, 20, 40, 12, 12, 12 \
+        20, 20, 40, 10, 10, 10 \
     }
 #endif
 
-#define K_INITLIST           \
-    {                        \
-        8, 15, 8, 8, 5, 5, 5 \
+#define K_INITLIST            \
+    {                         \
+        8, 15, 8, 10, 5, 8, 5 \
     }
 #define Kj 0.8
 #define Kr 10U
@@ -43,8 +43,8 @@
 
 #define q1_MAX 100U
 #define q1_MIN (-100)
-#define q2_MAX (100 * DEG2RAD)
-#define q2_MIN (-100 * DEG2RAD)
+#define q2_MAX (110 * DEG2RAD)
+#define q2_MIN (-110 * DEG2RAD)
 #define q3_MAX 100U
 #define q3_MIN (-100)
 #define q4_MAX (147.8 * DEG2RAD)
@@ -56,8 +56,8 @@
 #define q7_MAX 100U
 #define q7_MIN (-100)
 
-#define Ks_MANIPULABILITY 10U
-#define Ks_JOINT_LIMIT -8 // 全部的 qmax 跟 qmin 反向
+#define Ks_MANIPULABILITY 3U
+#define Ks_JOINT_LIMIT (-5) // 全部的 qmax 跟 qmin 反向
 
 // functions
 namespace hsu
