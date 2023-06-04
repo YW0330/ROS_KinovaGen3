@@ -129,19 +129,27 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         // 目標輸出
         Matrix<double> circle(DOF, 1);
         Matrix<double> dcircle(DOF, 1);
-
         circle[0] = 0.7 * sin(exp_time * 2 * M_PI / 20);
         circle[1] = 0.75 * cos(exp_time * 2 * M_PI / 20);
         circle[2] = 0.3 * sin(exp_time * 2 * M_PI / 6);
         dcircle[0] = 0.7 * cos(exp_time * 2 * M_PI / 20) * 2 * M_PI / 20;
         dcircle[1] = -0.75 * sin(exp_time * 2 * M_PI / 20) * 2 * M_PI / 20;
         dcircle[2] = 0.3 * cos(exp_time * 2 * M_PI / 6) * 2 * M_PI / 6;
+
         Matrix<double> Xd = X0 + circle;
         Matrix<double> dXd = dcircle;
         Matrix<double> error = Xd - X;
         Matrix<double> derror = dXd - dX;
-        Matrix<double> param_s(DOF, 1), param_v(DOF, 1), param_a(DOF, 1), param_r(DOF, 1);
-        Matrix<double> phi(NODE, 1), dW_hat(NODE, 7), W_hat(NODE, 7);
+        Matrix<double> param_s(7, 1), param_v(7, 1), param_a(7, 1), param_r(DOF, 1);
+
+        std::vector<Matrix<double>> phi, dW_hat, W_hat;
+        for (int i = 0; i < 7; i++)
+        {
+            phi.emplace_back(Matrix<double>(NODE, 1));
+            dW_hat.emplace_back(Matrix<double>(NODE, 1));
+            W_hat.emplace_back(Matrix<double>(NODE, 1));
+        }
+        Matrix<double> sigma(7, 1);
 
         // Real-time loop
         while (ros::ok())
@@ -165,14 +173,17 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     null_space_subtasks(J, Jinv, psi, subtasks);
                     contrller_params(J, Jinv, dJinv, error, derror, dq, subtasks, dsubtasks, param_s, param_v, param_a, param_r);
                     // RBFNN
-                    chang::get_phi(param_v, param_a, q, dq, phi);
-                    chang::get_dW_hat(phi, param_s, dW_hat);
+                    for (unsigned i = 0; i < 7; i++)
+                    {
+                        chang::get_phi(param_v, param_a, q, dq, phi.at(i), i);
+                        chang::get_dW_hat(phi.at(i), param_s, dW_hat.at(i), i);
+                        sigma[i] = (W_hat.at(i).transpose() * phi.at(i))[0];
+                    }
                     // 控制器
-                    chang::controller(J, dX, dXd, param_s, param_r, phi, W_hat, controller_tau);
-                    // 重力補償
-                    gravity_compensation(position_curr, init_tau, controller_tau);
+                    chang::controller(J, dX, dXd, param_s, param_r, sigma, controller_tau);
                     // 設定飽和器
                     torque_satuation(controller_tau);
+
                     // 輸入扭矩
                     for (int i = 0; i < 7; i++)
                     {
@@ -226,7 +237,8 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     dX = J * dq;
                     dJinv = (Jinv - prev_Jinv) / dt;
                     dsubtasks = (subtasks - prev_subtasks) / dt;
-                    W_hat = W_hat + dW_hat * dt;
+                    for (unsigned i = 0; i < 7; i++)
+                        W_hat.at(i) += dW_hat.at(i) * dt;
                     prev_q = q;
                     prev_Jinv = Jinv;
                     prev_subtasks = subtasks;

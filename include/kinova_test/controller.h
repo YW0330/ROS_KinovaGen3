@@ -10,7 +10,7 @@
 
 // Parameters
 #define DOF 3U
-#define NODE 300U
+#define NODE 25U
 
 #if (DOF == 3)
 #define LAMBDA_INITLIST \
@@ -30,8 +30,8 @@
     }
 #define Kj 0.8
 #define Kr 10U
-#define Gamma 1.5
-#define Bj 2U
+#define Gamma 2
+#define Bj 20
 #define Cj_v_UP 1U
 #define Cj_v_LOW (-1)
 #define Cj_a_UP 1U
@@ -56,8 +56,8 @@
 #define q7_MAX 100U
 #define q7_MIN (-100)
 
-#define Ks_MANIPULABILITY 2U
-#define Ks_JOINT_LIMIT (-3) // 全部的 qmax 跟 qmin 反向
+#define Ks_MANIPULABILITY 10U
+#define Ks_JOINT_LIMIT -8 // 全部的 qmax 跟 qmin 反向
 
 // functions
 namespace hsu
@@ -68,9 +68,9 @@ namespace hsu
 }
 namespace chang
 {
-    void get_phi(const Matrix<double> &v, const Matrix<double> &a, const Matrix<double> &q, const Matrix<double> &dq, Matrix<double> &phi);
-    void get_dW_hat(const Matrix<double> &phi, const Matrix<double> &s, Matrix<double> &dW_hat);
-    void controller(const Matrix<double> &J, const Matrix<double> &dx, const Matrix<double> &dxd, const Matrix<double> &s, const Matrix<double> &r, const Matrix<double> &phi, const Matrix<double> &W_hat, Matrix<double> &tau);
+    void get_phi(const Matrix<double> &v, const Matrix<double> &a, const Matrix<double> &q, const Matrix<double> &dq, Matrix<double> &phi, unsigned joint);
+    void get_dW_hat(const Matrix<double> &phi, const Matrix<double> &s, Matrix<double> &dW_hat, unsigned joint);
+    void controller(const Matrix<double> &J, const Matrix<double> &dx, const Matrix<double> &dxd, const Matrix<double> &s, const Matrix<double> &r, const Matrix<double> &sigma, Matrix<double> &tau);
 }
 void contrller_params(const Matrix<double> &J, const Matrix<double> &Jinv, const Matrix<double> &dJinv, const Matrix<double> &e, const Matrix<double> &de, const Matrix<double> &dq, const Matrix<double> &subtasks, const Matrix<double> &dsubtasks, Matrix<double> &s, Matrix<double> &v, Matrix<double> &a, Matrix<double> &r);
 void joint_angle_limit_psi(const Matrix<double> &q, Matrix<double> &psi);
