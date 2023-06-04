@@ -5,7 +5,7 @@ template <class DATA_TYPE>
 Matrix<DATA_TYPE>::Matrix(unsigned rows, unsigned cols) : _rows(rows), _cols(cols)
 {
     if (rows == 0 || cols == 0)
-        throw std::logic_error("The rows and cols can not be zero.");
+        THROW_EXCEPTION(LOGIC_ERROR, "Rows and columns cannot be zero.");
     matrix = new DATA_TYPE[_rows * _cols]();
 }
 
@@ -13,22 +13,22 @@ template <class DATA_TYPE>
 Matrix<DATA_TYPE>::Matrix(unsigned rows, unsigned cols, MatrixType type, std::initializer_list<DATA_TYPE> l) : _rows(rows), _cols(cols)
 {
     if (rows == 0 || cols == 0)
-        throw std::logic_error("The rows and cols can not be zero.");
+        THROW_EXCEPTION(LOGIC_ERROR, "Rows and columns cannot be zero.");
     matrix = new DATA_TYPE[_rows * _cols]();
     unsigned k = 0;
     if (type == MatrixType::Diagonal)
     {
         if (rows != cols)
-            throw std::logic_error("Must be square matrix.");
+            THROW_EXCEPTION(LOGIC_ERROR, "Must be square matrix.");
         if (l.size() != rows)
-            throw std::logic_error("The numbers of list must equal to matrix dimension.");
+            THROW_EXCEPTION(LOGIC_ERROR, "The numbers of list must equal to matrix dimension.");
         for (auto i = l.begin(); i != l.end(); i++, k++)
             *(matrix + _cols * k + k) = *i;
     }
     else if (type == MatrixType::General)
     {
         if (l.size() > rows * cols)
-            throw std::logic_error("The numbers of list must less or equal to matrix dimension.");
+            THROW_EXCEPTION(LOGIC_ERROR, "The numbers of list must less or equal to matrix dimension.");
         for (auto i = l.begin(); i != l.end(); i++, k++)
             *(matrix + k) = *i;
     }
@@ -59,6 +59,7 @@ Matrix<DATA_TYPE> &Matrix<DATA_TYPE>::operator=(const Matrix<DATA_TYPE> &mat)
         return *this;
     if (_rows != mat._rows || _cols != mat._cols)
     {
+        warning("The declared format of matrix is modified.");
         delete[] matrix;
         _rows = mat._rows;
         _cols = mat._cols;
@@ -72,7 +73,7 @@ template <class DATA_TYPE>
 const DATA_TYPE &Matrix<DATA_TYPE>::operator[](unsigned num) const
 {
     if (num >= _rows * _cols)
-        throw std::out_of_range("Invalid index to matrix");
+        THROW_EXCEPTION(OUT_OF_RANGE, "Invalid index to matrix");
     return *(matrix + num);
 }
 
@@ -80,7 +81,7 @@ template <class DATA_TYPE>
 DATA_TYPE &Matrix<DATA_TYPE>::operator[](unsigned num)
 {
     if (num >= _rows * _cols)
-        throw std::out_of_range("Invalid index to matrix");
+        THROW_EXCEPTION(OUT_OF_RANGE, "Invalid index to matrix");
     return *(matrix + num);
 }
 
@@ -88,7 +89,7 @@ template <class DATA_TYPE>
 const DATA_TYPE &Matrix<DATA_TYPE>::operator()(unsigned row, unsigned col) const
 {
     if (row >= _rows || col >= _cols)
-        throw std::out_of_range("Invalid index to matrix");
+        THROW_EXCEPTION(OUT_OF_RANGE, "Invalid index to matrix");
     return *(matrix + _cols * row + col);
 }
 
@@ -96,7 +97,7 @@ template <class DATA_TYPE>
 DATA_TYPE &Matrix<DATA_TYPE>::operator()(unsigned row, unsigned col)
 {
     if (row >= _rows || col >= _cols)
-        throw std::out_of_range("Invalid index to matrix");
+        THROW_EXCEPTION(OUT_OF_RANGE, "Invalid index to matrix");
     return *(matrix + _cols * row + col);
 }
 
@@ -104,7 +105,7 @@ template <class DATA_TYPE>
 Matrix<DATA_TYPE> Matrix<DATA_TYPE>::operator+(const Matrix<DATA_TYPE> &rhs)
 {
     if (_rows != rhs._rows || _cols != rhs._cols)
-        throw std::logic_error("LHS size is not equal to RHS size.");
+        THROW_EXCEPTION(LOGIC_ERROR, "LHS size is not equal to RHS size.");
     Matrix<DATA_TYPE> ret(_rows, _cols);
     for (unsigned i = 0; i < _rows; i++)
         for (unsigned j = 0; j < _cols; j++)
@@ -116,7 +117,7 @@ template <class DATA_TYPE>
 Matrix<DATA_TYPE> Matrix<DATA_TYPE>::operator+(const Matrix<DATA_TYPE> &rhs) const
 {
     if (_rows != rhs._rows || _cols != rhs._cols)
-        throw std::logic_error("LHS size is not equal to RHS size.");
+        THROW_EXCEPTION(LOGIC_ERROR, "LHS size is not equal to RHS size.");
     Matrix<DATA_TYPE> ret(_rows, _cols);
     for (unsigned i = 0; i < _rows; i++)
         for (unsigned j = 0; j < _cols; j++)
@@ -128,7 +129,7 @@ template <class DATA_TYPE>
 Matrix<DATA_TYPE> &Matrix<DATA_TYPE>::operator+=(const Matrix<DATA_TYPE> &rhs)
 {
     if (_rows != rhs._rows || _cols != rhs._cols)
-        throw std::logic_error("LHS size is not equal to RHS size.");
+        THROW_EXCEPTION(LOGIC_ERROR, "LHS size is not equal to RHS size.");
     for (unsigned i = 0; i < _rows; i++)
         for (unsigned j = 0; j < _cols; j++)
             *(matrix + _cols * i + j) += *(rhs.matrix + _cols * i + j);
@@ -138,6 +139,8 @@ Matrix<DATA_TYPE> &Matrix<DATA_TYPE>::operator+=(const Matrix<DATA_TYPE> &rhs)
 template <class DATA_TYPE>
 Matrix<DATA_TYPE> Matrix<DATA_TYPE>::operator-(const Matrix<DATA_TYPE> &rhs)
 {
+    if (_rows != rhs._rows || _cols != rhs._cols)
+        THROW_EXCEPTION(LOGIC_ERROR, "LHS size is not equal to RHS size.");
     Matrix<DATA_TYPE> ret(_rows, _cols);
     for (unsigned i = 0; i < _rows; i++)
         for (unsigned j = 0; j < _cols; j++)
@@ -148,6 +151,8 @@ Matrix<DATA_TYPE> Matrix<DATA_TYPE>::operator-(const Matrix<DATA_TYPE> &rhs)
 template <class DATA_TYPE>
 Matrix<DATA_TYPE> Matrix<DATA_TYPE>::operator-(const Matrix<DATA_TYPE> &rhs) const
 {
+    if (_rows != rhs._rows || _cols != rhs._cols)
+        THROW_EXCEPTION(LOGIC_ERROR, "LHS size is not equal to RHS size.");
     Matrix<DATA_TYPE> ret(_rows, _cols);
     for (unsigned i = 0; i < _rows; i++)
         for (unsigned j = 0; j < _cols; j++)
@@ -159,7 +164,7 @@ template <class DATA_TYPE>
 Matrix<DATA_TYPE> &Matrix<DATA_TYPE>::operator-=(const Matrix<DATA_TYPE> &rhs)
 {
     if (_rows != rhs._rows || _cols != rhs._cols)
-        throw std::logic_error("LHS size is not equal to RHS size.");
+        THROW_EXCEPTION(LOGIC_ERROR, "LHS size is not equal to RHS size.");
     for (unsigned i = 0; i < _rows; i++)
         for (unsigned j = 0; j < _cols; j++)
             *(matrix + _cols * i + j) -= *(rhs.matrix + _cols * i + j);
@@ -197,7 +202,7 @@ template <class DATA_TYPE>
 Matrix<DATA_TYPE> Matrix<DATA_TYPE>::operator*(const Matrix<DATA_TYPE> &rhs)
 {
     if (_cols != rhs._rows)
-        throw std::logic_error("LHS column is not equal to RHS row.");
+        THROW_EXCEPTION(LOGIC_ERROR, "LHS columns are not equal to RHS rows.");
     Matrix<DATA_TYPE> ret(_rows, rhs._cols);
     for (unsigned i = 0; i < _rows; i++)
         for (unsigned j = 0; j < rhs._cols; j++)
@@ -209,7 +214,7 @@ template <class DATA_TYPE>
 Matrix<DATA_TYPE> Matrix<DATA_TYPE>::operator*(const Matrix<DATA_TYPE> &rhs) const
 {
     if (_cols != rhs._rows)
-        throw std::logic_error("LHS column is not equal to RHS row.");
+        THROW_EXCEPTION(LOGIC_ERROR, "LHS columns are not equal to RHS rows.");
     Matrix<DATA_TYPE> ret(_rows, rhs._cols);
     for (unsigned i = 0; i < _rows; i++)
         for (unsigned j = 0; j < rhs._cols; j++)
@@ -222,7 +227,7 @@ template <class DATA_TYPE>
 Matrix<DATA_TYPE> &Matrix<DATA_TYPE>::operator*=(const Matrix<DATA_TYPE> &rhs)
 {
     if (_cols != rhs._rows)
-        throw std::logic_error("LHS column is not equal to RHS row.");
+        THROW_EXCEPTION(LOGIC_ERROR, "LHS columns are not equal to RHS rows.");
     Matrix<DATA_TYPE> ret(_rows, rhs._cols);
     for (unsigned i = 0; i < _rows; i++)
         for (unsigned j = 0; j < rhs._cols; j++)
@@ -290,7 +295,7 @@ template <class DATA_TYPE>
 Matrix<double> Matrix<DATA_TYPE>::inverse()
 {
     if (_rows != _cols)
-        throw std::logic_error("Must be square matrix.");
+        THROW_EXCEPTION(LOGIC_ERROR, "Must be square matrix.");
     Matrix<double> adjugate(_rows, _cols);
     if (_rows != 1)
     {
@@ -324,8 +329,10 @@ Matrix<double> Matrix<DATA_TYPE>::inverse()
 }
 
 template <class DATA_TYPE>
-double Matrix<DATA_TYPE>::norm()
+double Matrix<DATA_TYPE>::vec_norm2()
 {
+    if (_rows != 1 && _cols != 1)
+        THROW_EXCEPTION(LOGIC_ERROR, "Input must be a vector.");
     double tmp = 0;
     for (unsigned i = 0; i < _rows * _cols; i++)
         tmp += (*(matrix + i)) * (*(matrix + i));

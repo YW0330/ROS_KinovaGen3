@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <cmath>
 #include <initializer_list>
+#include "ExceptionTypes.h"
 
 #define PINV(mat) mat.transpose() * (mat * mat.transpose()).inverse()
 
@@ -68,7 +69,7 @@ public:
     Matrix<DATA_TYPE> operator+(const Matrix<TYPE> &rhs)
     {
         if (_rows != rhs.getRow() || _cols != rhs.getCol())
-            throw std::logic_error("LHS size is not equal to RHS size.");
+            THROW_EXCEPTION(LOGIC_ERROR, "LHS size is not equal to RHS size.");
         Matrix<DATA_TYPE> ret(_rows, _cols);
         for (unsigned i = 0; i < _rows; i++)
             for (unsigned j = 0; j < _cols; j++)
@@ -79,7 +80,7 @@ public:
     Matrix<DATA_TYPE> operator+(const Matrix<TYPE> &rhs) const
     {
         if (_rows != rhs.getRow() || _cols != rhs.getCol())
-            throw std::logic_error("LHS size is not equal to RHS size.");
+            THROW_EXCEPTION(LOGIC_ERROR, "LHS size is not equal to RHS size.");
         Matrix<DATA_TYPE> ret(_rows, _cols);
         for (unsigned i = 0; i < _rows; i++)
             for (unsigned j = 0; j < _cols; j++)
@@ -120,7 +121,18 @@ public:
     Matrix<DATA_TYPE> operator-(const Matrix<TYPE> &rhs)
     {
         if (_rows != rhs.getRow() || _cols != rhs.getCol())
-            throw std::logic_error("LHS size is not equal to RHS size.");
+            THROW_EXCEPTION(LOGIC_ERROR, "LHS size is not equal to RHS size.");
+        Matrix<DATA_TYPE> ret(_rows, _cols);
+        for (unsigned i = 0; i < _rows; i++)
+            for (unsigned j = 0; j < _cols; j++)
+                ret(i, j) = *(matrix + _cols * i + j) - rhs(i, j);
+        return ret;
+    }
+    template <class TYPE>
+    Matrix<DATA_TYPE> operator-(const Matrix<TYPE> &rhs) const
+    {
+        if (_rows != rhs.getRow() || _cols != rhs.getCol())
+            THROW_EXCEPTION(LOGIC_ERROR, "LHS size is not equal to RHS size.");
         Matrix<DATA_TYPE> ret(_rows, _cols);
         for (unsigned i = 0; i < _rows; i++)
             for (unsigned j = 0; j < _cols; j++)
@@ -150,6 +162,15 @@ public:
                 *(ret.matrix + _cols * i + j) = *(matrix + _cols * i + j) * rhs;
         return ret;
     }
+    template <class TYPE>
+    Matrix<DATA_TYPE> operator*(const TYPE &rhs) const
+    {
+        Matrix<DATA_TYPE> ret(_rows, _cols);
+        for (unsigned i = 0; i < _rows; i++)
+            for (unsigned j = 0; j < _cols; j++)
+                *(ret.matrix + _cols * i + j) = *(matrix + _cols * i + j) * rhs;
+        return ret;
+    }
     Matrix<DATA_TYPE> &operator*=(const DATA_TYPE rhs);
 
     /*
@@ -167,7 +188,19 @@ public:
     Matrix<DATA_TYPE> operator*(const Matrix<TYPE> &rhs)
     {
         if (_cols != rhs.getRow())
-            throw std::logic_error("LHS column is not equal to RHS row.");
+            THROW_EXCEPTION(LOGIC_ERROR, "LHS columns are not equal to RHS rows.");
+        Matrix<DATA_TYPE> ret(_rows, rhs.getCol());
+        for (unsigned i = 0; i < _rows; i++)
+            for (unsigned j = 0; j < rhs.getCol(); j++)
+                for (unsigned k = 0; k < _cols; k++)
+                    *(ret.matrix + rhs.getCol() * i + j) += *(matrix + _cols * i + k) * rhs(k, j);
+        return ret;
+    }
+    template <class TYPE>
+    Matrix<DATA_TYPE> operator*(const Matrix<TYPE> &rhs) const
+    {
+        if (_cols != rhs.getRow())
+            THROW_EXCEPTION(LOGIC_ERROR, "LHS columns are not equal to RHS rows.");
         Matrix<DATA_TYPE> ret(_rows, rhs.getCol());
         for (unsigned i = 0; i < _rows; i++)
             for (unsigned j = 0; j < rhs.getCol(); j++)
@@ -189,6 +222,15 @@ public:
     // 不同類型相除
     template <class TYPE>
     Matrix<DATA_TYPE> operator/(const TYPE &rhs)
+    {
+        Matrix<DATA_TYPE> ret(_rows, _cols);
+        for (unsigned i = 0; i < _rows; i++)
+            for (unsigned j = 0; j < _cols; j++)
+                *(ret.matrix + _cols * i + j) = *(matrix + _cols * i + j) / rhs;
+        return ret;
+    }
+    template <class TYPE>
+    Matrix<DATA_TYPE> operator/(const TYPE &rhs) const
     {
         Matrix<DATA_TYPE> ret(_rows, _cols);
         for (unsigned i = 0; i < _rows; i++)
@@ -245,12 +287,12 @@ public:
     Matrix<double> inverse();
 
     /*
-     * 計算 Euclidean norm。
+     * 計算向量的 Euclidean norm。
      *
      * @return Euclidean norm
      *
      */
-    double norm();
+    double vec_norm2();
 
     /*
      * 取得矩陣列數。
@@ -287,7 +329,7 @@ template <class DATA_TYPE>
 DATA_TYPE det(const Matrix<DATA_TYPE> &mat)
 {
     if (mat.getRow() != mat.getCol())
-        throw std::logic_error("Input must be square matrix.");
+        THROW_EXCEPTION(LOGIC_ERROR, "Input must be square matrix.");
     if (mat.getRow() == 2)
         return mat(0, 0) * mat(1, 1) - mat(0, 1) * mat(1, 0);
     else if (mat.getRow() == 1)
@@ -313,21 +355,4 @@ DATA_TYPE det(const Matrix<DATA_TYPE> &mat)
     return detVal;
 }
 
-/*
- * 計算向量 Euclidean norm。
- *
- * @return Euclidean norm 數值
- *
- */
-template <class DATA_TYPE>
-double norm(const Matrix<DATA_TYPE> &mat)
-{
-    if (mat.getRow() != 1 && mat.getCol() != 1)
-        throw std::logic_error("Input must be a vector.");
-    double norm = 0;
-    for (unsigned i = 0; i < mat.getRow(); i++)
-        for (unsigned j = 0; j < mat.getCol(); j++)
-            norm += mat(i, j) * mat(i, j);
-    return sqrt(norm);
-}
 #endif
