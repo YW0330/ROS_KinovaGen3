@@ -140,7 +140,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         Matrix<double> dXd = dcircle;
         Matrix<double> error = Xd - X;
         Matrix<double> derror = dXd - dX;
-        Matrix<double> param_s(DOF, 1), param_v(DOF, 1), param_a(DOF, 1), param_r(DOF, 1);
+        Matrix<double> param_s(7, 1), param_v(7, 1), param_a(7, 1), param_r(DOF, 1);
         Matrix<double> phi(NODE, 7), dW_hat(NODE, 1), W_hat(NODE, 1);
 
         // Real-time loop
