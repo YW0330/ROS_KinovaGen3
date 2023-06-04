@@ -18,9 +18,9 @@
         20, 20, 40      \
     }
 #else
-#define LAMBDA_INITLIST        \
-    {                          \
-        20, 20, 40, 10, 10, 10 \
+#define LAMBDA_INITLIST     \
+    {                       \
+        20, 20, 40, 8, 8, 8 \
     }
 #endif
 
@@ -56,8 +56,8 @@
 #define q7_MAX 100U
 #define q7_MIN (-100)
 
-#define Ks_MANIPULABILITY 3U
-#define Ks_JOINT_LIMIT (-5) // 全部的 qmax 跟 qmin 反向
+#define Ks_MANIPULABILITY 2U
+#define Ks_JOINT_LIMIT (-3) // 全部的 qmax 跟 qmin 反向
 
 // functions
 namespace hsu

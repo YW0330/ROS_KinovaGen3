@@ -135,6 +135,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         {
             if (!(humanState.stop) && !_kbhit())
             {
+                now = GetTickUs();
                 kinovaInfo.time = exp_time;
                 if (now - last > 1000)
                 {
