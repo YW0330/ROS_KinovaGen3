@@ -41,20 +41,22 @@
 #define Cj_dq_UP 2U
 #define Cj_dq_LOW (-2)
 
-#define q1_MAX 100U
-#define q1_MIN (-100)
+// all: 7U, Only even joints (2,4,6): 3U
+#define JML_JOINT_NUM 3U
+#define q1_MAX (100 * DEG2RAD)
+#define q1_MIN (-100 * DEG2RAD)
 #define q2_MAX (110 * DEG2RAD)
 #define q2_MIN (-110 * DEG2RAD)
-#define q3_MAX 100U
-#define q3_MIN (-100)
+#define q3_MAX (100 * DEG2RAD)
+#define q3_MIN (-100 * DEG2RAD)
 #define q4_MAX (147.8 * DEG2RAD)
 #define q4_MIN (-147.8 * DEG2RAD)
-#define q5_MAX 100U
-#define q5_MIN (-100)
+#define q5_MAX (100 * DEG2RAD)
+#define q5_MIN (-100 * DEG2RAD)
 #define q6_MAX (120.3 * DEG2RAD)
 #define q6_MIN (-120.3 * DEG2RAD)
-#define q7_MAX 100U
-#define q7_MIN (-100)
+#define q7_MAX (100 * DEG2RAD)
+#define q7_MIN (-100 * DEG2RAD)
 
 #define Ks_MANIPULABILITY 2U
 #define Ks_JOINT_LIMIT (-3) // 全部的 qmax 跟 qmin 反向
