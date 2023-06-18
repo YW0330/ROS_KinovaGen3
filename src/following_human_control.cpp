@@ -17,7 +17,7 @@
 bool platform_control(ros::Publisher &platform_pub, HumanState &humanState)
 {
     cout << "--------- Platform Mode ----------" << endl;
-
+    ros::Rate loop_rate(10);
     bool return_status = true;
     while (ros::ok() && humanState.current_mode == ControlMode::Platform)
     {
@@ -28,6 +28,7 @@ bool platform_control(ros::Publisher &platform_pub, HumanState &humanState)
             humanPos2platformVel(humanState, twist);
             platform_pub.publish(twist);
             ros::spinOnce(); // 偵測subscribers
+            loop_rate.sleep();
         }
         else if (humanState.stop || (char)_getch() == 's')
         {
