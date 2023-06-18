@@ -18,9 +18,9 @@
         20, 20, 40      \
     }
 #else
-#define LAMBDA_INITLIST     \
-    {                       \
-        20, 20, 40, 8, 8, 8 \
+#define LAMBDA_INITLIST           \
+    {                             \
+        10, 10, 20, 2.5, 2.5, 2.5 \
     }
 #endif
 
@@ -60,6 +60,19 @@
 
 #define Ks_MANIPULABILITY 2U
 #define Ks_JOINT_LIMIT (-3) // 全部的 qmax 跟 qmin 反向
+
+#define USER_pZ_MAX 0.6
+#define USER_pZ_MIN 0.2
+#define PLATFORM_pLINEAR_MAX 1
+#define PLATFORM_nLINEAR_MAX (-1)
+#define USER_nZ_MAX (-0.5)
+#define USER_nZ_MIN (-0.1)
+#define PLATFORM_pANGULAR_MAX 0.5
+#define PLATFORM_nANGULAR_MAX (-0.5)
+#define USER_pY_MAX 0
+#define USER_pY_MIN (-0.2)
+#define USER_nY_MAX (-0.7)
+#define USER_nY_MIN (-0.5)
 
 // functions
 namespace hsu
