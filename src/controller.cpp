@@ -147,21 +147,21 @@ void null_space_subtasks(Matrix<double> &J, Matrix<double> &Jinv, Matrix<double>
     psi.zeros();
 }
 
-void humanPos2platformVel(HumanState &humanState, geometry_msgs::Twist &twist)
+void humanPos2platformVel(Matrix<double> &Xd, geometry_msgs::Twist &twist)
 {
     // 前進後退
-    if (humanState.Xd[2] > USER_pZ_MIN)
-        twist.linear.x = PLATFORM_pLINEAR_MAX * (humanState.Xd[2] - USER_pZ_MAX) / (USER_pZ_MAX - USER_pZ_MIN) + PLATFORM_pLINEAR_MAX;
-    else if (humanState.Xd[2] < USER_nZ_MIN)
-        twist.linear.x = PLATFORM_nLINEAR_MAX * (humanState.Xd[2] - USER_nZ_MAX) / (USER_nZ_MAX - USER_nZ_MIN) + PLATFORM_nLINEAR_MAX;
+    if (Xd[2] > USER_pZ_MIN)
+        twist.linear.x = PLATFORM_pLINEAR_MAX * (Xd[2] - USER_pZ_MAX) / (USER_pZ_MAX - USER_pZ_MIN) + PLATFORM_pLINEAR_MAX;
+    else if (Xd[2] < USER_nZ_MIN)
+        twist.linear.x = PLATFORM_nLINEAR_MAX * (Xd[2] - USER_nZ_MAX) / (USER_nZ_MAX - USER_nZ_MIN) + PLATFORM_nLINEAR_MAX;
     else
         twist.linear.x = 0;
 
     // 旋轉
-    if (humanState.Xd[1] > USER_pY_MIN)
-        twist.angular.z = PLATFORM_pANGULAR_MAX * (humanState.Xd[1] - USER_pY_MAX) / (USER_pY_MAX - USER_pY_MIN) + PLATFORM_pANGULAR_MAX;
-    else if (humanState.Xd[1] < USER_nY_MIN)
-        twist.angular.z = PLATFORM_nANGULAR_MAX * (humanState.Xd[1] - USER_nY_MAX) / (USER_nY_MAX - USER_nY_MIN) + PLATFORM_nANGULAR_MAX;
+    if (Xd[1] > USER_pY_MIN)
+        twist.angular.z = PLATFORM_pANGULAR_MAX * (Xd[1] - USER_pY_MAX) / (USER_pY_MAX - USER_pY_MIN) + PLATFORM_pANGULAR_MAX;
+    else if (Xd[1] < USER_nY_MIN)
+        twist.angular.z = PLATFORM_nANGULAR_MAX * (Xd[1] - USER_nY_MAX) / (USER_nY_MAX - USER_nY_MIN) + PLATFORM_nANGULAR_MAX;
     else
         twist.angular.z = 0;
 }

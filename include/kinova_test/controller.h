@@ -65,14 +65,14 @@
 #define USER_pZ_MIN 0.2
 #define PLATFORM_pLINEAR_MAX 1
 #define PLATFORM_nLINEAR_MAX (-1)
-#define USER_nZ_MAX (-0.5)
-#define USER_nZ_MIN (-0.1)
+#define USER_nZ_MAX (-0.6)
+#define USER_nZ_MIN (-0.2)
 #define PLATFORM_pANGULAR_MAX 0.5
 #define PLATFORM_nANGULAR_MAX (-0.5)
-#define USER_pY_MAX 0
-#define USER_pY_MIN (-0.2)
-#define USER_nY_MAX (-0.7)
-#define USER_nY_MIN (-0.5)
+#define USER_pY_MAX (0.45)
+#define USER_pY_MIN (0.05)
+#define USER_nY_MAX (-0.5)
+#define USER_nY_MIN (-0.1)
 
 // functions
 namespace hsu
@@ -91,6 +91,6 @@ void contrller_params(const Matrix<double> &J, const Matrix<double> &Jinv, const
 void joint_angle_limit_psi(const Matrix<double> &q, Matrix<double> &psi);
 void manipulability_psi(const Matrix<double> &q, Matrix<double> &psi);
 void null_space_subtasks(Matrix<double> &J, Matrix<double> &Jinv, Matrix<double> &psi, Matrix<double> &subtasks);
-void humanPos2platformVel(HumanState &humanState, geometry_msgs::Twist &twist);
+void humanPos2platformVel(Matrix<double> &Xd, geometry_msgs::Twist &twist);
 void emergency_stop(ros::Publisher &platform_pub);
 #endif

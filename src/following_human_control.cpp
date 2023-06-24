@@ -19,13 +19,25 @@ bool platform_control(ros::Publisher &platform_pub, HumanState &humanState)
     cout << "--------- Platform Mode ----------" << endl;
     ros::Rate loop_rate(10);
     bool return_status = true;
+    int64_t t_start = GetTickUs(), now = GetTickUs();    // 微秒
+    double exp_time = (double)(now - t_start) / 1000000; // 秒
+    Matrix<double> Xd0 = humanState.Xd;
+    Matrix<double> Xd = humanState.Xd - Xd0;
     while (ros::ok() && humanState.current_mode == ControlMode::Platform)
     {
+
         if (!(humanState.stop) && !_kbhit())
         {
+            if (exp_time < 2)
+            {
+                Xd0 = humanState.Xd;
+                now = GetTickUs();
+                exp_time = (double)(now - t_start) / 1000000;
+            }
+            Xd = humanState.Xd - Xd0;
             // ROS
             geometry_msgs::Twist twist;
-            humanPos2platformVel(humanState, twist);
+            humanPos2platformVel(Xd, twist);
             platform_pub.publish(twist);
             ros::spinOnce(); // 偵測subscribers
             loop_rate.sleep();
