@@ -72,10 +72,11 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         auto control_mode_message = k_api::ActuatorConfig::ControlModeInformation();
         control_mode_message.set_control_mode(k_api::ActuatorConfig::ControlMode::TORQUE);
 
-        for (int i = 1; i <= actuator_count; i++)
-            actuator_config->SetControlMode(control_mode_message, i);
         for (int i = 0; i < actuator_count; i++)
+        {
+            actuator_config->SetControlMode(control_mode_message, i + 1);
             init_tau[i] = -base_feedback.actuators(i).torque();
+        }
 
         /* ------------ 初始值參數設定開始 ------------ */
         // 讀取關節角
@@ -160,6 +161,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                         chang::get_phi(param_v, param_a, q, dq, phi.at(i), i);
                         chang::get_dW_hat(phi.at(i), param_s, dW_hat.at(i), i);
                         sigma[i] = (W_hat.at(i).transpose() * phi.at(i))[0];
+                        // kinovaInfo.torque[i] = sigma[i];
                     }
                     // 控制器
                     chang::controller(J, dX, dXd, param_s, param_r, sigma, controller_tau);

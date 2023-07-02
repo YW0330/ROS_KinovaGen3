@@ -18,18 +18,18 @@
         20, 20, 40      \
     }
 #else
-#define LAMBDA_INITLIST           \
-    {                             \
-        10, 10, 20, 2.5, 2.5, 2.5 \
+#define LAMBDA_INITLIST     \
+    {                       \
+        10, 10, 12, 8, 8, 8 \
     }
 #endif
 
-#define K_INITLIST            \
-    {                         \
-        8, 15, 8, 10, 5, 8, 5 \
+#define K_INITLIST           \
+    {                        \
+        5, 10, 5, 8, 5, 8, 5 \
     }
-#define Kj 0.8
-#define Kr 10U
+#define Kj 0.5
+#define Kr 25U
 #define Gamma 2
 #define Bj 20
 #define Cj_v_UP 1U
@@ -58,13 +58,13 @@
 #define q7_MAX (100 * DEG2RAD)
 #define q7_MIN (-100 * DEG2RAD)
 
-#define Ks_MANIPULABILITY 2U
-#define Ks_JOINT_LIMIT (-3) // 全部的 qmax 跟 qmin 反向
+#define Ks_MANIPULABILITY 2
+#define Ks_JOINT_LIMIT (-2) // 全部的 qmax 跟 qmin 反向
 
-#define USER_pZ_MAX 0.6
-#define USER_pZ_MIN 0.2
 #define PLATFORM_pLINEAR_MAX 1
 #define PLATFORM_nLINEAR_MAX (-1)
+#define USER_pZ_MAX 0.6
+#define USER_pZ_MIN 0.2
 #define USER_nZ_MAX (-0.6)
 #define USER_nZ_MIN (-0.2)
 #define PLATFORM_pANGULAR_MAX 0.5
