@@ -95,10 +95,6 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
 #else
         Matrix<double> X = forward_kinematic_6dof(position_curr);
 #endif
-        Matrix<double> X0 = X;
-        X0[0] = 0;
-        X0[1] = 0;
-        kinovaInfo.kinova_X = {X[0], X[1], X[2]};
         // Jacobian矩陣
         double J_arr[42], Jinv_arr[42];
         Matrix<double> J67(6, 7);
@@ -127,14 +123,20 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
         Matrix<double> controller_tau(7, 1);
 
         // 目標輸出
+        Matrix<double> X0(DOF, 1, MatrixType::General, {0.56, 0.02, 0.41});
+        Matrix<double> circle0(DOF, 1);
+        circle0[0] = -0.2 * sin(0);
+        circle0[1] = -0.3 * cos(0);
+        circle0[2] = -0.18 * sin(0);
+
         Matrix<double> circle(DOF, 1);
         Matrix<double> dcircle(DOF, 1);
-        circle[0] = 0.7 * sin(exp_time * 2 * M_PI / 20);
-        circle[1] = 0.75 * cos(exp_time * 2 * M_PI / 20);
-        circle[2] = 0.3 * sin(exp_time * 2 * M_PI / 6);
-        dcircle[0] = 0.7 * cos(exp_time * 2 * M_PI / 20) * 2 * M_PI / 20;
-        dcircle[1] = -0.75 * sin(exp_time * 2 * M_PI / 20) * 2 * M_PI / 20;
-        dcircle[2] = 0.3 * cos(exp_time * 2 * M_PI / 6) * 2 * M_PI / 6;
+        circle[0] = 0.2 * sin(exp_time * 0.15 * M_PI) + circle0[0];
+        circle[1] = 0.3 * cos(exp_time * 0.3 * M_PI) + circle0[1];
+        circle[2] = 0.18 * sin(exp_time * 0.35 * M_PI) + circle0[2];
+        dcircle[0] = 0.2 * 0.15 * M_PI * cos(exp_time * 0.15 * M_PI);
+        dcircle[1] = -0.3 * 0.3 * M_PI * sin(exp_time * 0.3 * M_PI);
+        dcircle[2] = 0.18 * 0.35 * M_PI * cos(exp_time * 0.35 * M_PI);
 
         Matrix<double> Xd = X0 + circle;
         Matrix<double> dXd = dcircle;
@@ -178,6 +180,7 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                         chang::get_phi(param_v, param_a, q, dq, phi.at(i), i);
                         chang::get_dW_hat(phi.at(i), param_s, dW_hat.at(i), i);
                         sigma[i] = (W_hat.at(i).transpose() * phi.at(i))[0];
+                        // kinovaInfo.torque[i] = sigma[i];
                     }
                     // 控制器
                     chang::controller(J, dX, dXd, param_s, param_r, sigma, controller_tau);
@@ -245,18 +248,18 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     last = now;
                     if (exp_time < 10)
                     {
-                        circle[0] = 0.7 * sin(exp_time * 2 * M_PI / 20);
-                        circle[1] = 0.75 * cos(exp_time * 2 * M_PI / 20);
-                        circle[2] = 0.3 * sin(exp_time * 2 * M_PI / 6);
-                        dcircle[0] = 0.7 * cos(exp_time * 2 * M_PI / 20) * 2 * M_PI / 20;
-                        dcircle[1] = -0.75 * sin(exp_time * 2 * M_PI / 20) * 2 * M_PI / 20;
-                        dcircle[2] = 0.3 * cos(exp_time * 2 * M_PI / 6) * 2 * M_PI / 6;
+                        circle[0] = 0.2 * sin(exp_time * 0.15 * M_PI) + circle0[0];
+                        circle[1] = 0.3 * cos(exp_time * 0.3 * M_PI) + circle0[1];
+                        circle[2] = 0.18 * sin(exp_time * 0.35 * M_PI) + circle0[2];
+                        dcircle[0] = 0.2 * 0.15 * M_PI * cos(exp_time * 0.15 * M_PI);
+                        dcircle[1] = -0.3 * 0.3 * M_PI * sin(exp_time * 0.3 * M_PI);
+                        dcircle[2] = 0.18 * 0.35 * M_PI * cos(exp_time * 0.35 * M_PI);
                     }
                     else
                     {
-                        circle[0] = 0.7 * sin(10 * 2 * M_PI / 20);
-                        circle[1] = 0.75 * cos(10 * 2 * M_PI / 20);
-                        circle[2] = 0.3 * sin(10 * 2 * M_PI / 6);
+                        circle[0] = 0.2 * sin(10 * 0.15 * M_PI) + circle0[0];
+                        circle[1] = 0.3 * cos(10 * 0.3 * M_PI) + circle0[1];
+                        circle[2] = 0.18 * sin(10 * 0.35 * M_PI) + circle0[2];
                         dcircle[0] = 0;
                         dcircle[1] = 0;
                         dcircle[2] = 0;
