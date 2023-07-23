@@ -15,7 +15,7 @@
 #if (DOF == 3)
 #define LAMBDA_INITLIST \
     {                   \
-        20, 20, 40      \
+        15, 15, 25      \
     }
 #else
 #define LAMBDA_INITLIST     \
@@ -30,19 +30,14 @@
     }
 #define Kj 0.5
 #define Kr 25U
-#define Gamma 2
+#define Gamma 2.5
 #define Bj 20
-#define Cj_v_UP 1U
-#define Cj_v_LOW (-1)
-#define Cj_a_UP 1U
-#define Cj_a_LOW (-1)
-#define Cj_q_UP (2 * M_PI)
-#define Cj_q_LOW (-2 * M_PI)
-#define Cj_dq_UP 2U
-#define Cj_dq_LOW (-2)
 
-// all: 7U, Only even joints (2,4,6): 3U
-#define JML_JOINT_NUM 3U
+#define Ks_MANIPULABILITY 2
+#define Ks_JOINT_LIMIT 2
+
+// all: JML_JOINT_ALL, Only even joints (2,4,6): JML_JOINT_246
+#define JML_JOINT_246
 #define q1_MAX (100 * DEG2RAD)
 #define q1_MIN (-100 * DEG2RAD)
 #define q2_MAX (110 * DEG2RAD)
@@ -58,9 +53,6 @@
 #define q7_MAX (100 * DEG2RAD)
 #define q7_MIN (-100 * DEG2RAD)
 
-#define Ks_MANIPULABILITY 2
-#define Ks_JOINT_LIMIT (-2) // 全部的 qmax 跟 qmin 反向
-
 #define PLATFORM_pLINEAR_MAX 1
 #define PLATFORM_nLINEAR_MAX (-1)
 #define USER_pZ_MAX 0.6
@@ -73,6 +65,16 @@
 #define USER_pY_MIN (0.05)
 #define USER_nY_MAX (-0.5)
 #define USER_nY_MIN (-0.1)
+
+// hsu RBFNN params
+#define Cj_v_UP 1U
+#define Cj_v_LOW (-1)
+#define Cj_a_UP 1U
+#define Cj_a_LOW (-1)
+#define Cj_q_UP (2 * M_PI)
+#define Cj_q_LOW (-2 * M_PI)
+#define Cj_dq_UP 2U
+#define Cj_dq_LOW (-2)
 
 // functions
 namespace hsu

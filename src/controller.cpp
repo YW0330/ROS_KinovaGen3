@@ -114,20 +114,21 @@ void joint_angle_limit_psi(const Matrix<double> &q, Matrix<double> &psi)
 {
     double psi_arr[7];
     Matrix<double> psi_tmp(7, 1);
-#if (JML_JOINT_NUM == 7)
+#ifdef JML_JOINT_ALL
     const double q_max[7] = {q1_MAX, q2_MAX, q3_MAX, q4_MAX, q5_MAX, q6_MAX, q7_MAX};
     const double q_min[7] = {q1_MIN, q2_MIN, q3_MIN, q4_MIN, q5_MIN, q6_MIN, q7_MIN};
     kinova_psi_jointAngleLimits_all(q[0], q[1], q[2], q[3], q[4], q[5], q[6], q_max[0], q_max[1], q_max[2], q_max[3], q_max[4], q_max[5], q_max[6], q_min[0], q_min[1], q_min[2], q_min[3], q_min[4], q_min[5], q_min[6], psi_arr);
-#elif (JML_JOINT_NUM == 3)
+    psi_tmp.update_from_matlab(psi_arr);
+    for (unsigned int i = 0, k = 0; i < 7; i++, k++)
+#elif defined(JML_JOINT_246)
     const double q_max[3] = {q2_MAX, q4_MAX, q6_MAX};
     const double q_min[3] = {q2_MIN, q4_MIN, q6_MIN};
     kinova_psi_jointAngleLimits_246(q[1], q[3], q[5], q_max[0], q_max[1], q_max[2], q_min[0], q_min[1], q_min[2], psi_arr);
-#endif
-    for (unsigned int i = 0; i < JML_JOINT_NUM; i++)
-        if ((q_max[i] > 0 && q_min[i] < 0) || (q_max[i] < 0 && q_min[i] > 0))
-            psi[i] = -psi[i];
-
     psi_tmp.update_from_matlab(psi_arr);
+    for (unsigned int i = 0, k = 1; i < 3; i++, k += 2)
+#endif
+        if ((q_max[i] > 0 && q_min[i] < 0) || (q_max[i] < 0 && q_min[i] > 0))
+            psi_tmp[k] = -psi_tmp[k];
     psi += Ks_JOINT_LIMIT * psi_tmp;
 }
 

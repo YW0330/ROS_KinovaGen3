@@ -207,7 +207,7 @@ void gravity_compensation(const Matrix<double> &q, const double init_tau[7], Mat
     kinova_G_gripper(GRAVITY, q[0], q[1], q[2], q[3], q[4], q[5], q[6], G_arr);
     G.update_from_matlab(G_arr);
     tau[0] += G[0] + init_tau[0] * 0.05;
-    tau[1] += G[1] + init_tau[1] * 0.03;
+    tau[1] += G[1] + init_tau[1] * 0.08;
     tau[2] += G[2] + init_tau[2] * 0.1;
     tau[3] += G[3] + init_tau[3] * 0.05;
     tau[4] += G[4] + init_tau[4];
