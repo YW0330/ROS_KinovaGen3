@@ -184,9 +184,9 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                     }
                     // 控制器
                     chang::controller(J, dX, dXd, param_s, param_r, sigma, controller_tau);
-                    // 設定飽和器
-                    torque_satuation(controller_tau);
 
+                    // 設定飽和器
+                    torque_saturation(controller_tau);
                     // 輸入扭矩
                     for (int i = 0; i < 7; i++)
                     {

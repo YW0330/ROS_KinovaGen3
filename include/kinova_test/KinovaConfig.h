@@ -51,7 +51,7 @@ bool move_to_home_position_with_ros(k_api::Base::BaseClient *base, ros::Publishe
  * @param tau: 7*1 的輸出扭矩向量
  *
  */
-void torque_satuation(Matrix<double> &tau);
+void torque_saturation(Matrix<double> &tau);
 
 /*
  * 重力補償。

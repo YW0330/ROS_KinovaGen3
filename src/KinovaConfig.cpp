@@ -181,7 +181,7 @@ bool move_to_home_position_with_ros(k_api::Base::BaseClient *base, ros::Publishe
     }
 }
 
-void torque_satuation(Matrix<double> &tau)
+void torque_saturation(Matrix<double> &tau)
 {
     for (int i = 0; i < 7; i++)
     {
@@ -209,7 +209,7 @@ void gravity_compensation(const Matrix<double> &q, const double init_tau[7], Mat
     tau[0] += G[0] + init_tau[0] * 0.05;
     tau[1] += G[1] + init_tau[1] * 0.08;
     tau[2] += G[2] + init_tau[2] * 0.1;
-    tau[3] += G[3] + init_tau[3] * 0.05;
+    tau[3] += G[3] + init_tau[3] * 0.1;
     tau[4] += G[4] + init_tau[4];
     tau[5] += G[5] * 0.95 + init_tau[5] * 0.2;
     tau[6] += G[6] + init_tau[6];

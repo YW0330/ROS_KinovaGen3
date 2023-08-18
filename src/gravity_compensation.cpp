@@ -115,8 +115,9 @@ bool torque_control(k_api::Base::BaseClient *base, k_api::BaseCyclic::BaseCyclic
                 for (int i = 0; i < 7; i++)
                     controller_tau[i] = 0;
                 gravity_compensation(position_curr, init_tau, controller_tau);
+
                 // 設定飽和器
-                torque_satuation(controller_tau);
+                torque_saturation(controller_tau);
                 // 輸入扭矩
                 for (int i = 0; i < 7; i++)
                     base_command.mutable_actuators(i)->set_torque_joint(controller_tau[i]);
