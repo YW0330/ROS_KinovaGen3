@@ -31,6 +31,12 @@
 #define Kj 0.5
 #define Kr 25U
 #define Gamma 2.5
+
+// RBFNN Parameters
+#define Cj_v_UP 40
+#define Cj_v_LOW (-40)
+#define Cj_a_UP 80
+#define Cj_a_LOW (-80)
 #define Bj 20
 
 #define Ks_MANIPULABILITY 2

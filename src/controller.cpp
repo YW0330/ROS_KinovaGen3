@@ -18,10 +18,10 @@ namespace chang
         {
             Matrix<double> cj(4, 1);
             // v
-            cj[0] = -40 + (80 / (NODE - 1)) * i;
+            cj[0] = Cj_v_LOW + ((Cj_v_UP - Cj_v_LOW) / (NODE - 1)) * i;
 
             // a
-            cj[1] = -80 + (160 / (NODE - 1)) * i;
+            cj[1] = Cj_a_LOW + ((Cj_a_UP - Cj_a_LOW) / (NODE - 1)) * i;
 
             // q
             if (joint == 1) // joint 2
