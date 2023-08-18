@@ -8,7 +8,7 @@
 #include "ros/ros.h"
 #include "geometry_msgs/Twist.h"
 
-// Parameters
+// Controller Parameters
 #define DOF 6U
 #define NODE 25U
 
@@ -66,23 +66,7 @@
 #define USER_nY_MAX (-0.5)
 #define USER_nY_MIN (-0.1)
 
-// hsu RBFNN params
-#define Cj_v_UP 1U
-#define Cj_v_LOW (-1)
-#define Cj_a_UP 1U
-#define Cj_a_LOW (-1)
-#define Cj_q_UP (2 * M_PI)
-#define Cj_q_LOW (-2 * M_PI)
-#define Cj_dq_UP 2U
-#define Cj_dq_LOW (-2)
-
 // functions
-namespace hsu
-{
-    void get_phi(const Matrix<double> &v, const Matrix<double> &a, const Matrix<double> &q, const Matrix<double> &dq, Matrix<double> &phi);
-    void get_dW_hat(const Matrix<double> &phi, const Matrix<double> &s, Matrix<double> &dW_hat);
-    void controller(const Matrix<double> &J, const Matrix<double> &dx, const Matrix<double> &dxd, const Matrix<double> &s, const Matrix<double> &r, const Matrix<double> &phi, const Matrix<double> &W_hat, Matrix<double> &tau);
-}
 namespace chang
 {
     void get_phi(const Matrix<double> &v, const Matrix<double> &a, const Matrix<double> &q, const Matrix<double> &dq, Matrix<double> &phi, unsigned joint);

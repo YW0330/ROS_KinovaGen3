@@ -69,9 +69,6 @@ add_executable(gravity_compensation src/gravity_compensation.cpp src/utilities.c
 # ---------------- chang_tracking ------------------
 add_executable(chang_tracking src/chang_tracking.cpp src/utilities.cpp)
 
-# ---------------- hsu_tracking ------------------
-add_executable(hsu_tracking src/hsu_tracking.cpp src/utilities.cpp)
-
 # ---------------- following_human_control ------------------
 add_executable(following_human_control src/following_human_control.cpp src/utilities.cpp)
 

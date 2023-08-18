@@ -8,59 +8,6 @@ void contrller_params(const Matrix<double> &J, const Matrix<double> &Jinv, const
     a = dJinv * lambda * e + Jinv * lambda * de + dsubtasks;
     r = J * s;
 }
-namespace hsu
-{
-    void get_phi(const Matrix<double> &v, const Matrix<double> &a, const Matrix<double> &q, const Matrix<double> &dq, Matrix<double> &phi)
-    {
-        double distance_square, cj, X;
-        for (unsigned i = 0; i < NODE; i++)
-        {
-            for (unsigned j = 0; j < 7; j++)
-            {
-                distance_square = 0;
-                for (unsigned k = 0; k < 4; k++)
-                {
-                    if (k == 0)
-                    {
-                        X = v[j];
-                        cj = Cj_v_LOW + ((Cj_v_UP - Cj_v_LOW) / (NODE - 1)) * i;
-                    }
-                    else if (k == 1)
-                    {
-                        X = a[j];
-                        cj = Cj_a_LOW + ((Cj_a_UP - Cj_a_LOW) / (NODE - 1)) * i;
-                    }
-                    else if (k == 2)
-                    {
-                        X = q[j];
-                        cj = Cj_q_LOW + ((Cj_q_UP - Cj_q_LOW) / (NODE - 1)) * i;
-                    }
-                    else
-                    {
-                        X = dq[j];
-                        cj = Cj_dq_LOW + ((Cj_dq_UP - Cj_dq_LOW) / (NODE - 1)) * i;
-                    }
-                    distance_square += (X - cj) * (X - cj);
-                }
-                phi(i, j) = exp(-distance_square / (Bj * Bj));
-            }
-        }
-    }
-
-    void get_dW_hat(const Matrix<double> &phi, const Matrix<double> &s, Matrix<double> &dW_hat)
-    {
-        dW_hat = -Gamma * phi * s;
-    }
-
-    void controller(const Matrix<double> &J, const Matrix<double> &dx, const Matrix<double> &dxd, const Matrix<double> &s, const Matrix<double> &r, const Matrix<double> &phi, const Matrix<double> &W_hat, Matrix<double> &tau)
-    {
-        Matrix<double> K(7, 7, MatrixType::Diagonal, K_INITLIST);
-        // Matrix<double> tau_bar = Kr * r - Kj * (dxd - dx) + PINV(r.transpose()) * dx.transpose() * Kj * dxd;
-        Matrix<double> tau_bar = Kr * r;
-
-        tau = phi.transpose() * W_hat - K * s - J.transpose() * tau_bar;
-    }
-}
 
 namespace chang
 {
